@@ -1,46 +1,29 @@
 // src/composables/useGameEngine.ts
 import { ref, reactive, computed } from 'vue';
 import type { PlayerProfile, SeasonStats, CareerTotals, Position } from '../types';
+import { simulateLeagueStandings } from '../utils/leagueSimulation';
+import { calculateSeasonStats } from '../utils/statsCalculator';
+import { calculateAwards } from '../utils/awardsCalculator';
+import { simulatePlayoffs } from '../utils/playoffsSimulation';
 
 export function useGameEngine() {
-  /** Creates a fresh player with sensible defaults for all PlayerProfile fields. */
-  const createDefaultPlayer = (): PlayerProfile => ({
+  const player = reactive<PlayerProfile>({
     name: '',
     position: 'SF',
-    nationality: '',
-    team: '',
+    nationality: 'USA',
+    teamId: 'LAL',
     age: 19,
     ovr: 68,
     isRetired: false,
-    attributes: {}
+    attributes: { Arremesso: 60, Drible: 60, Defesa: 60, IQ: 60, Atletismo: 60, Passe: 60, Rebote: 60, Velocidade: 60, Mentalidade: 60 }
   });
-
-  const player = reactive<PlayerProfile>(createDefaultPlayer());
 
   const history = ref<SeasonStats[]>([]);
-
-  // Computed para atualizar automaticamente o painel de carreira
-  const careerTotals = computed<CareerTotals>(() => {
-    return history.value.reduce(
-      (acc, season) => {
-        // Multiplica a média de pontos por uma base de 82 jogos na temporada regular
-        acc.totalPoints += Math.round(season.ppg * 82);
-        acc.totalRebounds += Math.round(season.rpg * 82);
-        acc.totalAssists += Math.round(season.apg * 82);
-        if (season.wonRing) acc.rings += 1;
-        if (season.wonMVP) acc.mvps += 1;
-        acc.seasonsPlayed += 1;
-        return acc;
-      },
-      { totalPoints: 0, totalRebounds: 0, totalAssists: 0, rings: 0, mvps: 0, seasonsPlayed: 0 }
-    );
-  });
 
   const initCareer = (name: string, position: Position) => {
     player.name = name;
     player.position = position;
     player.age = 19;
-    player.ovr = Math.floor(Math.random() * (75 - 65 + 1)) + 65; // OVR inicial entre 65 e 75
     player.isRetired = false;
     history.value = [];
   };
@@ -48,108 +31,82 @@ export function useGameEngine() {
   const simulateSeason = () => {
     if (player.isRetired) return;
 
-    // 1. Atualizar Idade e OVR
-    const currentOvr = updateOVR(player.age, player.ovr);
-    player.ovr = currentOvr;
+    const seasonNumber = history.value.length + 1;
 
-    // 2. Gerar Estatísticas Baseadas no OVR e Posição
-    const { ppg, rpg, apg } = generateStats(currentOvr, player.position);
+    // 1. Simular Liga e Standings
+    const standings = simulateLeagueStandings(player);
+    const myTeamStandings = standings.find(t => t.id === player.teamId)!;
 
-    // 3. RNG para Prêmios
-    // MVP exige um OVR alto. Anel sofre influência do OVR, mas tem fator sorte maior.
-    const wonMVP = currentOvr > 90 && Math.random() < ((currentOvr - 90) * 0.1); 
-    const wonRing = currentOvr > 80 && Math.random() < ((currentOvr - 70) * 0.05);
+    // 2. Gerar Estatísticas Avançadas baseadas nos Atributos
+    const rawStats = calculateSeasonStats(player.attributes, player.position, player.age, myTeamStandings.wins);
 
-    // 4. Salvar histórico da temporada
+    // 3. Simular Playoffs (Anel)
+    const wonRing = simulatePlayoffs(player, standings);
+
+    // 4. Calcular Prêmios (Awards)
+    const awards = calculateAwards(rawStats, seasonNumber, myTeamStandings.wins, standings, player.position);
+
+    // 5. Salvar na História
     history.value.push({
-      seasonNumber: history.value.length + 1,
+      seasonNumber,
       age: player.age,
-      ovr: currentOvr,
-      ppg,
-      rpg,
-      apg,
-      wonRing,
-      wonMVP
+      ovr: player.ovr,
+      teamId: player.teamId,
+      teamWins: myTeamStandings.wins,
+      teamLosses: myTeamStandings.losses,
+      ...rawStats,
+      awards,
+      wonRing
     });
 
-    // 5. Verificar Aposentadoria (RNG aumenta drasticamente após os 36 anos)
-    if (player.age >= 40 || (player.age > 35 && Math.random() < 0.3)) {
+    // 6. Atualização de OVR e Idade (Teto e Regressão)
+    if (player.age >= 40 || (player.age > 36 && Math.random() < 0.25)) {
       player.isRetired = true;
     } else {
       player.age += 1;
+      
+      // Define o teto máximo de OVR baseado na média dos atributos roubados (+12 de folga para desenvolvimento)
+      const attrValues = Object.values(player.attributes) as number[];
+      const baseAvg = attrValues.reduce((a, b) => a + b, 0) / attrValues.length;
+      const potentialCeiling = Math.min(99, Math.floor(baseAvg + 12)); 
+
+      if (player.age < 26) {
+        // Evolução de novato a estrela
+        player.ovr += Math.floor(Math.random() * 4);
+        if (player.ovr > potentialCeiling) player.ovr = potentialCeiling;
+      } else if (player.age >= 26 && player.age <= 31) {
+        // Ápice: flutuação mínima
+        const change = Math.floor(Math.random() * 3) - 1; // -1, 0 ou +1
+        player.ovr = Math.min(potentialCeiling, player.ovr + change);
+      } else if (player.age > 31 && player.age <= 34) {
+        // Início do declínio físico
+        player.ovr -= Math.floor(Math.random() * 3) + 1; // Perde de 1 a 3 pontos por ano
+      } else {
+        // Declínio severo em idade avançada
+        player.ovr -= Math.floor(Math.random() * 4) + 3; // Perde de 3 a 6 pontos por ano
+      }
+      
+      player.ovr = Math.max(40, Math.floor(player.ovr)); // Nunca cai abaixo de 40
     }
   };
 
-  return {
-    player,
-    history,
-    careerTotals,
-    initCareer,
-    simulateSeason
-  };
-}
+  // Atualize o computed 'careerTotals' para incluir Steals e Blocks
+  const careerTotals = computed<CareerTotals>(() => {
+    return history.value.reduce(
+      (acc, season) => {
+        acc.totalPoints += Math.round(season.ppg * 82);
+        acc.totalRebounds += Math.round(season.rpg * 82);
+        acc.totalAssists += Math.round(season.apg * 82);
+        acc.totalSteals += Math.round(season.spg * 82);
+        acc.totalBlocks += Math.round(season.bpg * 82);
+        if (season.wonRing) acc.rings += 1;
+        if (season.awards.includes('MVP')) acc.mvps += 1;
+        acc.seasonsPlayed += 1;
+        return acc;
+      },
+      { totalPoints: 0, totalRebounds: 0, totalAssists: 0, totalSteals: 0, totalBlocks: 0, rings: 0, mvps: 0, seasonsPlayed: 0 }
+    );
+  });
 
-function updateOVR(age: number, currentOvr: number): number {
-  let change = 0;
-  
-  if (age < 26) {
-    // Crescimento rápido
-    change = Math.floor(Math.random() * 4) + 1; 
-  } else if (age >= 26 && age <= 31) {
-    // Ápice (Prime) - Manutenção ou ganho leve
-    change = Math.floor(Math.random() * 3) - 1; 
-  } else if (age > 31 && age <= 35) {
-    // Declínio inicial
-    change = -Math.floor(Math.random() * 3);
-  } else {
-    // Declínio acentuado
-    change = -Math.floor(Math.random() * 4) - 1;
-  }
-
-  const newOvr = currentOvr + change;
-  return Math.min(Math.max(newOvr, 40), 99); // Trava entre 40 e 99
-}
-
-function generateStats(ovr: number, position: Position) {
-  // Base de cálculo vinculada ao OVR
-  const baseStat = (ovr / 99); 
-  
-  // Variação RNG (± 10%)
-  const variance = () => (Math.random() * 0.2) + 0.9;
-
-  let ppg = 0, rpg = 0, apg = 0;
-
-  switch (position) {
-    case 'PG':
-      ppg = baseStat * 25 * variance();
-      apg = baseStat * 11 * variance();
-      rpg = baseStat * 5 * variance();
-      break;
-    case 'SG':
-      ppg = baseStat * 30 * variance();
-      apg = baseStat * 6 * variance();
-      rpg = baseStat * 6 * variance();
-      break;
-    case 'SF':
-      ppg = baseStat * 28 * variance();
-      apg = baseStat * 7 * variance();
-      rpg = baseStat * 8 * variance();
-      break;
-    case 'PF':
-      ppg = baseStat * 24 * variance();
-      apg = baseStat * 4 * variance();
-      rpg = baseStat * 11 * variance();
-      break;
-    case 'C':
-      ppg = baseStat * 22 * variance();
-      apg = baseStat * 3 * variance();
-      rpg = baseStat * 13 * variance();
-      break;
-  }
-
-  return {
-    ppg: parseFloat(ppg.toFixed(1)),
-    rpg: parseFloat(rpg.toFixed(1)),
-    apg: parseFloat(apg.toFixed(1))
-  };
+  return { player, history, careerTotals, initCareer, simulateSeason };
 }

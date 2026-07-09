@@ -1,9 +1,11 @@
 // src/composables/useDraft.ts
-import { ref, reactive, computed } from 'vue';
+import { ref, computed, reactive } from 'vue';
 import type { AttributeKey, RealPlayer, PlayerAttributes } from '../types';
-import { ATTRIBUTES_LIST } from '../types';
 import { nbaPlayers } from '../data/players';
+import { nbaTeams } from '../data/teams';
 
+// Adicione esta linha:
+const ATTRIBUTES_LIST: AttributeKey[] = ['Arremesso', 'Drible', 'Defesa', 'IQ', 'Atletismo', 'Passe', 'Rebote', 'Velocidade', 'Mentalidade'];
 /**
  * Returns a random player whose ID hasn't been drawn yet.
  * If all players have been seen, resets the pool.
@@ -59,9 +61,9 @@ export function useDraft() {
     return Math.max(65, average - 10); 
   };
 
-  const getRandomTeam = () => {
-    const teams = ['Bulls', 'Lakers', 'Warriors', 'Celtics', 'Heat', 'Knicks'];
-    return teams[Math.floor(Math.random() * teams.length)];
+  const getRandomTeam = (): string => {
+    const randomIndex = Math.floor(Math.random() * nbaTeams.length);
+    return nbaTeams[randomIndex].id;
   };
 
   return {
