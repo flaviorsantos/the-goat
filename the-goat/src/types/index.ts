@@ -4,6 +4,11 @@ export type Position = 'PG' | 'SG' | 'SF' | 'PF' | 'C';
 
 export type AttributeKey = 'Arremesso' | 'Drible' | 'Defesa' | 'IQ' | 'Atletismo' | 'Passe' | 'Rebote' | 'Velocidade' | 'Mentalidade';
 
+/** All attribute keys in a typed tuple for consistent iteration. */
+export const ATTRIBUTES_LIST: AttributeKey[] = [
+  'Arremesso', 'Drible', 'Defesa', 'IQ', 'Atletismo', 'Passe', 'Rebote', 'Velocidade', 'Mentalidade'
+];
+
 export type PlayerAttributes = Record<AttributeKey, number>;
 
 export interface RealPlayer {

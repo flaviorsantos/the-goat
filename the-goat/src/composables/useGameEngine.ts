@@ -3,13 +3,19 @@ import { ref, reactive, computed } from 'vue';
 import type { PlayerProfile, SeasonStats, CareerTotals, Position } from '../types';
 
 export function useGameEngine() {
-  const player = reactive<PlayerProfile>({
+  /** Creates a fresh player with sensible defaults for all PlayerProfile fields. */
+  const createDefaultPlayer = (): PlayerProfile => ({
     name: '',
     position: 'SF',
+    nationality: '',
+    team: '',
     age: 19,
     ovr: 68,
-    isRetired: false
+    isRetired: false,
+    attributes: {}
   });
+
+  const player = reactive<PlayerProfile>(createDefaultPlayer());
 
   const history = ref<SeasonStats[]>([]);
 

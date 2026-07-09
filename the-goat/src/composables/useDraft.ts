@@ -1,21 +1,34 @@
 // src/composables/useDraft.ts
-import { ref, computed } from 'vue';
+import { ref, reactive, computed } from 'vue';
 import type { AttributeKey, RealPlayer, PlayerAttributes } from '../types';
+import { ATTRIBUTES_LIST } from '../types';
 import { nbaPlayers } from '../data/players';
 
-const ATTRIBUTES_LIST: AttributeKey[] = ['Arremesso', 'Drible', 'Defesa', 'IQ', 'Atletismo', 'Passe', 'Rebote', 'Velocidade', 'Mentalidade'];
+/**
+ * Returns a random player whose ID hasn't been drawn yet.
+ * If all players have been seen, resets the pool.
+ */
+function pickRandomPlayer(drawnIds: Set<number>): RealPlayer {
+  const available = nbaPlayers.filter(p => !drawnIds.has(p.id));
+  const pool = available.length > 0 ? available : nbaPlayers;
+  const index = Math.floor(Math.random() * pool.length);
+  return pool[index];
+}
 
 export function useDraft() {
   const currentDrawnPlayer = ref<RealPlayer | null>(null);
   const myAttributes = ref<Partial<PlayerAttributes>>({});
   const availableSlots = ref<AttributeKey[]>([...ATTRIBUTES_LIST]);
   const hasReroll = ref(true);
+  /** Track which player IDs have already been shown to avoid repeats. */
+  const drawnPlayerIds = reactive(new Set<number>());
   
   const isDraftComplete = computed(() => availableSlots.value.length === 0);
 
   const drawRandomPlayer = () => {
-    const randomIndex = Math.floor(Math.random() * nbaPlayers.length);
-    currentDrawnPlayer.value = nbaPlayers[randomIndex];
+    const player = pickRandomPlayer(drawnPlayerIds);
+    drawnPlayerIds.add(player.id);
+    currentDrawnPlayer.value = player;
   };
 
   const useReroll = () => {
