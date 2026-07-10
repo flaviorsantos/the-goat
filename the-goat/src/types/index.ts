@@ -11,6 +11,7 @@ export interface Team {
   baseOvr: number; 
   star1Ovr: number; 
   star2Ovr: number; 
+  momentum?: number; 
 }
 
 export interface TeamStanding extends Team {
@@ -34,8 +35,11 @@ export interface PlayerProfile {
   age: number;
   ovr: number;
   isRetired: boolean;
-  attributes: PlayerAttributes;
+  attributes: PlayerAttributes;         
+  potentialAttributes: PlayerAttributes; 
 }
+
+export type SeasonStatsFields = Pick<SeasonStats, 'mpg' | 'ppg' | 'rpg' | 'apg' | 'spg' | 'bpg' | 'topg' | 'fgPct' | 'fg3Pct' | 'ftPct' | 'plusMinus' | 'teamWins'>;
 
 export interface SeasonStats {
   seasonNumber: number;
@@ -44,6 +48,7 @@ export interface SeasonStats {
   teamId: string;
   teamWins: number;
   teamLosses: number;
+  mpg: number; 
   ppg: number; 
   rpg: number; 
   apg: number; 

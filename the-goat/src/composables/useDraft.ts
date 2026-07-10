@@ -1,15 +1,10 @@
-// src/composables/useDraft.ts
 import { ref, computed, reactive } from 'vue';
 import type { AttributeKey, RealPlayer, PlayerAttributes } from '../types';
 import { nbaPlayers } from '../data/players';
 import { nbaTeams } from '../data/teams';
 
-// Adicione esta linha:
 const ATTRIBUTES_LIST: AttributeKey[] = ['Arremesso', 'Drible', 'Defesa', 'IQ', 'Atletismo', 'Passe', 'Rebote', 'Velocidade', 'Mentalidade'];
-/**
- * Returns a random player whose ID hasn't been drawn yet.
- * If all players have been seen, resets the pool.
- */
+
 function pickRandomPlayer(drawnIds: Set<number>): RealPlayer {
   const available = nbaPlayers.filter(p => !drawnIds.has(p.id));
   const pool = available.length > 0 ? available : nbaPlayers;
@@ -22,7 +17,7 @@ export function useDraft() {
   const myAttributes = ref<Partial<PlayerAttributes>>({});
   const availableSlots = ref<AttributeKey[]>([...ATTRIBUTES_LIST]);
   const hasReroll = ref(true);
-  /** Track which player IDs have already been shown to avoid repeats. */
+
   const drawnPlayerIds = reactive(new Set<number>());
   
   const isDraftComplete = computed(() => availableSlots.value.length === 0);
@@ -40,6 +35,20 @@ export function useDraft() {
     }
   };
 
+  const calculateDraftPick = (rookieOvr: number): number => {
+    let pick = 60;
+    const rng = Math.floor(Math.random() * 5); // Fator de imprevisibilidade (0 a 4)
+
+    if (rookieOvr >= 80) pick = 1 + rng; // Top 5
+    else if (rookieOvr >= 75) pick = 5 + Math.floor(Math.random() * 6); // Lottery (5 a 10)
+    else if (rookieOvr >= 70) pick = 11 + Math.floor(Math.random() * 9); // Mid 1st Round (11 a 19)
+    else if (rookieOvr >= 65) pick = 20 + Math.floor(Math.random() * 11); // Late 1st Round (20 a 30)
+    else if (rookieOvr >= 60) pick = 31 + Math.floor(Math.random() * 15); // Early 2nd Round (31 a 45)
+    else pick = 46 + Math.floor(Math.random() * 15); // Late 2nd Round (46 a 60)
+
+    return Math.min(60, Math.max(1, pick));
+  };
+
   const selectAttribute = (attr: AttributeKey) => {
     if (!currentDrawnPlayer.value || !availableSlots.value.includes(attr)) return;
 
@@ -51,19 +60,32 @@ export function useDraft() {
     }
   };
 
-  const calculateStartingOVR = (): number => {
-    const values = Object.values(myAttributes.value) as number[];
-    if (values.length === 0) return 60;
-    const sum = values.reduce((acc, curr) => acc + curr, 0);
-    // Diminui um pouco a média crua para simular que o jogador começa como novato, 
-    // mas o "teto" de desenvolvimento é baseado nessas notas.
-    const average = Math.floor(sum / values.length);
-    return Math.max(65, average - 10); 
+  const calculateStartingOVR = (rookieAttributes: PlayerAttributes): number => {
+    const values = Object.values(rookieAttributes);
+    const sum = values.reduce((acc, val) => acc + val, 0);
+    return Math.floor(sum / values.length);
   };
 
   const getRandomTeam = (): string => {
     const randomIndex = Math.floor(Math.random() * nbaTeams.length);
     return nbaTeams[randomIndex].id;
+  };
+
+  const generateRookieAttributes = (peakAttributes: PlayerAttributes): PlayerAttributes => {
+    const rookie = {} as PlayerAttributes;
+    for (const key in peakAttributes) {
+      const attr = key as AttributeKey;
+      const nerf = Math.floor(Math.random() * 6) + 10; 
+      rookie[attr] = Math.max(25, peakAttributes[attr] - nerf);
+    }
+    return rookie;
+  };
+
+  const resetDraft = () => {
+    myAttributes.value = {};
+    availableSlots.value = [...ATTRIBUTES_LIST];
+    hasReroll.value = true;
+    currentDrawnPlayer.value = null;
   };
 
   return {
@@ -76,6 +98,9 @@ export function useDraft() {
     useReroll,
     selectAttribute,
     calculateStartingOVR,
-    getRandomTeam
+    getRandomTeam,
+    generateRookieAttributes,
+    resetDraft,
+    calculateDraftPick
   };
 }
