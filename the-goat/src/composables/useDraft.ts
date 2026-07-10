@@ -3,7 +3,7 @@ import type { AttributeKey, RealPlayer, PlayerAttributes } from '../types';
 import { nbaPlayers } from '../data/players';
 import { nbaTeams } from '../data/teams';
 
-const ATTRIBUTES_LIST: AttributeKey[] = ['Arremesso', 'Drible', 'Defesa', 'IQ', 'Atletismo', 'Passe', 'Rebote', 'Velocidade', 'Mentalidade'];
+const ATTRIBUTES_LIST: AttributeKey[] = ['Shooting', 'Dribbling', 'Defense', 'IQ', 'Athleticism', 'Passing', 'Rebounding', 'Speed', 'Mentality'];
 
 function pickRandomPlayer(drawnIds: Set<number>): RealPlayer {
   const available = nbaPlayers.filter(p => !drawnIds.has(p.id));

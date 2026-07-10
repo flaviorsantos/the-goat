@@ -1,4 +1,3 @@
-// src/utils/leagueSimulation.ts
 import type { Team, PlayerProfile, TeamStanding } from '../types';
 
 export function simulateLeagueStandings(player: PlayerProfile, leagueTeams: Team[]): TeamStanding[] {
@@ -8,10 +7,16 @@ export function simulateLeagueStandings(player: PlayerProfile, leagueTeams: Team
 
     if (team.id === player.teamId) {
       const rosterStars = [team.star1Ovr, team.star2Ovr, player.ovr].sort((a, b) => b - a);
-      power = team.baseOvr + rosterStars[0] + rosterStars[1] + (rosterStars[2] * 0.4) + currentMomentum;
+      
+      let carryBonus = 0;
+      if (player.ovr >= 90) {
+        carryBonus = Math.pow(player.ovr - 85, 1.5) * 2;
+      }
+
+      power = team.baseOvr + rosterStars[0] + (rosterStars[1] * 0.8) + (rosterStars[2] * 0.4) + currentMomentum + carryBonus;
     }
 
-    const rngMod = (Math.random() * 0.3) + 0.85; 
+    const rngMod = (Math.random() * 0.25) + 0.875; 
     
     return {
       ...team,
@@ -34,14 +39,13 @@ export function simulateLeagueStandings(player: PlayerProfile, leagueTeams: Team
     const originalTeam = leagueTeams.find(t => t.id === team.id);
     if (originalTeam) {
       if (rawWins <= 25) {
-        originalTeam.momentum = (originalTeam.momentum || 0) + (Math.floor(Math.random() * 5) + 4);
+        originalTeam.momentum = (originalTeam.momentum || 0) + (Math.floor(Math.random() * 6) + 3);
       } else if (rawWins >= 58) {
-        originalTeam.momentum = (originalTeam.momentum || 0) - (Math.floor(Math.random() * 4) + 2);
+        originalTeam.momentum = (originalTeam.momentum || 0) - (Math.floor(Math.random() * 5) + 2);
       } else {
         originalTeam.momentum = (originalTeam.momentum || 0) + (Math.floor(Math.random() * 5) - 2);
       }
-      
-      originalTeam.momentum = Math.min(Math.max(originalTeam.momentum, -18), 18);
+      originalTeam.momentum = Math.min(Math.max(originalTeam.momentum, -15), 15);
     }
   });
 

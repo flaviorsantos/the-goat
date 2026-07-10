@@ -101,7 +101,7 @@ const viewLegacy = () => {
 };
 
 const goatEvaluation = computed(() => {
-  return calculateGoatScore(careerTotals.value);
+  return calculateGoatScore(careerTotals.value, detailedAwards.value);
 });
 
 const detailedAwards = computed(() => {
@@ -314,43 +314,63 @@ const detailedAwards = computed(() => {
                  </div>
                </div>
 
-               <!-- Grid de Stats Avançados -->
-               <div class="grid grid-cols-3 md:grid-cols-6 gap-3 mb-8">
-                 <div class="text-center p-2 border border-gray-700 rounded bg-gray-800/50">
-                   <p class="text-[10px] text-gray-400 uppercase font-bold">SPG</p>
-                   <p class="font-bold text-gray-200">{{ lastSeason.spg }}</p>
+               <!-- Novo Bloco: Resultado dos Playoffs e League Awards -->
+               <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                 <!-- Playoff Status -->
+                 <div class="bg-gray-900/50 border border-gray-700 p-5 rounded-lg">
+                   <p class="text-gray-500 text-xs font-bold uppercase mb-3">Postseason Result</p>
+                   <div v-if="!lastSeason.playoffs.madePlayoffs" class="text-red-400 font-bold">Missed Playoffs</div>
+                   <div v-else-if="lastSeason.playoffs.wonRing" class="text-yellow-400 font-black text-xl uppercase tracking-widest flex items-center gap-2">
+                     🏆 NBA Champions
+                   </div>
+                   <div v-else class="text-gray-300 font-bold">
+                     Eliminated in: <span class="text-white">{{ lastSeason.playoffs.eliminatedIn }}</span>
+                   </div>
+                   
+                   <div v-if="lastSeason.playoffs.overallAverages" class="mt-4 pt-4 border-t border-gray-700/50">
+                     <p class="text-[10px] text-gray-500 uppercase font-bold mb-1">Playoff Averages ({{ lastSeason.playoffs.overallAverages.gamesPlayed }} Games)</p>
+                     <p class="text-sm text-gray-300">{{ lastSeason.playoffs.overallAverages.points }} PTS | {{ lastSeason.playoffs.overallAverages.rebounds }} REB | {{ lastSeason.playoffs.overallAverages.assists }} AST</p>
+                   </div>
                  </div>
-                 <div class="text-center p-2 border border-gray-700 rounded bg-gray-800/50">
-                   <p class="text-[10px] text-gray-400 uppercase font-bold">BPG</p>
-                   <p class="font-bold text-gray-200">{{ lastSeason.bpg }}</p>
-                 </div>
-                 <div class="text-center p-2 border border-gray-700 rounded bg-gray-800/50">
-                   <p class="text-[10px] text-gray-400 uppercase font-bold">FG%</p>
-                   <p class="font-bold text-gray-200">{{ lastSeason.fgPct }}%</p>
-                 </div>
-                 <div class="text-center p-2 border border-gray-700 rounded bg-gray-800/50">
-                   <p class="text-[10px] text-gray-400 uppercase font-bold">3PT%</p>
-                   <p class="font-bold text-gray-200">{{ lastSeason.fg3Pct }}%</p>
-                 </div>
-                 <div class="text-center p-2 border border-gray-700 rounded bg-gray-800/50">
-                   <p class="text-[10px] text-gray-400 uppercase font-bold">FT%</p>
-                   <p class="font-bold text-gray-200">{{ lastSeason.ftPct }}%</p>
-                 </div>
-                 <div class="text-center p-2 border border-gray-700 rounded bg-gray-800/50">
-                   <p class="text-[10px] text-gray-400 uppercase font-bold">+/-</p>
-                   <p class="font-bold" :class="lastSeason.plusMinus > 0 ? 'text-green-400' : 'text-red-400'">
-                     {{ lastSeason.plusMinus > 0 ? '+' : '' }}{{ lastSeason.plusMinus }}
-                   </p>
+
+                 <!-- Box Score das Finais (Renderiza apenas se chegou nas Finais) -->
+               <div v-if="lastSeason.playoffs.finalsLog && lastSeason.playoffs.finalsLog.length > 0" class="mb-8 bg-gray-900/50 border border-gray-700 p-5 rounded-lg">
+                 <p class="text-gray-500 text-xs font-bold uppercase mb-3">NBA Finals - Game by Game Box Score</p>
+                 <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+                   <div v-for="(game, index) in lastSeason.playoffs.finalsLog" :key="index" class="bg-gray-800 border border-gray-600 p-3 rounded-lg text-center shadow-inner">
+                     <p class="text-[10px] text-gray-400 uppercase font-bold mb-2 border-b border-gray-700 pb-1">Game {{ index + 1 }}</p>
+                     <p class="text-sm text-white font-black">{{ game.points }} <span class="text-[9px] text-gray-500 font-normal">PTS</span></p>
+                     <p class="text-xs text-gray-300 font-bold">{{ game.rebounds }} <span class="text-[9px] text-gray-500 font-normal">REB</span></p>
+                     <p class="text-xs text-gray-300 font-bold">{{ game.assists }} <span class="text-[9px] text-gray-500 font-normal">AST</span></p>
+                     <p class="text-[10px] text-gray-400 mt-1 pt-1 border-t border-gray-700">{{ game.steals }} STL | {{ game.blocks }} BLK</p>
+                   </div>
                  </div>
                </div>
 
-               <!-- Prêmios Conquistados -->
-               <div v-if="lastSeason.wonRing || lastSeason.awards.length > 0" class="flex flex-wrap justify-center gap-3">
-                 <div v-if="lastSeason.wonRing" class="flex items-center gap-2 bg-yellow-900/40 border border-yellow-600 px-4 py-2 rounded-lg shadow-inner text-yellow-500 font-black uppercase tracking-wide">
-                   <span class="text-xl">🏆</span> NBA Champion
+                 <!-- League Awards (Mundo Vivo) -->
+                 <div class="bg-gray-900/50 border border-gray-700 p-5 rounded-lg">
+                   <p class="text-gray-500 text-xs font-bold uppercase mb-3">League Awards</p>
+                   <ul class="space-y-2 text-sm">
+                     <li class="flex justify-between border-b border-gray-700/30 pb-1">
+                       <span class="text-gray-400">MVP</span> 
+                       <span :class="lastSeason.leagueAwards['MVP'] === player.name ? 'text-blue-400 font-black' : 'text-gray-300'">{{ lastSeason.leagueAwards['MVP'] }}</span>
+                     </li>
+                     <li class="flex justify-between border-b border-gray-700/30 pb-1">
+                       <span class="text-gray-400">DPOY</span> 
+                       <span :class="lastSeason.leagueAwards['DPOY'] === player.name ? 'text-blue-400 font-black' : 'text-gray-300'">{{ lastSeason.leagueAwards['DPOY'] }}</span>
+                     </li>
+                     <li class="flex justify-between pb-1">
+                       <span class="text-gray-400">6MOTY</span> 
+                       <span :class="lastSeason.leagueAwards['6MOTY'] === player.name ? 'text-blue-400 font-black' : 'text-gray-300'">{{ lastSeason.leagueAwards['6MOTY'] }}</span>
+                     </li>
+                   </ul>
                  </div>
+               </div>
+
+               <!-- Prêmios Conquistados pelo Jogador -->
+               <div v-if="lastSeason.awards.length > 0" class="flex flex-wrap justify-center gap-3">
                  <div v-for="award in lastSeason.awards" :key="award" class="flex items-center gap-2 bg-blue-900/40 border border-blue-600 px-4 py-2 rounded-lg shadow-inner text-blue-400 font-black uppercase tracking-wide">
-                   <span v-if="award === 'MVP' || award === 'ROTY'">⭐</span>
+                   <span v-if="award === 'MVP' || award === 'ROTY' || award.includes('Finals MVP')">⭐</span>
                    <span v-else-if="award === 'DPOY'">🛡️</span>
                    {{ award }}
                  </div>
@@ -491,6 +511,7 @@ const detailedAwards = computed(() => {
                   <th class="pb-3 px-2">BPG</th>
                   <th class="pb-3 px-2">FG%</th>
                   <th class="pb-3 px-2">3PT%</th>
+                  <th class="pb-3 px-2 text-center">Playoffs</th>
                   <th class="pb-3 px-2 text-center">Awards</th>
                 </tr>
               </thead>
@@ -508,6 +529,9 @@ const detailedAwards = computed(() => {
                   <td class="py-3 px-2">{{ season.bpg }}</td>
                   <td class="py-3 px-2">{{ season.fgPct }}%</td>
                   <td class="py-3 px-2">{{ season.fg3Pct }}%</td>
+                  <td class="py-3 px-2 text-center text-[11px] uppercase tracking-wide font-black" :class="season.wonRing ? 'text-yellow-400' : (season.playoffs.madePlayoffs ? 'text-gray-400' : 'text-red-900')">
+                    {{ season.wonRing ? 'Champion' : (season.playoffs.madePlayoffs ? season.playoffs.eliminatedIn : 'Missed') }}
+                  </td>
                   <td class="py-3 px-2 flex flex-wrap gap-1 justify-center max-w-[250px]">
                     <span v-if="season.wonRing" class="bg-yellow-600/20 text-yellow-500 border border-yellow-600/50 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase">🏆 Ring</span>
                     <span v-for="award in season.awards" :key="award" class="bg-blue-900/40 text-blue-300 border border-blue-700/50 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase">{{ award }}</span>

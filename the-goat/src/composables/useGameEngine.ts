@@ -36,14 +36,15 @@ export function useGameEngine() {
     player.position = position;
     player.age = 19;
     player.isRetired = false;
+    player.contractYearsLeft = 4; 
     history.value = [];
 
     leagueTeams.value = JSON.parse(JSON.stringify(nbaTeams)).map((t: Team) => ({ ...t, momentum: 0 }));
   };
 
   const applyAttributeProgression = () => {
-    const physicalAttrs: (keyof PlayerAttributes)[] = ['Velocidade', 'Atletismo', 'Defesa'];
-    const mentalAttrs: (keyof PlayerAttributes)[] = ['Arremesso', 'Drible', 'IQ', 'Passe', 'Rebote', 'Mentalidade'];
+    const physicalAttrs: (keyof PlayerAttributes)[] = ['Speed', 'Athleticism', 'Defense'];
+    const mentalAttrs: (keyof PlayerAttributes)[] = ['Shooting', 'Dribbling', 'IQ', 'Passing', 'Rebounding', 'Mentality'];
 
     const age = player.age;
 
@@ -105,23 +106,35 @@ export function useGameEngine() {
       myTeamStandings.wins
     );
 
-    // 3. Simular Playoffs (Anel)
-    const wonRing = simulatePlayoffs(player, standings);
+    // 3. Simular Playoffs
+    const playoffRun = simulatePlayoffs(player, myTeamStandings.wins, rawStats);
 
-    // 4. Calcular Prêmios (Awards)
-    const awards = calculateAwards(rawStats, player, player.age === 19);
+    // 4. Prêmios Globais e Individuais (Agora recebendo playoffRun)
+    const awardsData = calculateAwards(rawStats, myTeamStandings.wins, player, player.age === 19, playoffRun);
+    
+    if (playoffRun.wonRing) {
+      careerTotals.value.rings += 1;
+    }
+    
+    // Contabiliza MVPs para o cálculo de Goat
+    if (awardsData.playerAwards.includes('MVP')) {
+      careerTotals.value.mvps += 1;
+    }
 
-    // 5. Salvar na História
+    // 5. Salvar Histórico
     history.value.push({
       seasonNumber,
       age: player.age,
       ovr: player.ovr,
       teamId: player.teamId,
+      teamWins: myTeamStandings.wins,
       teamLosses: myTeamStandings.losses,
       ...rawStats,
-      awards,
-      wonRing
-    } as SeasonStats);
+      awards: awardsData.playerAwards,
+      leagueAwards: awardsData.leagueAwards, 
+      wonRing: playoffRun.wonRing,
+      playoffs: playoffRun
+    });
 
     if (player.age >= 40 || (player.age > 36 && Math.random() < 0.25)) {
       player.isRetired = true;
