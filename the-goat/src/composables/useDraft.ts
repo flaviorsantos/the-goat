@@ -1,31 +1,51 @@
-import { ref, computed, reactive } from 'vue';
-import type { AttributeKey, RealPlayer, PlayerAttributes } from '../types';
+import { ref, computed } from 'vue';
 import { nbaPlayers } from '../data/players';
 import { nbaTeams } from '../data/teams';
+import type { AttributeKey, PlayerAttributes, Position } from '../types';
 
-const ATTRIBUTES_LIST: AttributeKey[] = ['Shooting', 'Dribbling', 'Defense', 'IQ', 'Athleticism', 'Passing', 'Rebounding', 'Speed', 'Mentality'];
-
-function pickRandomPlayer(drawnIds: Set<number>): RealPlayer {
-  const available = nbaPlayers.filter(p => !drawnIds.has(p.id));
-  const pool = available.length > 0 ? available : nbaPlayers;
-  const index = Math.floor(Math.random() * pool.length);
-  return pool[index];
+// Interface local para tipar o jogador sorteado garantindo que o OVR exista
+interface DraftedLegend {
+  id?: number | string;
+  name: string;
+  position: Position;
+  ovr: number;
+  attributes: PlayerAttributes;
 }
 
+const ATTRIBUTES_LIST: AttributeKey[] = [
+  'Shooting', 'Dribbling', 'Defense', 'IQ', 'Athleticism', 
+  'Passing', 'Rebounding', 'Speed', 'Mentality'
+];
+
 export function useDraft() {
-  const currentDrawnPlayer = ref<RealPlayer | null>(null);
+  const currentDrawnPlayer = ref<DraftedLegend | null>(null);
   const myAttributes = ref<Partial<PlayerAttributes>>({});
   const availableSlots = ref<AttributeKey[]>([...ATTRIBUTES_LIST]);
   const hasReroll = ref(true);
 
-  const drawnPlayerIds = reactive(new Set<number>());
-  
   const isDraftComplete = computed(() => availableSlots.value.length === 0);
 
+  // Calcula um OVR base se o jogador da base de dados não tiver
+  const calculateStartingOVR = (attrs: PlayerAttributes): number => {
+    const sum = (attrs.Shooting * 0.15) + (attrs.Dribbling * 0.1) +
+                (attrs.Defense * 0.15) + (attrs.IQ * 0.1) +
+                (attrs.Athleticism * 0.15) + (attrs.Passing * 0.1) +
+                (attrs.Rebounding * 0.1) + (attrs.Speed * 0.1) +
+                (attrs.Mentality * 0.05);
+    return Math.floor(sum);
+  };
+
   const drawRandomPlayer = () => {
-    const player = pickRandomPlayer(drawnPlayerIds);
-    drawnPlayerIds.add(player.id);
-    currentDrawnPlayer.value = player;
+    const randomIndex = Math.floor(Math.random() * nbaPlayers.length);
+    const p = nbaPlayers[randomIndex] as any;
+    
+    currentDrawnPlayer.value = {
+      id: p.id || randomIndex,
+      name: p.name,
+      position: p.position as Position,
+      ovr: p.ovr || calculateStartingOVR(p.attributes),
+      attributes: p.attributes
+    };
   };
 
   const useReroll = () => {
@@ -35,50 +55,43 @@ export function useDraft() {
     }
   };
 
-  const calculateDraftPick = (rookieOvr: number): number => {
-    let pick = 60;
-    const rng = Math.floor(Math.random() * 5); // Fator de imprevisibilidade (0 a 4)
-
-    if (rookieOvr >= 80) pick = 1 + rng; // Top 5
-    else if (rookieOvr >= 75) pick = 5 + Math.floor(Math.random() * 6); // Lottery (5 a 10)
-    else if (rookieOvr >= 70) pick = 11 + Math.floor(Math.random() * 9); // Mid 1st Round (11 a 19)
-    else if (rookieOvr >= 65) pick = 20 + Math.floor(Math.random() * 11); // Late 1st Round (20 a 30)
-    else if (rookieOvr >= 60) pick = 31 + Math.floor(Math.random() * 15); // Early 2nd Round (31 a 45)
-    else pick = 46 + Math.floor(Math.random() * 15); // Late 2nd Round (46 a 60)
-
-    return Math.min(60, Math.max(1, pick));
-  };
-
-  const selectAttribute = (attr: AttributeKey) => {
-    if (!currentDrawnPlayer.value || !availableSlots.value.includes(attr)) return;
-
-    myAttributes.value[attr] = currentDrawnPlayer.value.attributes[attr];
-    availableSlots.value = availableSlots.value.filter(a => a !== attr);
-    
-    if (!isDraftComplete.value) {
-      drawRandomPlayer();
+  const selectAttribute = (key: AttributeKey) => {
+    if (currentDrawnPlayer.value && availableSlots.value.includes(key)) {
+      myAttributes.value[key] = currentDrawnPlayer.value.attributes[key];
+      availableSlots.value = availableSlots.value.filter(slot => slot !== key);
+      
+      if (!isDraftComplete.value) {
+        drawRandomPlayer();
+      }
     }
   };
 
-  const calculateStartingOVR = (rookieAttributes: PlayerAttributes): number => {
-    const values = Object.values(rookieAttributes);
-    const sum = values.reduce((acc, val) => acc + val, 0);
-    return Math.floor(sum / values.length);
+  const generateRookieAttributes = (peak: PlayerAttributes): PlayerAttributes => {
+    const rookie = {} as PlayerAttributes;
+    const rng = (min = 0.65, max = 0.85) => (Math.random() * (max - min)) + min;
+    
+    for (const key of Object.keys(peak) as AttributeKey[]) {
+      let multiplier = rng();
+      // Físicos começam mais altos, atributos mentais começam mais baixos
+      if (key === 'Speed' || key === 'Athleticism') multiplier = rng(0.8, 0.95);
+      if (key === 'IQ' || key === 'Mentality') multiplier = rng(0.5, 0.75);
+      
+      rookie[key] = Math.max(40, Math.floor(peak[key] * multiplier));
+    }
+    return rookie;
+  };
+
+  const calculateDraftPick = (ovr: number): number => {
+    if (ovr >= 80) return Math.floor(Math.random() * 3) + 1; // Top 3 Pick
+    if (ovr >= 75) return Math.floor(Math.random() * 7) + 4; // Pick 4-10
+    if (ovr >= 70) return Math.floor(Math.random() * 10) + 11; // Pick 11-20
+    if (ovr >= 65) return Math.floor(Math.random() * 10) + 21; // Pick 21-30
+    return Math.floor(Math.random() * 30) + 31; // 2nd Round Pick
   };
 
   const getRandomTeam = (): string => {
     const randomIndex = Math.floor(Math.random() * nbaTeams.length);
     return nbaTeams[randomIndex].id;
-  };
-
-  const generateRookieAttributes = (peakAttributes: PlayerAttributes): PlayerAttributes => {
-    const rookie = {} as PlayerAttributes;
-    for (const key in peakAttributes) {
-      const attr = key as AttributeKey;
-      const nerf = Math.floor(Math.random() * 6) + 10; 
-      rookie[attr] = Math.max(25, peakAttributes[attr] - nerf);
-    }
-    return rookie;
   };
 
   const resetDraft = () => {
@@ -100,7 +113,7 @@ export function useDraft() {
     calculateStartingOVR,
     getRandomTeam,
     generateRookieAttributes,
-    resetDraft,
-    calculateDraftPick
+    calculateDraftPick,
+    resetDraft
   };
 }

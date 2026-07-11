@@ -1,8 +1,31 @@
-// src/types/index.ts
-
 export type Position = 'PG' | 'SG' | 'SF' | 'PF' | 'C';
+export type Difficulty = 'amateur' | 'pro';
+export type GameMode = 'fast' | 'full';
+
 export type AttributeKey = 'Shooting' | 'Dribbling' | 'Defense' | 'IQ' | 'Athleticism' | 'Passing' | 'Rebounding' | 'Speed' | 'Mentality';
+
 export type PlayerAttributes = Record<AttributeKey, number>;
+
+export interface CareerTimelineEntry {
+  teamId: string;
+  startYear: number;
+  endYear: number | null;
+}
+
+export interface Legend {
+  id: number;
+  name: string;
+  position: Position;
+  ovr: number;
+  attributes: PlayerAttributes;
+}
+
+export interface ContractOffer {
+  teamId: string;
+  years: number;
+  salary: number; 
+  role: string;   
+}
 
 export interface Team {
   id: string;
@@ -31,6 +54,9 @@ export interface PlayerProfile {
   name: string;
   position: Position;
   nationality: string;
+  jerseyNumber: number;
+  difficulty: Difficulty;
+  gameMode: GameMode;
   teamId: string;
   age: number;
   ovr: number;
@@ -38,6 +64,7 @@ export interface PlayerProfile {
   contractYearsLeft: number;
   attributes: PlayerAttributes;
   potentialAttributes: PlayerAttributes;
+  careerTimeline: CareerTimelineEntry[];
 }
 
 export interface PlayoffGameStats {
@@ -65,7 +92,7 @@ export interface PlayoffRunStats {
   overallAverages: PlayoffGameStats & { gamesPlayed: number } | null;
 }
 
-export type SeasonStatsFields = Pick<SeasonStats, 'mpg' | 'ppg' | 'rpg' | 'apg' | 'spg' | 'bpg' | 'topg' | 'fgPct' | 'fg3Pct' | 'ftPct' | 'plusMinus' | 'teamWins'>;
+//export type SeasonStatsFields = Pick<SeasonStats, 'mpg' | 'ppg' | 'rpg' | 'apg' | 'spg' | 'bpg' | 'topg' | 'fgPct' | 'fg3Pct' | 'ftPct' | 'plusMinus' | 'teamWins'>;
 
 export interface SeasonStats {
   seasonNumber: number;
