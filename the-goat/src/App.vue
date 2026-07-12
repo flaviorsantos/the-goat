@@ -6,17 +6,14 @@ import { calculateGoatScore } from './utils/careerEvaluator';
 import { runStressTest } from './utils/stressTest';
 import type { Position, Difficulty, GameMode } from './types';
 
-const executeStressTest = () => {
-  console.log("Iniciando bateria de testes...");
-  runStressTest(50); // Executa 50 simulações
-};
-
+// Motor do Jogo
 const { 
   player, history, careerTotals, leagueTeams, freeAgencyOffers, pendingMilestones, 
   initCareer, simulateSeason, generateOffers, acceptOffer, forceRetirement,
   loadPastCareer 
 } = useGameEngine();
 
+// Motor de Draft
 const { 
   currentDrawnPlayer, 
   myAttributes, 
@@ -33,68 +30,13 @@ const {
   resetDraft
 } = useDraft();
 
-const isFreeAgent = computed(() => player.contractYearsLeft === 0 && !player.isRetired);
-
-const pastCareers = ref<any[]>([]);
-
-onMounted(() => {
-  pastCareers.value = JSON.parse(localStorage.getItem('the_goat_past_careers') || '[]');
-});
-
-const viewPastCareer = (career: any) => {
-  loadPastCareer(career);
-  currentPhase.value = 'retired';
+// Utilitários de Dev/Teste
+const executeStressTest = () => {
+  console.log("Iniciando bateria de testes...");
+  runStressTest(50);
 };
 
-const newsFeed = computed(() => {
-  if (!lastSeason.value) return ['The rookie is ready. The world is watching.'];
-  const news = [];
-  
-  if (lastSeason.value.playoffs.wonRing) {
-    news.push(`${player.name} leads the ${player.teamId} to the NBA Championship!`);
-  } else if (!lastSeason.value.playoffs.madePlayoffs) {
-    news.push(`Disaster! ${player.teamId} misses the playoffs.`);
-  } else {
-    news.push(`${player.teamId} eliminated in ${lastSeason.value.playoffs.eliminatedIn}.`);
-  }
-
-  if (lastSeason.value.ppg > 30) news.push(`${player.name} has a historic scoring season averaging ${lastSeason.value.ppg} PPG.`);
-  if (lastSeason.value.awards.includes('MVP')) news.push(`${player.name} named the Most Valuable Player!`);
-  
-  return news;
-});
-
-const sortedStandings = computed(() => {
-  if (!leagueTeams.value) return [];
-  // Ordena por Força (Base + Momentum) se for pré-temporada, ou por vitórias se estivesse no meio
-  return [...leagueTeams.value].sort((a, b) => (b.baseOvr + (b.momentum || 0)) - (a.baseOvr + (a.momentum || 0))).slice(0, 15);
-});
-
-const formattedTimeline = computed(() => {
-  return player.careerTimeline.map((entry, index) => {
-    const isLast = index === player.careerTimeline.length - 1;
-    const end = entry.endYear !== null ? entry.endYear : history.value.length;
-    // Calcula a idade baseada no ano da temporada
-    const startAge = 19 + entry.startYear - 1;
-    const endAge = 19 + end - 1;
-    return {
-      teamId: entry.teamId,
-      period: startAge === endAge ? `${startAge}` : `${startAge}-${endAge}`,
-      isLast
-    };
-  });
-});
-
-const dismissMilestone = () => {
-  pendingMilestones.value.shift(); // Remove o primeiro item da fila
-};
-
-const retireManual = () => {
-  if (confirm("Are you sure you want to end your career? This action cannot be undone.")) {
-    forceRetirement();
-  }
-};
-
+// Estados do Formulário e do Jogo
 type GamePhase = 'setup' | 'draft-steal' | 'draft-day' | 'playing' | 'retired';
 const currentPhase = ref<GamePhase>('setup');
 
@@ -105,8 +47,105 @@ const inputJersey = ref<number | ''>('');
 const selectedDifficulty = ref<Difficulty>('amateur');
 const selectedMode = ref<GameMode>('fast');
 const draftPickResult = ref(60);
+const pastCareers = ref<any[]>([]);
 
-// Arrays para as Grids
+// Carregamento de Legados Antigos
+onMounted(() => {
+  pastCareers.value = JSON.parse(localStorage.getItem('the_goat_past_careers') || '[]');
+});
+
+const viewPastCareer = (career: any) => {
+  loadPastCareer(career);
+  currentPhase.value = 'retired';
+};
+
+// --- PROPRIEDADES COMPUTADAS (Dashboard e OVR) ---
+
+// Declarado antes do newsFeed para evitar erros de inicialização
+const lastSeason = computed(() => history.value.length === 0 ? null : history.value[history.value.length - 1]);
+
+// Correção: player.value utilizado em todos os acessos
+const isFreeAgent = computed(() => player.value.contractYearsLeft === 0 && !player.value.isRetired);
+
+const newsFeed = computed(() => {
+  if (!lastSeason.value) return ['The rookie is ready. The world is watching.'];
+  const news = [];
+  
+  // Segurança com "?." caso playoffs não tenha sido gerado
+  if (lastSeason.value.playoffs?.wonRing) {
+    news.push(`${player.value.name} leads the ${player.value.teamId} to the NBA Championship!`);
+  } else if (!lastSeason.value.playoffs?.madePlayoffs) {
+    news.push(`Disaster! ${player.value.teamId} misses the playoffs.`);
+  } else {
+    news.push(`${player.value.teamId} eliminated in ${lastSeason.value.playoffs?.eliminatedIn}.`);
+  }
+
+  if (lastSeason.value.ppg > 30) news.push(`${player.value.name} has a historic scoring season averaging ${lastSeason.value.ppg} PPG.`);
+  if (lastSeason.value.awards?.includes('MVP')) news.push(`${player.value.name} named the Most Valuable Player!`);
+  
+  return news;
+});
+
+const sortedStandings = computed(() => {
+  if (!leagueTeams.value) return [];
+  return [...leagueTeams.value].sort((a, b) => (b.baseOvr + (b.momentum || 0)) - (a.baseOvr + (a.momentum || 0))).slice(0, 15);
+});
+
+const formattedTimeline = computed(() => {
+  if (!player.value.careerTimeline) return [];
+  return player.value.careerTimeline.map((entry: any, index: number) => {
+    const isLast = index === player.value.careerTimeline.length - 1;
+    const end = entry.endYear !== null ? entry.endYear : history.value.length;
+    const startAge = 19 + entry.startYear - 1;
+    const endAge = 19 + end - 1;
+    return {
+      teamId: entry.teamId,
+      period: startAge === endAge ? `${startAge}` : `${startAge}-${endAge}`,
+      isLast
+    };
+  });
+});
+
+const currentOVR = computed(() => {
+  if (!currentDrawnPlayer.value) return 0;
+  return calculateStartingOVR(currentDrawnPlayer.value.attributes); 
+});
+
+const trophyCabinet = computed(() => {
+  const counts: Record<string, number> = {};
+  history.value.forEach(season => {
+    if (season.playoffs?.wonRing) counts['Rings'] = (counts['Rings'] || 0) + 1;
+    season.awards?.forEach((award: string) => counts[award] = (counts[award] || 0) + 1);
+  });
+  return counts;
+});
+
+const sortedAwards = computed(() => {
+  return Object.entries(trophyCabinet.value)
+    .filter(([award]) => !['Rings', 'MVP', 'Finals MVP', 'DPOY'].includes(award))
+    .sort((a, b) => b[1] - a[1]);
+});
+
+const detailedAwards = computed(() => {
+  const counts: Record<string, number> = {};
+  history.value.forEach(season => season.awards?.forEach((award: string) => counts[award] = (counts[award] || 0) + 1));
+  return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+});
+
+const goatEvaluation = computed(() => calculateGoatScore(careerTotals.value, detailedAwards.value));
+
+const getRecordPercentage = (current: number, record: number) => {
+  return Math.min(100, (current / record) * 100).toFixed(1);
+};
+
+
+// --- CONSTANTES E OPÇÕES ---
+
+const nbaRecords = {
+  points: 40474, assists: 15806, rebounds: 23924,
+  steals: 3265, blocks: 3830, rings: 11, mvps: 6
+};
+
 const nationalities = [
   { code: 'US', name: 'USA' }, { code: 'RS', name: 'Serbia' },
   { code: 'SI', name: 'Slovenia' }, { code: 'FR', name: 'France' },
@@ -121,7 +160,11 @@ const positions = [
   { code: 'C', name: 'Center' }
 ];
 
-const jerseyOptions = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99];
+// Otimizado: Gera automaticamente o array de números das camisas (0 a 99)
+const jerseyOptions = Array.from({ length: 100 }, (_, i) => i);
+
+
+// --- AÇÕES DO JOGO ---
 
 const startDraftSteal = () => {
   if (!inputName.value || !inputPosition.value || !inputNationality.value || inputJersey.value === '') return;
@@ -137,7 +180,6 @@ const processDraftDay = () => {
   
   draftPickResult.value = calculateDraftPick(initialOvr);
   
-  // Passa as configurações completas para a inicialização
   initCareer(
     inputName.value, 
     inputPosition.value as Position, 
@@ -147,13 +189,13 @@ const processDraftDay = () => {
     selectedMode.value
   );
   
-  player.teamId = draftedTeam;
-  player.ovr = initialOvr;
-  player.attributes = rookieAttributes;
-  player.potentialAttributes = peakAttributes;
+  // Correção: Atualização das propriedades da ref `player` usando `.value`
+  player.value.teamId = draftedTeam;
+  player.value.ovr = initialOvr;
+  player.value.attributes = rookieAttributes;
+  player.value.potentialAttributes = peakAttributes;
   
-  // Registra o primeiro clube na timeline
-  player.careerTimeline.push({
+  player.value.careerTimeline.push({
     teamId: draftedTeam,
     startYear: 1,
     endYear: null
@@ -162,30 +204,8 @@ const processDraftDay = () => {
   currentPhase.value = 'draft-day';
 };
 
-const nbaRecords = {
-  points: 40474, // LeBron James
-  assists: 15806, // John Stockton
-  rebounds: 23924, // Wilt Chamberlain
-  steals: 3265, // John Stockton
-  blocks: 3830, // Hakeem Olajuwon
-  rings: 11, // Bill Russell
-  mvps: 6 // Kareem Abdul-Jabbar
-};
-
-const trophyCabinet = computed(() => {
-  const counts: Record<string, number> = {};
-  history.value.forEach(season => {
-    if (season.playoffs?.wonRing) counts['Rings'] = (counts['Rings'] || 0) + 1;
-    season.awards.forEach(award => counts[award] = (counts[award] || 0) + 1);
-  });
-  return counts;
-});
-
-const getRecordPercentage = (current: number, record: number) => {
-  return Math.min(100, (current / record) * 100).toFixed(1);
-};
-
 const startCareer = () => { currentPhase.value = 'playing'; };
+const viewLegacy = () => { currentPhase.value = 'retired'; };
 
 const resetGame = () => {
   pastCareers.value = JSON.parse(localStorage.getItem('the_goat_past_careers') || '[]');
@@ -197,19 +217,13 @@ const resetGame = () => {
   currentPhase.value = 'setup';
 };
 
-const currentOVR = computed(() => {
-  if (!currentDrawnPlayer.value) return 0;
-  return calculateStartingOVR(currentDrawnPlayer.value.attributes); 
-});
+const dismissMilestone = () => pendingMilestones.value.shift();
 
-const lastSeason = computed(() => history.value.length === 0 ? null : history.value[history.value.length - 1]);
-const viewLegacy = () => { currentPhase.value = 'retired'; };
-const detailedAwards = computed(() => {
-  const counts: Record<string, number> = {};
-  history.value.forEach(season => season.awards.forEach(award => counts[award] = (counts[award] || 0) + 1));
-  return Object.entries(counts).sort((a, b) => b[1] - a[1]);
-});
-const goatEvaluation = computed(() => calculateGoatScore(careerTotals.value, detailedAwards.value));
+const retireManual = () => {
+  if (confirm("Are you sure you want to end your career? This action cannot be undone.")) {
+    forceRetirement();
+  }
+};
 </script>
 
 <template>
@@ -508,7 +522,11 @@ const goatEvaluation = computed(() => calculateGoatScore(careerTotals.value, det
                 <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-3">
                   {{ lastSeason ? `Season ${lastSeason.seasonNumber} Stats` : 'Rookie Season' }}
                 </p>
-                <div class="space-y-2">
+                <div class="grid grid-cols-2 gap-x-4 gap-y-2">
+                  <div class="flex justify-between text-sm">
+                    <span class="text-gray-400 font-bold">MPG</span>
+                    <span class="text-white font-black">{{ lastSeason ? lastSeason.mpg : '0.0' }}</span>
+                  </div>
                   <div class="flex justify-between text-sm">
                     <span class="text-gray-400 font-bold">PTS</span>
                     <span class="text-white font-black">{{ lastSeason ? lastSeason.ppg : '0.0' }}</span>
@@ -522,8 +540,24 @@ const goatEvaluation = computed(() => calculateGoatScore(careerTotals.value, det
                     <span class="text-white font-black">{{ lastSeason ? lastSeason.apg : '0.0' }}</span>
                   </div>
                   <div class="flex justify-between text-sm">
+                    <span class="text-gray-400 font-bold">STL</span>
+                    <span class="text-white font-black">{{ lastSeason ? lastSeason.spg : '0.0' }}</span>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <span class="text-gray-400 font-bold">BLK</span>
+                    <span class="text-white font-black">{{ lastSeason ? lastSeason.bpg : '0.0' }}</span>
+                  </div>
+                  <div class="flex justify-between text-sm">
                     <span class="text-gray-400 font-bold">FG%</span>
                     <span class="text-white font-black">{{ lastSeason ? lastSeason.fgPct : '0.0' }}%</span>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <span class="text-gray-400 font-bold">3P%</span>
+                    <span class="text-white font-black">{{ lastSeason ? lastSeason.fg3Pct : '0.0' }}%</span>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <span class="text-gray-400 font-bold">FT%</span>
+                    <span class="text-white font-black">{{ lastSeason ? lastSeason.ftPct : '0.0' }}%</span>
                   </div>
                 </div>
               </div>
@@ -712,10 +746,12 @@ const goatEvaluation = computed(() => calculateGoatScore(careerTotals.value, det
             
             <!-- Outros Prêmios -->
             <div class="flex flex-wrap gap-2 mt-4">
-              <div v-for="(count, award) in trophyCabinet" :key="award" class="bg-gray-900 border border-gray-800 px-3 py-1.5 rounded text-[10px] font-black uppercase tracking-widest text-gray-400">
-                <span v-if="award !== 'Rings' && award !== 'MVP' && award !== 'Finals MVP' && award !== 'DPOY'">
-                  {{ award }} <span class="text-white ml-1">x{{ count }}</span>
-                </span>
+              <div 
+                v-for="[award, count] in sortedAwards" 
+                :key="award" 
+                class="bg-gray-900 border border-gray-800 px-3 py-1.5 rounded text-[10px] font-black uppercase tracking-widest text-gray-400"
+              >
+                {{ award }} <span class="text-white ml-1">x{{ count }}</span>
               </div>
             </div>
           </div>
@@ -760,6 +796,39 @@ const goatEvaluation = computed(() => calculateGoatScore(careerTotals.value, det
                   <div class="bg-blue-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(careerTotals.totalRebounds, nbaRecords.rebounds)}%`"></div>
                 </div>
               </div>
+
+              <!-- Barra de Steals -->
+              <div>
+                <div class="flex justify-between text-xs font-bold uppercase tracking-widest mb-2">
+                  <span class="text-white">Career Steals</span>
+                  <span class="text-gray-500"><span class="text-purple-500">{{ careerTotals.totalSteals }}</span> / {{ nbaRecords.steals }} (Harden)</span>
+                </div>
+                <div class="w-full bg-gray-900 rounded-full h-1.5">
+                  <div class="bg-purple-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(careerTotals.totalSteals, nbaRecords.steals)}%`"></div>
+                </div>
+              </div>
+
+              <!-- Barra de Blocks -->
+              <div>
+                <div class="flex justify-between text-xs font-bold uppercase tracking-widest mb-2">
+                  <span class="text-white">Career Blocks</span>
+                  <span class="text-gray-500"><span class="text-red-500">{{ careerTotals.totalBlocks }}</span> / {{ nbaRecords.blocks }} (Hakeem)</span>
+                </div>
+                <div class="w-full bg-gray-900 rounded-full h-1.5">
+                  <div class="bg-red-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(careerTotals.totalBlocks, nbaRecords.blocks)}%`"></div>
+                </div>
+              </div>
+
+              <!-- Barra de MVPs -->
+              <div>
+                <div class="flex justify-between text-xs font-bold uppercase tracking-widest mb-2">
+                  <span class="text-white">MVP Awards</span>
+                  <span class="text-gray-500"><span class="text-yellow-500">{{ trophyCabinet['MVP'] || 0 }}</span> / {{ nbaRecords.mvps }} (Russell)</span>
+                </div>
+                <div class="w-full bg-gray-900 rounded-full h-1.5">
+                  <div class="bg-yellow-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(trophyCabinet['MVP'] || 0, nbaRecords.mvps)}%`"></div>
+                </div>
+              </div>
               
               <!-- Barra de Títulos -->
               <div>
@@ -778,17 +847,24 @@ const goatEvaluation = computed(() => calculateGoatScore(careerTotals.value, det
           <div class="mt-8 mb-12">
             <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-3">Year-by-Year Stats</p>
             <div class="bg-[#0a0a0a] border border-gray-800 rounded-xl overflow-hidden overflow-x-auto">
-              <table class="w-full text-left border-collapse min-w-200">
+              <table class="w-full text-left border-collapse min-w-250">
                 <thead>
                   <tr class="bg-gray-900/50 border-b border-gray-800 text-[10px] text-gray-500 uppercase tracking-widest font-black">
                     <th class="p-4">Season</th>
                     <th class="p-4">Team</th>
                     <th class="p-4">Age</th>
                     <th class="p-4">OVR</th>
+                    <th class="p-4">MPG</th>
                     <th class="p-4">PTS</th>
                     <th class="p-4">REB</th>
                     <th class="p-4">AST</th>
+                    <th class="p-4">STL</th>
+                    <th class="p-4">BLK</th>
+                    <th class="p-4">TOV</th>
                     <th class="p-4">FG%</th>
+                    <th class="p-4">3P%</th>
+                    <th class="p-4">FT%</th>
+                    <th class="p-4">+/-</th>
                     <th class="p-4 text-center">Playoffs</th>
                     <th class="p-4">Awards</th>
                   </tr>
@@ -799,10 +875,17 @@ const goatEvaluation = computed(() => calculateGoatScore(careerTotals.value, det
                     <td class="p-4 text-white font-black">{{ season.teamId }}</td>
                     <td class="p-4">{{ season.age }}</td>
                     <td class="p-4 text-yellow-500">{{ season.ovr }}</td>
+                    <td class="p-4 text-gray-400">{{ season.mpg }}</td>
                     <td class="p-4 text-white">{{ season.ppg }}</td>
                     <td class="p-4">{{ season.rpg }}</td>
                     <td class="p-4">{{ season.apg }}</td>
+                    <td class="p-4">{{ season.spg }}</td>
+                    <td class="p-4">{{ season.bpg }}</td>
+                    <td class="p-4">{{ season.tov }}</td>
                     <td class="p-4 text-gray-500">{{ season.fgPct }}%</td>
+                    <td class="p-4 text-gray-500">{{ season.fg3Pct }}%</td>
+                    <td class="p-4 text-gray-500">{{ season.ftPct }}%</td>
+                    <td class="p-4" :class="season.plusMinus > 0 ? 'text-green-500' : 'text-red-500'">{{ season.plusMinus > 0 ? '+' : '' }}{{ season.plusMinus }}</td>
                     <td class="p-4 text-center text-[10px] uppercase tracking-widest font-black" :class="season.wonRing ? 'text-yellow-500' : (season.playoffs.madePlayoffs ? 'text-gray-500' : 'text-red-900/50')">
                       {{ season.wonRing ? '🏆 Champion' : (season.playoffs.madePlayoffs ? season.playoffs.eliminatedIn : 'Missed') }}
                     </td>

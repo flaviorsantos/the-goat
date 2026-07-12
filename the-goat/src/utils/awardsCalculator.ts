@@ -1,84 +1,75 @@
-import type { PlayerProfile, PlayoffRunStats } from '../types';
-import { nbaPlayers } from '../data/players';
+import type { SeasonStats } from './statsCalculator';
+import type { Position } from '../types';
 
 export function calculateAwards(
-  stats: { mpg: number; ppg: number; apg: number; rpg: number; spg: number; bpg: number; plusMinus: number; }, 
-  teamWins: number,
-  player: PlayerProfile, 
+  stats: SeasonStats, 
+  attributes: any, 
+  playerOvr: number, 
+  teamWins: number, 
   isRookie: boolean,
-  playoffs: PlayoffRunStats
-): { playerAwards: string[], leagueAwards: Record<string, string> } {
-  
-  const playerAwards: string[] = [];
-  const leagueAwards: Record<string, string> = {};
-  const rng = (min = 0.9, max = 1.1) => (Math.random() * (max - min)) + min;
+  position: Position
+) {
+  const awards: string[] = [];
 
-  const offensiveImpact = (stats.ppg * 1.5) + (stats.apg * 1.2) + (stats.rpg * 0.5) + (stats.plusMinus * 1.5);
-  const defensiveImpact = (stats.bpg * 4) + (stats.spg * 4) + (stats.rpg * 0.8) + (player.attributes.Defense * 0.15);
-  const overallImpact = offensiveImpact + (defensiveImpact * 0.8);
+  let posMvpMultiplier = 1.0;
+  let posDefMultiplier = 1.0;
 
-  const mvpThreshold = (65 + (Math.random() * 10)) * rng();
-  const dpoyThreshold = (32 + (Math.random() * 5)) * rng();
-  const smotyThreshold = 25 * rng(); // Threshold para Sexto Homem
-/*
-  // Função auxiliar para achar um NPC para ganhar o prêmio
-  const getRandomElite = (minOvr: number, isDefender = false) => {
-    const candidates = nbaPlayers.filter(p => p.ovr >= minOvr && (!isDefender || p.attributes.Defense > 85));
-    if (candidates.length === 0) return 'LeBron James'; // Fallback
-    return candidates[Math.floor(Math.random() * candidates.length)].name;
-  };*/
-
-  // 1. Rookie of the Year
-  if (isRookie && overallImpact > 35 * rng()) {
-    playerAwards.push('ROTY');
-    leagueAwards['ROTY'] = player.name;
-  } else if (isRookie) {
-    leagueAwards['ROTY'] = 'Random Top Draft Pick'; // Simulação genérica
+  if (position === 'PG' || position === 'SG') {
+    // Perímetro valoriza mais Assistências, Roubos e menos Ressaltos/Blocos
+    posMvpMultiplier = (stats.apg * 1.6) + (stats.spg * 2.5) + (stats.rpg * 0.8);
+    posDefMultiplier = (attributes.Defense * 0.5) + (stats.spg * 14) + (stats.bpg * 4);
+  } else if (position === 'SF' || position === 'PF') {
+    // Alas são híbridos equilibrados
+    posMvpMultiplier = (stats.apg * 1.1) + (stats.spg * 1.5) + (stats.rpg * 1.2) + (stats.bpg * 1.5);
+    posDefMultiplier = (attributes.Defense * 0.5) + (stats.spg * 9) + (stats.bpg * 9);
+  } else if (position === 'C') {
+    // Postes valorizam massivamente Ressaltos, Blocos e Eficiência, ignorando assistências
+    posMvpMultiplier = (stats.rpg * 1.6) + (stats.bpg * 2.5) + (stats.apg * 0.5);
+    posDefMultiplier = (attributes.Defense * 0.4) + (stats.bpg * 15) + (stats.spg * 4);
   }
 
-  // 2. Sixth Man of the Year (Exige menos de 28 MPG e impacto sólido)
-  if (stats.mpg < 28 && overallImpact > smotyThreshold) {
-    playerAwards.push('6MOTY');
-    leagueAwards['6MOTY'] = player.name;
-  } else {
-    //leagueAwards['6MOTY'] = getRandomElite(80);
+  const mvpScore = stats.ppg + posMvpMultiplier - stats.tov;
+  const npcMvpThreshold = 45 + Math.random() * 8; 
+
+  if (teamWins >= 50 && mvpScore > npcMvpThreshold && stats.mpg >= 30 && playerOvr >= 88) {
+    awards.push('MVP');
   }
 
-  // 3. MVP
-  if (overallImpact > mvpThreshold && teamWins >= 48) {
-    playerAwards.push('MVP');
-    leagueAwards['MVP'] = player.name;
-  } else {
-    //leagueAwards['MVP'] = getRandomElite(93);
+  if (mvpScore > 40 && stats.mpg >= 30 && playerOvr >= 87) {
+    awards.push('All-NBA 1st Team');
+  } else if (mvpScore > 33 && stats.mpg >= 28 && playerOvr >= 83) {
+    awards.push('All-NBA 2nd Team');
+  } else if (mvpScore > 28 && stats.mpg >= 26 && playerOvr >= 80) {
+    awards.push('All-NBA 3rd Team');
   }
 
-  // 4. DPOY
-  if (defensiveImpact > dpoyThreshold) {
-    playerAwards.push('DPOY');
-    leagueAwards['DPOY'] = player.name;
-  } else {
-    //leagueAwards['DPOY'] = getRandomElite(88, true);
-  }
-
-  // 5. Playoffs Awards (Conference Finals MVP e Finals MVP)
-  if (playoffs.wonRing || playoffs.eliminatedIn === 'NBA Finals') {
-    // Se chegou na final, ganha o MVP das Finais de Conferência se tiver OVR de estrela
-    if (player.ovr >= 85 && rng() > 0.95) {
-      playerAwards.push('Conf. Finals MVP');
+  if (isRookie && stats.mpg >= 20) {
+    const rookieScore = stats.ppg + stats.rpg + stats.apg;
+    const npcRookieThreshold = 15 + Math.random() * 7; 
+    if (rookieScore > npcRookieThreshold) {
+      awards.push('ROTY');
     }
   }
 
-  if (playoffs.wonRing && player.ovr >= 88 && rng() > 0.9) {
-    playerAwards.push('Finals MVP');
+  if (stats.mpg > 15 && stats.mpg < 28 && stats.ppg > 12) {
+    const npcSmotyThreshold = 14 + Math.random() * 4;
+    if (stats.ppg > npcSmotyThreshold) {
+      awards.push('SMOTY');
+    }
+  }
+  const defensiveImpact = (attributes.Defense * 0.5) + (stats.spg * 12) + (stats.bpg * 8) + (stats.plusMinus * 1.2);
+  const dpoyThreshold = 80 + Math.random() * 15;
+  
+  if (stats.mpg >= 28) {
+    if (defensiveImpact > dpoyThreshold && attributes.Defense >= 88) {
+      awards.push('DPOY');
+      awards.push('All-Defense 1st Team');
+    } else if (defensiveImpact > 74 && attributes.Defense >= 82) {
+      awards.push('All-Defense 1st Team');
+    } else if (defensiveImpact > 66 && attributes.Defense >= 76) {
+      awards.push('All-Defense 2nd Team');
+    }
   }
 
-  // 6. All-NBA e All-Defense (Apenas pro player)
-  if (!playerAwards.includes('MVP') && overallImpact > 58 * rng()) playerAwards.push('All-NBA 1st');
-  else if (overallImpact > 52 * rng() && !playerAwards.includes('All-NBA 1st')) playerAwards.push('All-NBA 2nd');
-  else if (overallImpact > 46 * rng() && !playerAwards.includes('All-NBA 2nd') && !playerAwards.includes('All-NBA 1st')) playerAwards.push('All-NBA 3rd');
-
-  if (!playerAwards.includes('DPOY') && defensiveImpact > 26 * rng()) playerAwards.push('All-Def 1st');
-  else if (defensiveImpact > 22 * rng() && !playerAwards.includes('All-Def 1st')) playerAwards.push('All-Def 2nd');
-
-  return { playerAwards, leagueAwards };
+  return awards;
 }

@@ -1,61 +1,74 @@
-import type { Position, PlayerAttributes } from '../types';
+import type { PlayerAttributes, Position } from '../types';
+
+export interface SeasonStats {
+  mpg: number;
+  ppg: number;
+  rpg: number;
+  apg: number;
+  spg: number;
+  bpg: number;
+  tov: number;
+  fgPct: number;
+  fg3Pct: number;
+  ftPct: number;
+  plusMinus: number;
+}
 
 export function calculateSeasonStats(
   attributes: PlayerAttributes, 
   position: Position, 
-  age: number, 
-  ovr: number, 
-  teamWins: number
-) {
-  const rng = (min = 0.9, max = 1.1) => (Math.random() * (max - min)) + min; 
-  
-  let baseMpg = 12 + ((ovr - 60) * 0.85);
-  if (age >= 34) baseMpg -= (age - 33) * 1.5; 
-  if (ovr >= 90) baseMpg = Math.min(baseMpg, 38.5); 
-  
-  const mpg = Math.max(8, Math.min(baseMpg * rng(0.95, 1.05), 42));
-  const minutesModifier = mpg / 36;
+  playerOvr: number, 
+  teamBaseOvr: number, 
+  age: number
+): SeasonStats {
+  const baseMpg = playerOvr >= 85 ? 36 : (playerOvr >= 75 ? 28 : 16);
+  const agePenalty = age > 33 ? (age - 33) * 1.5 : 0;
+  const mpg = Math.max(8, Math.min(42, baseMpg + (attributes.Athleticism * 0.05) - agePenalty));
+  const minuteFactor = mpg / 36; 
 
-  const normalize = (val: number) => Math.max(1, val);
+  // Correção: Uso máximo travado em 30% e escala suavizada para evitar super inflação
+  const usageRate = Math.max(15, Math.min(30, 20 + ((playerOvr - teamBaseOvr) * 0.4)));
+  const usageFactor = usageRate / 20;
 
-  let ppg = ((attributes.Shooting * 0.16) + (attributes.Mentality * 0.08) + (attributes.Athleticism * 0.03)) * rng() * minutesModifier;
-  
-  let apg = (Math.pow(normalize(attributes.Passing), 1.2) / 25 + (attributes.IQ * 0.04)) * rng() * minutesModifier;
-  
-  let rpg = (Math.pow(normalize(attributes.Rebounding), 1.15) / 12 + (attributes.Athleticism * 0.03)) * rng() * minutesModifier;
-  
-  let spg = ((attributes.Defense * 0.015) + (attributes.Speed * 0.01) + (attributes.IQ * 0.005)) * rng() * minutesModifier;
-  let bpg = ((attributes.Defense * 0.018) + (attributes.Athleticism * 0.012)) * rng() * minutesModifier;
-  
-  let topg = Math.max(0.5, 4.0 - (attributes.IQ * 0.02) - (attributes.Dribbling * 0.01)) * rng() * minutesModifier;
+  const scoringAbility = (attributes.Shooting * 0.4) + (attributes.Dribbling * 0.3) + (attributes.Athleticism * 0.3);
+  let ppg = scoringAbility * 0.18 * minuteFactor * usageFactor * (0.9 + Math.random() * 0.2);
 
-  switch (position) {
-    case 'PG': apg *= 1.35; spg *= 1.15; rpg *= 0.5; bpg *= 0.2; ppg *= 1.05; break;
-    case 'SG': ppg *= 1.15; apg *= 0.85; rpg *= 0.6; bpg *= 0.4; break;
-    case 'SF': ppg *= 1.05; rpg *= 0.9; apg *= 0.9; break;
-    case 'PF': rpg *= 1.25; bpg *= 1.15; apg *= 0.6; ppg *= 0.9; break;
-    case 'C':  rpg *= 1.4; bpg *= 1.4; apg *= 0.4; spg *= 0.6; ppg *= 0.85; break;
-  }
+  const apgBase = position === 'PG' ? 8 : (position === 'SG' ? 4 : (position === 'SF' ? 3.5 : 1.5));
+  const passingAbility = (attributes.Passing * 0.5) + (attributes.IQ * 0.3) + (attributes.Dribbling * 0.2);
+  let apg = apgBase * (passingAbility / 75) * minuteFactor * (usageFactor * 0.75) * (0.8 + Math.random() * 0.4);
 
-  const fgPct = (32 + (attributes.Shooting * 0.12) + (attributes.IQ * 0.10)) * rng(0.96, 1.04);
-  const fg3Pct = (22 + (attributes.Shooting * 0.18)) * rng(0.92, 1.08);
-  const ftPct = (55 + (attributes.Shooting * 0.35) + (attributes.Mentality * 0.05)) * rng(0.96, 1.04);
+  const rpgBase = position === 'C' ? 10 : (position === 'PF' ? 8 : (position === 'SF' ? 5 : 3.5));
+  const reboundingAbility = (attributes.Rebounding * 0.5) + (attributes.Athleticism * 0.3) + (attributes.IQ * 0.2);
+  let rpg = rpgBase * (reboundingAbility / 75) * minuteFactor * (0.8 + Math.random() * 0.4);
 
-  const teamWinFactor = (teamWins - 41) / 5; 
-  const playerImpact = ((ovr - 75) / 6) * minutesModifier; 
-  const plusMinus = (teamWinFactor + playerImpact + (attributes.IQ * 0.04)) * rng(0.85, 1.15);
+  const spgBase = position === 'PG' ? 1.5 : (position === 'SG' ? 1.2 : (position === 'SF' ? 1.0 : 0.6));
+  const stealAbility = (attributes.Defense * 0.5) + (attributes.Speed * 0.3) + (attributes.IQ * 0.2);
+  let spg = spgBase * (stealAbility / 75) * minuteFactor * (0.8 + Math.random() * 0.4);
+
+  const bpgBase = position === 'C' ? 2.0 : (position === 'PF' ? 1.4 : (position === 'SF' ? 0.6 : 0.2));
+  const blockAbility = (attributes.Defense * 0.5) + (attributes.Athleticism * 0.3) + (attributes.IQ * 0.2);
+  let bpg = bpgBase * (blockAbility / 75) * minuteFactor * (0.8 + Math.random() * 0.4);
+
+  const tovBase = position === 'PG' ? 3.0 : (position === 'SG' ? 2.5 : (position === 'SF' ? 2.0 : 1.5));
+  let tov = tovBase * (1 - (attributes.IQ * 0.01)) * minuteFactor * (usageRate * 0.3) * (0.8 + Math.random() * 0.4);
+
+  let fgPct = 42 + (attributes.Shooting * 0.15) + (attributes.IQ * 0.08) - (usageRate * 0.2) + (Math.random() * 4 - 2);
+  let fg3Pct = 25 + (attributes.Shooting * 0.22) + (attributes.IQ * 0.05) + (Math.random() * 6 - 3);
+  let ftPct = 60 + (attributes.Shooting * 0.2) + (attributes.Mentality * 0.15) + (Math.random() * 5 - 2.5);
+
+  let plusMinus = ((teamBaseOvr - 75) * 0.4) + ((playerOvr - 75) * 0.2) + (Math.random() * 6 - 3);
 
   return {
     mpg: Number(mpg.toFixed(1)),
-    ppg: Number(ppg.toFixed(1)),
-    rpg: Number(rpg.toFixed(1)),
-    apg: Number(apg.toFixed(1)),
-    spg: Number(spg.toFixed(1)),
-    bpg: Number(bpg.toFixed(1)),
-    topg: Number(topg.toFixed(1)),
-    fgPct: Number(Math.min(fgPct, 75).toFixed(1)), 
-    fg3Pct: Number(Math.min(fg3Pct, 55).toFixed(1)),
-    ftPct: Number(Math.min(ftPct, 99.9).toFixed(1)),
+    ppg: Number(Math.max(2, ppg).toFixed(1)),
+    rpg: Number(Math.max(0.5, rpg).toFixed(1)),
+    apg: Number(Math.max(0.5, apg).toFixed(1)),
+    spg: Number(Math.max(0.1, spg).toFixed(1)),
+    bpg: Number(Math.max(0.1, bpg).toFixed(1)),
+    tov: Number(Math.max(0.5, tov).toFixed(1)),
+    fgPct: Number(Math.min(65, Math.max(35, fgPct)).toFixed(1)),
+    fg3Pct: Number(Math.min(50, Math.max(15, fg3Pct)).toFixed(1)),
+    ftPct: Number(Math.min(99, Math.max(40, ftPct)).toFixed(1)),
     plusMinus: Number(plusMinus.toFixed(1))
   };
 }
