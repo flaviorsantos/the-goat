@@ -17,7 +17,6 @@ const {
 const { 
   currentDrawnPlayer, 
   myAttributes, 
-  availableSlots, 
   hasReroll, 
   isDraftComplete, 
   drawRandomPlayer, 
@@ -27,8 +26,11 @@ const {
   getRandomTeam,
   generateRookieAttributes,
   calculateDraftPick,
-  resetDraft
+  resetDraft,
+  attributeSources
 } = useDraft();
+
+const availableSlots = computed(() => Object.keys(myAttributes.value) as Array<keyof typeof myAttributes.value>);
 
 // Utilitários de Dev/Teste
 const executeStressTest = () => {
@@ -194,6 +196,7 @@ const processDraftDay = () => {
   player.value.ovr = initialOvr;
   player.value.attributes = rookieAttributes;
   player.value.potentialAttributes = peakAttributes;
+  player.value.age = 19;
   
   player.value.careerTimeline.push({
     teamId: draftedTeam,
@@ -409,23 +412,65 @@ const retireManual = () => {
 
         <!-- Grid de Atributos -->
         <div v-if="!isDraftComplete">
-          <div class="mb-4 flex justify-between items-end">
-            <p class="text-white font-black uppercase text-sm tracking-wide">Choose 1 attribute to steal</p>
-            <p class="text-gray-500 font-bold text-xs uppercase">Remaining: {{ 9 - Object.keys(myAttributes).length }}</p>
-          </div>
+        <div class="mb-4 flex justify-between items-end">
+          <p class="text-white font-black uppercase text-sm tracking-wide">Choose 1 attribute to steal</p>
+          <p class="text-gray-500 font-bold text-xs uppercase">Remaining: {{ 9 - Object.values(myAttributes).filter(v => v > 0).length }}</p>
+        </div>
 
           <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-8">
             <button 
               v-for="slot in availableSlots" 
               :key="slot"
               @click="selectAttribute(slot)"
-              class="bg-[#0a0a0a] border border-gray-800 hover:border-yellow-500 rounded-lg p-6 flex flex-col items-center justify-center transition-all group"
+              :disabled="myAttributes[slot] > 0"
+              :class="myAttributes[slot] > 0 ? 'opacity-20 cursor-not-allowed border-gray-900' : 'hover:border-yellow-500'"
+              class="bg-[#0a0a0a] border border-gray-800 rounded-lg p-6 flex flex-col items-center justify-center transition-all group"
             >
-              <span class="text-gray-500 text-[11px] font-bold uppercase tracking-widest mb-2 group-hover:text-yellow-500 transition-colors">{{ slot }}</span>
+              <span 
+                :class="myAttributes[slot] > 0 ? 'line-through text-gray-700' : 'text-gray-500 group-hover:text-yellow-500'" 
+                class="text-[11px] font-bold uppercase tracking-widest mb-2 transition-colors"
+              >
+                {{ slot }}
+              </span>
+              
               <!-- Condição de Dificuldade -->
-              <span v-if="selectedDifficulty === 'amateur'" class="text-3xl font-black text-white">{{ currentDrawnPlayer?.attributes[slot] }}</span>
-              <span v-else class="text-3xl font-black text-gray-700 tracking-widest">???</span>
+              <template v-if="myAttributes[slot] === 0">
+                <span v-if="selectedDifficulty === 'amateur'" class="text-3xl font-black text-white">
+                  {{ currentDrawnPlayer?.attributes[slot] }}
+                </span>
+                <span v-else class="text-3xl font-black text-gray-700 tracking-widest">???</span>
+              </template>
+              <span v-else class="text-sm font-black text-yellow-500">SELECTED</span>
             </button>
+          </div>
+
+          <!-- Painel: Seu Jogador (Slots Fixos) -->
+          <div class="mt-12 border-t border-gray-800 pt-8">
+            <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-6">Seu Jogador</p>
+            
+            <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              <!-- Itera sobre todas as chaves de atributos base (Shooting, Speed, etc) -->
+              <div 
+                v-for="(val, key) in myAttributes" 
+                :key="key"
+                class="flex flex-col items-center justify-center p-4 border rounded-xl h-28 transition-all duration-300"
+                :class="val > 0 ? 'bg-gray-950 border-gray-700 shadow-lg' : 'bg-transparent border-gray-800 border-dashed opacity-40'"
+              >
+                <!-- Estado: Preenchido -->
+                <template v-if="val > 0">
+                  <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">{{ key }}</span>
+                  <span class="text-2xl font-black text-white" :class="val >= 90 ? 'text-yellow-500' : ''">{{ val }}</span>
+                  <span class="text-[9px] text-gray-400 mt-2 truncate w-full text-center">
+                    {{ attributeSources[key] }}
+                  </span>
+                </template>
+                
+                <!-- Estado: Vazio (Aguardando Escolha) -->
+                <template v-else>
+                  <span class="text-[10px] font-bold text-gray-600 uppercase tracking-widest">{{ key }}</span>
+                </template>
+              </div>
+            </div>
           </div>
 
           <!-- Controles Inferiores (Reroll) -->
@@ -443,6 +488,8 @@ const retireManual = () => {
             </div>
           </div>
         </div>
+
+
 
         <!-- Botão de Avanço (Aparece ao terminar) -->
         <div v-else class="mt-12 text-center animate-fade-in">

@@ -65,49 +65,107 @@ export function useGameEngine() {
     achievedMilestones.value = new Set();
   };
 
-  const recalculateOVR = () => {
-    const attrs = player.value.attributes;
-    const sum = (attrs.Shooting * 0.15) + (attrs.Dribbling * 0.1) +
-                (attrs.Defense * 0.15) + (attrs.IQ * 0.1) +
-                (attrs.Athleticism * 0.15) + (attrs.Passing * 0.1) +
-                (attrs.Rebounding * 0.1) + (attrs.Speed * 0.1) +
-                (attrs.Mentality * 0.05);
-    player.value.ovr = Math.floor(sum);
-  };
-
-  const applyAttributeProgression = () => {
+  const applyOffseasonProgression = () => {
     player.value.age++;
-    if (player.value.contractYearsLeft > 0) player.value.contractYearsLeft--;
-
-    const isDeclining = player.value.age >= 32;
-
-    if (player.value.age < 27) {
-      for (const key in player.value.attributes) {
-        const k = key as keyof typeof player.value.attributes;
-        if (player.value.attributes[k] < player.value.potentialAttributes[k]) {
-          player.value.attributes[k] += Math.floor(Math.random() * 3) + 1;
-          if (player.value.attributes[k] > player.value.potentialAttributes[k]) {
-            player.value.attributes[k] = player.value.potentialAttributes[k];
-          }
-        }
-      }
-    } else if (isDeclining) {
-      const declineRate = Math.max(1, player.value.age - 31); 
-      
-      player.value.attributes.Speed = Math.max(10, player.value.attributes.Speed - (Math.floor(Math.random() * 3) + declineRate));
-      player.value.attributes.Athleticism = Math.max(10, player.value.attributes.Athleticism - (Math.floor(Math.random() * 3) + declineRate));
-      player.value.attributes.Defense = Math.max(15, player.value.attributes.Defense - (Math.floor(Math.random() * 2) + Math.floor(declineRate / 2)));
-      
-      if (player.value.age >= 34) {
-        player.value.attributes.Shooting = Math.max(25, player.value.attributes.Shooting - Math.floor(Math.random() * 3) + 1);
-        player.value.attributes.Dribbling = Math.max(25, player.value.attributes.Dribbling - 2);
-        player.value.attributes.Passing = Math.max(30, player.value.attributes.Passing - 1);
-      }
-      
-      player.value.attributes.IQ = Math.min(99, player.value.attributes.IQ + 1);
+    
+    if (player.value.contractYearsLeft > 0) {
+      player.value.contractYearsLeft--;
     }
 
+    const attrs = player.value.attributes;
+    const pots = player.value.potentialAttributes;
+    const age = player.value.age;
+
+    // Agrupamento estrito de atributos para manipulação em lote
+    const physicals = ['Speed', 'Athleticism', 'Defense'] as const;
+    const mentals = ['IQ', 'Mentality'] as const;
+    const technicals = ['Shooting', 'Dribbling', 'Passing', 'Rebounding'] as const;
+
+    if (age < 24) {
+      // Desenvolvimento Rápido: Cobre a distância até o potencial de forma agressiva
+      for (const key in attrs) {
+        const k = key as keyof typeof attrs;
+        if (attrs[k] < pots[k]) {
+          // O crescimento acelera consoante os anos restantes até ao auge (24 anos)
+          const gap = pots[k] - attrs[k];
+          const yearsToPrime = 24 - age;
+          const baseGrowth = Math.ceil(gap / yearsToPrime);
+          const growthVariance = Math.floor(Math.random() * 2); // +0 ou +1
+          
+          attrs[k] = Math.min(pots[k], attrs[k] + baseGrowth + growthVariance);
+        }
+      }
+    } else if (age >= 24 && age <= 29) {
+      // O Auge: Força a convergência exata ao potencial e estabiliza
+      for (const key in attrs) {
+        const k = key as keyof typeof attrs;
+        if (attrs[k] < pots[k]) {
+          attrs[k] = pots[k];
+        }
+      }
+    } else if (age >= 30 && age <= 34) {
+      // Declínio Leve
+      physicals.forEach(k => {
+        attrs[k] = Math.max(30, attrs[k] - 1);
+      });
+      technicals.forEach(k => {
+        // 50% de probabilidade de perder 1 ponto em atributos técnicos
+        if (Math.random() > 0.5) attrs[k] = Math.max(30, attrs[k] - 1);
+      });
+      mentals.forEach(k => {
+        // IQ e Mentality sobem devido à experiência
+        attrs[k] = Math.min(99, attrs[k] + 1);
+      });
+    } else if (age >= 35) {
+      // Declínio Severo
+      physicals.forEach(k => {
+        const drop = Math.floor(Math.random() * 2) + 2; // -2 a -3 por ano
+        attrs[k] = Math.max(30, attrs[k] - drop);
+      });
+      technicals.forEach(k => {
+        const drop = Math.floor(Math.random() * 2) + 1; // -1 a -2 por ano
+        attrs[k] = Math.max(30, attrs[k] - drop);
+      });
+      // Atributos mentais estabilizam no pico, não sofrem decaimento
+    }
+
+    // É imperativo recalcular o OVR após a manipulação dos atributos
     recalculateOVR();
+  };
+
+  const recalculateOVR = () => {
+    const attrs = player.value.attributes;
+    const position = player.value.position; // Ex: 'PG', 'SG', 'SF', 'PF', 'C'
+
+    // Pesos padrão (os seus pesos atuais)
+    let weights = {
+      Shooting: 0.15, Defense: 0.15, Athleticism: 0.15,
+      Dribbling: 0.10, IQ: 0.10, Passing: 0.10, Rebounding: 0.10, Speed: 0.10,
+      Mentality: 0.05
+    };
+
+    // Exemplo de personalização por posição
+    if (position === 'C' || position === 'PF') {
+      weights = {
+        Shooting: 0.05, Defense: 0.20, Athleticism: 0.15,
+        Dribbling: 0.05, IQ: 0.10, Passing: 0.05, Rebounding: 0.25, Speed: 0.10,
+        Mentality: 0.05
+      };
+    } else if (position === 'PG') {
+      weights = {
+        Shooting: 0.15, Defense: 0.10, Athleticism: 0.10,
+        Dribbling: 0.20, IQ: 0.15, Passing: 0.20, Rebounding: 0.02, Speed: 0.03,
+        Mentality: 0.05
+      };
+    }
+
+    // Cálculo da média ponderada dinâmica
+    const sum = Object.keys(weights).reduce((acc, key) => {
+      return acc + (attrs[key as keyof typeof attrs] * weights[key as keyof typeof weights]);
+    }, 0);
+
+    // Arredondamento justo para o jogador
+    player.value.ovr = Math.round(sum);
   };
 
   const generateOffers = () => {
@@ -291,7 +349,7 @@ export function useGameEngine() {
       wonRing: playoffRun.wonRing
     });
 
-    applyAttributeProgression();
+    applyOffseasonProgression();
 
     if ((player.value.age >= 34 && player.value.ovr < 68) || player.value.age >= 39) {
       forceRetirement();

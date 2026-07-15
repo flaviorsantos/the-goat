@@ -26,31 +26,28 @@ export function calculateSeasonStats(
   const mpg = Math.max(8, Math.min(42, baseMpg + (attributes.Athleticism * 0.05) - agePenalty));
   const minuteFactor = mpg / 36; 
 
-  // Correção: Uso máximo travado em 30% e escala suavizada para evitar super inflação
-  const usageRate = Math.max(15, Math.min(30, 20 + ((playerOvr - teamBaseOvr) * 0.4)));
+  const usageRate = Math.max(15, Math.min(35, 20 + ((playerOvr - teamBaseOvr) * 0.4)));
   const usageFactor = usageRate / 20;
 
   const scoringAbility = (attributes.Shooting * 0.4) + (attributes.Dribbling * 0.3) + (attributes.Athleticism * 0.3);
   let ppg = scoringAbility * 0.18 * minuteFactor * usageFactor * (0.9 + Math.random() * 0.2);
 
-  const apgBase = position === 'PG' ? 8 : (position === 'SG' ? 4 : (position === 'SF' ? 3.5 : 1.5));
-  const passingAbility = (attributes.Passing * 0.5) + (attributes.IQ * 0.3) + (attributes.Dribbling * 0.2);
-  let apg = apgBase * (passingAbility / 75) * minuteFactor * (usageFactor * 0.75) * (0.8 + Math.random() * 0.4);
+  const apgBase = position === 'PG' ? 6.5 : (position === 'SG' ? 3.5 : (position === 'SF' ? 2.8 : 1.5));
+  let apg = apgBase * (attributes.Passing / 80) * minuteFactor * (0.8 + Math.random() * 0.4);
 
-  const rpgBase = position === 'C' ? 10 : (position === 'PF' ? 8 : (position === 'SF' ? 5 : 3.5));
-  const reboundingAbility = (attributes.Rebounding * 0.5) + (attributes.Athleticism * 0.3) + (attributes.IQ * 0.2);
-  let rpg = rpgBase * (reboundingAbility / 75) * minuteFactor * (0.8 + Math.random() * 0.4);
+  const rpgBase = position === 'C' ? 8.5 : (position === 'PF' ? 7.0 : (position === 'SF' ? 4.5 : 3.0));
+  let rpg = rpgBase * (attributes.Rebounding / 80) * minuteFactor * (0.8 + Math.random() * 0.4);
 
-  const spgBase = position === 'PG' ? 1.5 : (position === 'SG' ? 1.2 : (position === 'SF' ? 1.0 : 0.6));
-  const stealAbility = (attributes.Defense * 0.5) + (attributes.Speed * 0.3) + (attributes.IQ * 0.2);
-  let spg = spgBase * (stealAbility / 75) * minuteFactor * (0.8 + Math.random() * 0.4);
-
-  const bpgBase = position === 'C' ? 2.0 : (position === 'PF' ? 1.4 : (position === 'SF' ? 0.6 : 0.2));
-  const blockAbility = (attributes.Defense * 0.5) + (attributes.Athleticism * 0.3) + (attributes.IQ * 0.2);
-  let bpg = bpgBase * (blockAbility / 75) * minuteFactor * (0.8 + Math.random() * 0.4);
-
-  const tovBase = position === 'PG' ? 3.0 : (position === 'SG' ? 2.5 : (position === 'SF' ? 2.0 : 1.5));
-  let tov = tovBase * (1 - (attributes.IQ * 0.01)) * minuteFactor * (usageRate * 0.3) * (0.8 + Math.random() * 0.4);
+  // Redutor posicional estrito aplicado aos roubos de bola
+  const spgBase = position === 'PG' ? 1.8 : (position === 'SG' ? 1.4 : (position === 'SF' ? 1.1 : (position === 'PF' ? 0.8 : 0.6)));
+  let spg = spgBase * ((attributes.Speed + attributes.Defense) / 160) * minuteFactor * (0.8 + Math.random() * 0.4);
+  
+  const bpgBase = position === 'C' ? 2.2 : (position === 'PF' ? 1.4 : (position === 'SF' ? 0.6 : 0.2));
+  let bpg = bpgBase * (attributes.Athleticism / 85) * minuteFactor * (0.8 + Math.random() * 0.4);
+  
+  // TOV balanceado: estrelas de alto volume (Usage) cometem de 2.0 a 4.0 turnovers
+  let tovBase = usageRate * 0.14;
+  let tov = tovBase - (attributes.IQ * 0.01) + (Math.random() * 1.5);
 
   let fgPct = 42 + (attributes.Shooting * 0.15) + (attributes.IQ * 0.08) - (usageRate * 0.2) + (Math.random() * 4 - 2);
   let fg3Pct = 25 + (attributes.Shooting * 0.22) + (attributes.IQ * 0.05) + (Math.random() * 6 - 3);
