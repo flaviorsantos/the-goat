@@ -25,9 +25,14 @@ export function calculateGoatScore(totals: CareerTotals, awardsCount: [string, n
     return found ? found[1] : 0;
   };
 
-  rawScore += getCount('MVP') * 3;
-  rawScore += getCount('Finals MVP') * 2;
-  rawScore += getCount('DPOY') * 2;
+  const mvps = getCount('MVP');
+  const dpoys = getCount('DPOY');
+  const fmvps = getCount('Finals MVP');
+
+  rawScore += Math.min(mvps * 3, 15);
+  rawScore += Math.min(fmvps * 2, 10);
+  rawScore += Math.min(dpoys * 1.5, 7.5); 
+  
   rawScore += getCount('All-NBA 1st Team') * 1.5;
   rawScore += getCount('All-NBA Team') * 0.5;
   rawScore += getCount('All-Defense 1st Team') * 1;

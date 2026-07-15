@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useGameEngine } from './composables/useGameEngine';
 import { useDraft } from './composables/useDraft';
 import { calculateGoatScore } from './utils/careerEvaluator';
 import { runStressTest } from './utils/stressTest';
-import type { Position, Difficulty, GameMode } from './types';
+import type { Position, Difficulty } from './types';
 
 // Motor do Jogo
 const { 
@@ -47,7 +47,6 @@ const inputPosition = ref<Position | ''>('');
 const inputNationality = ref('');
 const inputJersey = ref<number | ''>('');
 const selectedDifficulty = ref<Difficulty>('amateur');
-const selectedMode = ref<GameMode>('fast');
 const draftPickResult = ref(60);
 const pastCareers = ref<any[]>([]);
 
@@ -86,11 +85,6 @@ const newsFeed = computed(() => {
   if (lastSeason.value.awards?.includes('MVP')) news.push(`${player.value.name} named the Most Valuable Player!`);
   
   return news;
-});
-
-const sortedStandings = computed(() => {
-  if (!leagueTeams.value) return [];
-  return [...leagueTeams.value].sort((a, b) => (b.baseOvr + (b.momentum || 0)) - (a.baseOvr + (a.momentum || 0))).slice(0, 15);
 });
 
 const formattedTimeline = computed(() => {
@@ -153,7 +147,9 @@ const nationalities = [
   { code: 'SI', name: 'Slovenia' }, { code: 'FR', name: 'France' },
   { code: 'CA', name: 'Canada' }, { code: 'AU', name: 'Australia' },
   { code: 'ES', name: 'Spain' }, { code: 'GR', name: 'Greece' },
-  { code: 'DE', name: 'Germany' }, { code: 'BR', name: 'Brazil' }
+  { code: 'DE', name: 'Germany' }, { code: 'BR', name: 'Brazil' },
+  { code: 'IT', name: 'Italy' }, { code: 'HR', name: 'Croatia' },
+  { code: 'LT', name: 'Lithuania' }, { code: 'AR', name: 'Argentina' }
 ];
 
 const positions = [
@@ -162,17 +158,49 @@ const positions = [
   { code: 'C', name: 'Center' }
 ];
 
-// Otimizado: Gera automaticamente o array de números das camisas (0 a 99)
-const jerseyOptions = Array.from({ length: 100 }, (_, i) => i);
+const easternTeams = computed(() => {
+  if (!leagueTeams.value) return [];
+  const eastIds = ['BOS','NYK','PHI','MIL','CLE','IND','MIA','ORL','CHI','ATL','BKN','TOR','CHA','WAS','DET'];
+  return leagueTeams.value
+    .filter((t: { id: string; }) => eastIds.includes(t.id))
+    .sort((a: { wins: any; }, b: { wins: any; }) => (b.wins || 0) - (a.wins || 0));
+});
 
+const westernTeams = computed(() => {
+  if (!leagueTeams.value) return [];
+  const westIds = ['DEN','OKC','MIN','LAC','DAL','PHX','LAL','NOP','SAC','GSW','HOU','UTA','MEM','SAS','POR'];
+  return leagueTeams.value
+    .filter((t: { id: string; }) => westIds.includes(t.id) || !['BOS','NYK','PHI','MIL','CLE','IND','MIA','ORL','CHI','ATL','BKN','TOR','CHA','WAS','DET'].includes(t.id))
+    .sort((a: { wins: any; }, b: { wins: any; }) => (b.wins || 0) - (a.wins || 0));
+});
 
 // --- AÇÕES DO JOGO ---
 
 const startDraftSteal = () => {
   if (!inputName.value || !inputPosition.value || !inputNationality.value || inputJersey.value === '') return;
+  
+  localStorage.setItem('the_goat_last_setup', JSON.stringify({
+    name: inputName.value,
+    position: inputPosition.value,
+    nationality: inputNationality.value,
+    jersey: inputJersey.value
+  }));
+  
   currentPhase.value = 'draft-steal';
   drawRandomPlayer();
 };
+
+const bestSeasonNumber = computed(() => {
+  if (history.value.length === 0) return -1;
+  let best = history.value[0];
+  let maxScore = 0;
+  history.value.forEach(s => {
+    // Cálculo simples de impacto: Produção + Prêmios
+    const score = s.ppg + s.apg + s.rpg + (s.wonRing ? 10 : 0) + (s.awards?.includes('MVP') ? 15 : 0);
+    if (score > maxScore) { maxScore = score; best = s; }
+  });
+  return best.seasonNumber;
+});
 
 const processDraftDay = () => {
   const peakAttributes = { ...myAttributes.value } as any;
@@ -187,8 +215,7 @@ const processDraftDay = () => {
     inputPosition.value as Position, 
     inputNationality.value, 
     inputJersey.value as number, 
-    selectedDifficulty.value, 
-    selectedMode.value
+    selectedDifficulty.value
   );
   
   // Correção: Atualização das propriedades da ref `player` usando `.value`
@@ -213,10 +240,6 @@ const viewLegacy = () => { currentPhase.value = 'retired'; };
 const resetGame = () => {
   pastCareers.value = JSON.parse(localStorage.getItem('the_goat_past_careers') || '[]');
   resetDraft();
-  inputName.value = '';
-  inputPosition.value = '';
-  inputNationality.value = '';
-  inputJersey.value = '';
   currentPhase.value = 'setup';
 };
 
@@ -227,6 +250,23 @@ const retireManual = () => {
     forceRetirement();
   }
 };
+
+onMounted(() => {
+  pastCareers.value = JSON.parse(localStorage.getItem('the_goat_past_careers') || '[]');
+  const lastSetup = JSON.parse(localStorage.getItem('the_goat_last_setup') || '{}');
+  if (lastSetup.name) {
+    inputName.value = lastSetup.name;
+    inputPosition.value = lastSetup.position;
+    inputNationality.value = lastSetup.nationality;
+    inputJersey.value = lastSetup.jersey;
+  }
+});
+
+watch(() => isDraftComplete.value, (newVal) => {
+  if (newVal) {
+    setTimeout(() => { processDraftDay(); }, 600); // 600ms para feedback visual da última escolha
+  }
+});
 </script>
 
 <template>
@@ -255,16 +295,15 @@ const retireManual = () => {
           <!-- Nacionalidade -->
           <div>
             <label class="block text-xl font-black text-white mb-4 uppercase">Nationality</label>
-            <div class="grid grid-cols-5 gap-3">
+            <div class="grid grid-cols-7 gap-2">
               <button 
                 v-for="nat in nationalities" 
                 :key="nat.code"
                 @click="inputNationality = nat.code"
                 :class="inputNationality === nat.code ? 'bg-yellow-500 text-black border-yellow-500' : 'bg-[#0a0a0a] border-gray-800 text-gray-400 hover:border-gray-500'"
-                class="border rounded-lg py-4 flex flex-col items-center justify-center transition-colors"
+                class="border rounded py-2 flex flex-col items-center justify-center transition-colors"
               >
-                <span class="font-black text-lg">{{ nat.code }}</span>
-                <span class="text-[10px] uppercase font-bold opacity-80">{{ nat.name }}</span>
+                <span class="font-black text-sm">{{ nat.code }}</span>
               </button>
             </div>
           </div>
@@ -289,43 +328,16 @@ const retireManual = () => {
           <!-- Número da Camisa -->
           <div>
             <label class="block text-xl font-black text-white mb-4 uppercase">Jersey Number</label>
-            <div class="flex flex-wrap gap-2">
-              <button 
-                v-for="num in jerseyOptions" 
-                :key="num"
-                @click="inputJersey = num"
-                :class="inputJersey === num ? 'bg-yellow-500 text-black border-yellow-500' : 'bg-[#0a0a0a] border-gray-800 text-gray-400 hover:border-gray-500'"
-                class="border rounded-lg w-12 h-12 flex items-center justify-center font-black text-lg transition-colors"
-              >
-                {{ num }}
-              </button>
-            </div>
+            <input 
+              v-model="inputJersey" 
+              type="number" min="0" max="99" 
+              class="w-32 bg-[#0a0a0a] border border-gray-800 rounded-lg px-6 py-4 text-2xl text-center text-white font-black focus:outline-none focus:border-yellow-500 transition-colors" 
+              placeholder="0-99" 
+            />
           </div>
 
           <!-- Modos de Jogo e Dificuldade -->
           <div class="space-y-6 pt-6 border-t border-gray-800">
-            <div>
-              <label class="block text-sm font-bold text-gray-500 mb-3 uppercase tracking-widest">Pacing Mode</label>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <button 
-                  @click="selectedMode = 'fast'"
-                  :class="selectedMode === 'fast' ? 'border-yellow-500 bg-[#12120a]' : 'border-gray-800 bg-[#0a0a0a]'"
-                  class="border p-5 rounded-lg text-left transition-colors"
-                >
-                  <p class="font-black text-white text-lg uppercase mb-1" :class="selectedMode === 'fast' ? 'text-yellow-500' : ''">Fast Mode <span v-if="selectedMode === 'fast'" class="text-yellow-500 text-xs ml-1">●</span></p>
-                  <p class="text-xs text-gray-400 font-bold">Simulates the entire season with one click. The classic flow.</p>
-                </button>
-                <button 
-                  @click="selectedMode = 'full'"
-                  :class="selectedMode === 'full' ? 'border-yellow-500 bg-[#12120a]' : 'border-gray-800 bg-[#0a0a0a]'"
-                  class="border p-5 rounded-lg text-left transition-colors relative overflow-hidden"
-                >
-                  <p class="font-black text-white text-lg uppercase mb-1" :class="selectedMode === 'full' ? 'text-yellow-500' : ''">Full Simulation <span class="bg-yellow-500/20 text-yellow-500 text-[9px] px-2 py-0.5 rounded ml-2">BETA</span></p>
-                  <p class="text-xs text-gray-400 font-bold">Live week by week. Playoff games simulated one by one.</p>
-                </button>
-              </div>
-            </div>
-
             <div>
               <label class="block text-sm font-bold text-gray-500 mb-3 uppercase tracking-widest">Difficulty</label>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -349,13 +361,15 @@ const retireManual = () => {
             </div>
           </div>
 
-          <button 
-            @click="startDraftSteal" 
-            :disabled="!inputName || !inputPosition || !inputNationality || inputJersey === ''"
-            class="w-full lg:w-auto bg-yellow-500 text-black font-black py-5 px-12 rounded-full hover:bg-yellow-400 uppercase tracking-widest transition-colors disabled:opacity-30 disabled:cursor-not-allowed mt-8 text-xl"
-          >
-            Start Draft
-          </button>
+          <div class="text-center mt-12">
+            <button 
+              @click="startDraftSteal" 
+              :disabled="!inputName || !inputPosition || !inputNationality || inputJersey === ''"
+              class="mx-auto bg-yellow-500 text-black font-black py-5 px-16 rounded-full hover:bg-yellow-400 uppercase tracking-widest transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-xl shadow-lg"
+            >
+              Start Draft
+            </button>
+          </div>
 
           <!-- Debug Button (Posicionado discretamente no canto) -->
           <button 
@@ -395,54 +409,55 @@ const retireManual = () => {
       <!-- FASE 2: DRAFT STEAL -->
       <section v-if="currentPhase === 'draft-steal'" class="max-w-4xl mx-auto pb-12">
         <!-- Status Bar -->
-        <div class="flex justify-between items-center mb-6 text-gray-500 text-xs font-bold uppercase tracking-widest border-b border-gray-800 pb-4">
-          <span>Filled Slots {{ Object.keys(myAttributes).length }}/9</span>
-          <span class="text-yellow-500">{{ inputPosition }} · {{ selectedDifficulty }}</span>
+        <div class="flex justify-between items-center mb-6 border-b border-gray-800 pb-4">
+          <div class="text-gray-500 text-xs font-bold uppercase tracking-widest">
+            <span>Filled Slots {{ Object.values(myAttributes).filter(v => v > 0).length }}/9</span>
+            <span class="text-yellow-500 ml-2">{{ inputPosition }} · {{ selectedDifficulty }}</span>
+          </div>
+          
+          <button 
+            v-if="selectedDifficulty === 'amateur'"
+            @click="useReroll"
+            :disabled="!hasReroll"
+            class="border border-yellow-500 text-yellow-500 font-black py-2 px-6 rounded-full hover:bg-yellow-500 hover:text-black uppercase text-[10px] tracking-widest transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            Blind Reroll ({{ hasReroll ? '1' : '0' }})
+          </button>
+          <div v-else class="text-gray-600 text-[10px] uppercase font-black tracking-widest px-4 py-2 bg-gray-900 rounded-full">
+            Pro Mode: No rerolls
+          </div>
         </div>
 
         <!-- Banner da Lenda Atual -->
-        <div class="bg-[#0a0a0a] border border-gray-800 rounded-xl p-10 mb-8 text-center relative overflow-hidden shadow-2xl">
+        <div class="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6 mb-6 text-center relative overflow-hidden shadow-2xl">
           <div class="absolute inset-0 bg-yellow-900/5 blur-3xl z-0"></div>
           <div class="relative z-10">
-            <p class="text-yellow-600 font-black text-[10px] uppercase tracking-[0.3em] mb-3">Current Legend</p>
-            <h2 class="text-5xl font-black text-white uppercase tracking-tight">{{ currentDrawnPlayer?.name }}</h2>
-            <p class="text-gray-500 text-sm mt-3 font-bold uppercase tracking-widest">{{ currentDrawnPlayer?.position }} · {{ currentOVR }} OVR</p>
+            <p class="text-yellow-600 font-black text-[9px] uppercase tracking-[0.3em] mb-2">Current Legend</p>
+            <h2 class="text-3xl font-black text-white uppercase tracking-tight">{{ currentDrawnPlayer?.name }}</h2>
+            <p class="text-gray-500 text-xs mt-1 font-bold uppercase tracking-widest">{{ currentDrawnPlayer?.position }} · {{ currentOVR }} OVR</p>
           </div>
         </div>
 
         <!-- Grid de Atributos -->
-        <div v-if="!isDraftComplete">
-        <div class="mb-4 flex justify-between items-end">
-          <p class="text-white font-black uppercase text-sm tracking-wide">Choose 1 attribute to steal</p>
-          <p class="text-gray-500 font-bold text-xs uppercase">Remaining: {{ 9 - Object.values(myAttributes).filter(v => v > 0).length }}</p>
+        <div class="grid grid-cols-3 gap-2 mb-6">
+          <button 
+            v-for="slot in availableSlots" 
+            :key="slot"
+            @click="selectAttribute(slot)"
+            :disabled="myAttributes[slot] > 0"
+            :class="myAttributes[slot] > 0 ? 'opacity-20 cursor-not-allowed border-gray-900' : 'hover:border-yellow-500'"
+            class="bg-[#0a0a0a] border border-gray-800 rounded-lg p-4 flex flex-col items-center justify-center transition-all group"
+          >
+            <span :class="myAttributes[slot] > 0 ? 'line-through text-gray-700' : 'text-gray-500 group-hover:text-yellow-500'" class="text-[9px] font-bold uppercase tracking-widest mb-1 transition-colors">
+              {{ slot }}
+            </span>
+            <template v-if="myAttributes[slot] === 0">
+              <span v-if="selectedDifficulty === 'amateur'" class="text-xl font-black text-white">{{ currentDrawnPlayer?.attributes[slot] }}</span>
+              <span v-else class="text-xl font-black text-gray-700 tracking-widest">???</span>
+            </template>
+            <span v-else class="text-[10px] font-black text-yellow-500 mt-1">SELECTED</span>
+          </button>
         </div>
-
-          <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-8">
-            <button 
-              v-for="slot in availableSlots" 
-              :key="slot"
-              @click="selectAttribute(slot)"
-              :disabled="myAttributes[slot] > 0"
-              :class="myAttributes[slot] > 0 ? 'opacity-20 cursor-not-allowed border-gray-900' : 'hover:border-yellow-500'"
-              class="bg-[#0a0a0a] border border-gray-800 rounded-lg p-6 flex flex-col items-center justify-center transition-all group"
-            >
-              <span 
-                :class="myAttributes[slot] > 0 ? 'line-through text-gray-700' : 'text-gray-500 group-hover:text-yellow-500'" 
-                class="text-[11px] font-bold uppercase tracking-widest mb-2 transition-colors"
-              >
-                {{ slot }}
-              </span>
-              
-              <!-- Condição de Dificuldade -->
-              <template v-if="myAttributes[slot] === 0">
-                <span v-if="selectedDifficulty === 'amateur'" class="text-3xl font-black text-white">
-                  {{ currentDrawnPlayer?.attributes[slot] }}
-                </span>
-                <span v-else class="text-3xl font-black text-gray-700 tracking-widest">???</span>
-              </template>
-              <span v-else class="text-sm font-black text-yellow-500">SELECTED</span>
-            </button>
-          </div>
 
           <!-- Painel: Seu Jogador (Slots Fixos) -->
           <div class="mt-12 border-t border-gray-800 pt-8">
@@ -472,34 +487,6 @@ const retireManual = () => {
               </div>
             </div>
           </div>
-
-          <!-- Controles Inferiores (Reroll) -->
-          <div class="flex justify-between items-center border-t border-gray-800 pt-6">
-            <button 
-              v-if="selectedDifficulty === 'amateur'"
-              @click="useReroll"
-              :disabled="!hasReroll"
-              class="border border-yellow-500 text-yellow-500 font-black py-3 px-8 rounded-full hover:bg-yellow-500 hover:text-black uppercase text-[10px] tracking-widest transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-yellow-500"
-            >
-              Blind Reroll ({{ hasReroll ? '1' : '0' }})
-            </button>
-            <div v-else class="text-gray-600 text-[10px] uppercase font-black tracking-widest px-4 py-2 bg-gray-900 rounded-full">
-              Pro Mode: No rerolls
-            </div>
-          </div>
-        </div>
-
-
-
-        <!-- Botão de Avanço (Aparece ao terminar) -->
-        <div v-else class="mt-12 text-center animate-fade-in">
-          <button 
-            @click="processDraftDay"
-            class="bg-yellow-500 text-black font-black py-5 px-12 rounded-full hover:bg-yellow-400 uppercase tracking-widest transition-colors text-xl w-full"
-          >
-            Enter The League
-          </button>
-        </div>
       </section>
 
       <!-- FASE 3: DRAFT DAY REVEAL (Adaptado ao Dark Mode) -->
@@ -694,18 +681,36 @@ const retireManual = () => {
 
           </div>
 
-          <!-- COLUNA DIREITA: Standings -->
-          <div class="lg:col-span-3">
-            <div class="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6 h-full">
-              <h4 class="text-white font-black uppercase tracking-widest text-sm mb-4 border-b border-gray-800 pb-2">League Power Ranking</h4>
-              <div class="space-y-3">
-                <div v-for="(team, index) in sortedStandings" :key="team.id" class="flex justify-between items-center text-sm">
-                  <div class="flex items-center gap-3">
-                    <span class="text-gray-600 font-bold text-xs w-4">{{ index + 1 }}</span>
-                    <span :class="team.id === player.teamId ? 'text-yellow-500 font-black' : 'text-gray-300 font-bold'">{{ team.id }}</span>
-                  </div>
-                  <span class="text-gray-500 text-xs">{{ team.baseOvr + (team.momentum || 0) }} OVR</span>
+          <div class="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6 h-full flex flex-col">
+            <h4 class="text-white font-black uppercase tracking-widest text-sm mb-4 border-b border-gray-800 pb-2">League Standings</h4>
+            
+            <!-- Correção visual: Substituição do grid-cols-2 por empilhamento vertical (space-y-4) -->
+            <div class="space-y-4 flex-1">
+              <div>
+                <p class="text-gray-500 text-[9px] font-bold uppercase tracking-widest mb-3">Eastern</p>
+                <div v-for="(team, idx) in easternTeams" :key="team.id" class="flex justify-between items-center text-[10px] mb-1.5">
+                  <span class="flex gap-2"><span class="text-gray-600 font-bold w-3">{{ (idx as number) + 1 }}</span><span :class="team.id === player.teamId ? 'text-yellow-500 font-black' : 'text-gray-300'">{{ team.id }}</span></span>
+                  <span class="text-gray-500 font-mono">{{ team.wins }}-{{ team.losses }}</span>
                 </div>
+              </div>
+              
+              <div class="pt-2 border-t border-gray-800/50">
+                <p class="text-gray-500 text-[9px] font-bold uppercase tracking-widest mb-3">Western</p>
+                <div v-for="(team, idx) in westernTeams" :key="team.id" class="flex justify-between items-center text-[10px] mb-1.5">
+                  <span class="flex gap-2"><span class="text-gray-600 font-bold w-3">{{ (idx as number) + 1 }}</span><span :class="team.id === player.teamId ? 'text-yellow-500 font-black' : 'text-gray-300'">{{ team.id }}</span></span>
+                  <span class="text-gray-500 font-mono">{{ team.wins }}-{{ team.losses }}</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Active League Awards -->
+            <div v-if="lastSeason && lastSeason.leagueAwards" class="mt-4 border-t border-gray-800 pt-4">
+              <p class="text-gray-500 text-[9px] font-bold uppercase tracking-widest mb-2">Season Leaders</p>
+              <div class="space-y-1.5 text-[10px]">
+                <div class="flex justify-between"><span class="text-gray-400 font-bold">MVP</span> <span class="text-yellow-500 font-black">{{ lastSeason.leagueAwards.MVP }}</span></div>
+                <div class="flex justify-between"><span class="text-gray-400 font-bold">DPOY</span> <span class="text-white font-black">{{ lastSeason.leagueAwards.DPOY }}</span></div>
+                <div class="flex justify-between"><span class="text-gray-400 font-bold">SMOTY</span> <span class="text-white font-black">{{ lastSeason.leagueAwards.SMOTY }}</span></div>
+                <div v-if="lastSeason.playoffs?.wonRing" class="flex justify-between"><span class="text-gray-400 font-bold">FMVP</span> <span class="text-white font-black">{{ lastSeason.leagueAwards.FMVP }}</span></div>
               </div>
             </div>
           </div>
@@ -735,14 +740,14 @@ const retireManual = () => {
           <div>
             <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-3">Career Numbers</p>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div class="bg-[#0a0a0a] border border-gray-800 p-6 rounded-lg text-center">
-                <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">Games</p>
-                <p class="text-3xl font-black text-white">{{ history.length > 0 ? history.length : 0 }}</p>
-              </div>
               <div class="bg-[#0a0a0a] border border-yellow-500/30 p-6 rounded-lg text-center relative overflow-hidden">
                 <div class="absolute inset-0 bg-yellow-500/5"></div>
                 <p class="text-yellow-600 text-[10px] font-bold uppercase tracking-widest mb-1 relative z-10">Points</p>
                 <p class="text-3xl font-black text-yellow-500 relative z-10">{{ careerTotals.totalPoints }}</p>
+              </div>
+              <div class="bg-[#0a0a0a] border border-gray-800 p-6 rounded-lg text-center">
+                <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">Rebounds</p>
+                <p class="text-3xl font-black text-white">{{ careerTotals.totalRebounds }}</p>
               </div>
               <div class="bg-[#0a0a0a] border border-gray-800 p-6 rounded-lg text-center">
                 <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">Assists</p>
@@ -812,7 +817,7 @@ const retireManual = () => {
 
             <div class="space-y-5">
               <!-- Barra de Pontos -->
-              <div>
+              <div class="mt-4">
                 <div class="flex justify-between text-xs font-bold uppercase tracking-widest mb-2">
                   <span class="text-white">Career Points</span>
                   <span class="text-gray-500"><span class="text-yellow-500">{{ careerTotals.totalPoints }}</span> / {{ nbaRecords.points }} (LeBron)</span>
@@ -823,7 +828,7 @@ const retireManual = () => {
               </div>
 
               <!-- Barra de Assistências -->
-              <div>
+              <div class="mt-4">
                 <div class="flex justify-between text-xs font-bold uppercase tracking-widest mb-2">
                   <span class="text-white">Career Assists</span>
                   <span class="text-gray-500"><span class="text-green-500">{{ careerTotals.totalAssists }}</span> / {{ nbaRecords.assists }} (Stockton)</span>
@@ -834,7 +839,7 @@ const retireManual = () => {
               </div>
 
               <!-- Barra de Rebotes -->
-              <div>
+              <div class="mt-4">
                 <div class="flex justify-between text-xs font-bold uppercase tracking-widest mb-2">
                   <span class="text-white">Career Rebounds</span>
                   <span class="text-gray-500"><span class="text-blue-500">{{ careerTotals.totalRebounds }}</span> / {{ nbaRecords.rebounds }} (Wilt)</span>
@@ -845,40 +850,34 @@ const retireManual = () => {
               </div>
 
               <!-- Barra de Steals -->
-              <div>
+              <div class="mt-4">
                 <div class="flex justify-between text-xs font-bold uppercase tracking-widest mb-2">
                   <span class="text-white">Career Steals</span>
-                  <span class="text-gray-500"><span class="text-purple-500">{{ careerTotals.totalSteals }}</span> / {{ nbaRecords.steals }} (Harden)</span>
+                  <span class="text-gray-500"><span class="text-purple-500">{{ careerTotals.totalSteals || 0 }}</span> / {{ nbaRecords.steals }}</span>
                 </div>
-                <div class="w-full bg-gray-900 rounded-full h-1.5">
-                  <div class="bg-purple-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(careerTotals.totalSteals, nbaRecords.steals)}%`"></div>
-                </div>
+                <div class="w-full bg-gray-900 rounded-full h-1.5"><div class="bg-purple-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(careerTotals.totalSteals || 0, nbaRecords.steals)}%`"></div></div>
               </div>
 
               <!-- Barra de Blocks -->
-              <div>
+              <div class="mt-4">
                 <div class="flex justify-between text-xs font-bold uppercase tracking-widest mb-2">
                   <span class="text-white">Career Blocks</span>
-                  <span class="text-gray-500"><span class="text-red-500">{{ careerTotals.totalBlocks }}</span> / {{ nbaRecords.blocks }} (Hakeem)</span>
+                  <span class="text-gray-500"><span class="text-red-500">{{ careerTotals.totalBlocks || 0 }}</span> / {{ nbaRecords.blocks }}</span>
                 </div>
-                <div class="w-full bg-gray-900 rounded-full h-1.5">
-                  <div class="bg-red-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(careerTotals.totalBlocks, nbaRecords.blocks)}%`"></div>
-                </div>
+                <div class="w-full bg-gray-900 rounded-full h-1.5"><div class="bg-red-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(careerTotals.totalBlocks || 0, nbaRecords.blocks)}%`"></div></div>
               </div>
 
               <!-- Barra de MVPs -->
-              <div>
+              <div class="mt-4">
                 <div class="flex justify-between text-xs font-bold uppercase tracking-widest mb-2">
                   <span class="text-white">MVP Awards</span>
-                  <span class="text-gray-500"><span class="text-yellow-500">{{ trophyCabinet['MVP'] || 0 }}</span> / {{ nbaRecords.mvps }} (Russell)</span>
+                  <span class="text-gray-500"><span class="text-yellow-500">{{ trophyCabinet['MVP'] || 0 }}</span> / {{ nbaRecords.mvps }}</span>
                 </div>
-                <div class="w-full bg-gray-900 rounded-full h-1.5">
-                  <div class="bg-yellow-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(trophyCabinet['MVP'] || 0, nbaRecords.mvps)}%`"></div>
-                </div>
+                <div class="w-full bg-gray-900 rounded-full h-1.5"><div class="bg-yellow-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(trophyCabinet['MVP'] || 0, nbaRecords.mvps)}%`"></div></div>
               </div>
-              
+
               <!-- Barra de Títulos -->
-              <div>
+              <div class="mt-4">
                 <div class="flex justify-between text-xs font-bold uppercase tracking-widest mb-2">
                   <span class="text-white">Championships</span>
                   <span class="text-gray-500"><span class="text-purple-500">{{ trophyCabinet['Rings'] || 0 }}</span> / {{ nbaRecords.rings }} (Russell)</span>
@@ -887,61 +886,53 @@ const retireManual = () => {
                   <div class="bg-purple-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(trophyCabinet['Rings'] || 0, nbaRecords.rings)}%`"></div>
                 </div>
               </div>
+
+              <div class="mt-4">
+                <div class="flex justify-between text-xs font-bold uppercase tracking-widest mb-2">
+                  <span class="text-white">DPOY Awards</span>
+                  <span class="text-gray-500"><span class="text-blue-500">{{ trophyCabinet['DPOY'] || 0 }}</span> / 4 (Mutombo/Wallace)</span>
+                </div>
+                <div class="w-full bg-gray-900 rounded-full h-1.5"><div class="bg-blue-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(trophyCabinet['DPOY'] || 0, 4)}%`"></div></div>
+              </div>
             </div>
           </div>
 
           <!-- Tabela de Histórico (Year-by-Year) -->
           <div class="mt-8 mb-12">
             <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-3">Year-by-Year Stats</p>
-            <div class="bg-[#0a0a0a] border border-gray-800 rounded-xl overflow-hidden overflow-x-auto">
-              <table class="w-full text-left border-collapse min-w-250">
+            <div class="bg-[#0a0a0a] border border-gray-800 rounded-xl overflow-hidden">
+              <table class="w-full text-left border-collapse table-fixed whitespace-nowrap">
                 <thead>
-                  <tr class="bg-gray-900/50 border-b border-gray-800 text-[10px] text-gray-500 uppercase tracking-widest font-black">
-                    <th class="p-4">Season</th>
-                    <th class="p-4">Team</th>
-                    <th class="p-4">Age</th>
-                    <th class="p-4">OVR</th>
-                    <th class="p-4">MPG</th>
-                    <th class="p-4">PTS</th>
-                    <th class="p-4">REB</th>
-                    <th class="p-4">AST</th>
-                    <th class="p-4">STL</th>
-                    <th class="p-4">BLK</th>
-                    <th class="p-4">TOV</th>
-                    <th class="p-4">FG%</th>
-                    <th class="p-4">3P%</th>
-                    <th class="p-4">FT%</th>
-                    <th class="p-4">+/-</th>
-                    <th class="p-4 text-center">Playoffs</th>
-                    <th class="p-4">Awards</th>
+                  <tr class="bg-gray-900/50 border-b border-gray-800 text-[9px] text-gray-500 uppercase tracking-widest font-black">
+                    <th class="py-2 px-2 w-8 text-center">Yr</th>
+                    <th class="py-2 px-2 w-10 text-center">Tm</th>
+                    <th class="py-2 px-2 w-8 text-center">Ag</th>
+                    <th class="py-2 px-2 w-8 text-center">OV</th>
+                    <th class="py-2 px-2 w-10 text-center">PTS</th>
+                    <th class="py-2 px-2 w-10 text-center">REB</th>
+                    <th class="py-2 px-2 w-10 text-center">AST</th>
+                    <th class="py-2 px-2 w-10 text-center">STL</th>
+                    <th class="py-2 px-2 w-10 text-center">BLK</th>
+                    <th class="py-2 px-2 w-10 text-center">TOV</th>
+                    <th class="py-2 px-2 text-left">AWARDS & NOTES</th>
                   </tr>
                 </thead>
-                <tbody class="text-sm font-bold text-gray-300">
-                  <tr v-for="season in history" :key="season.seasonNumber" class="border-b border-gray-800/50 hover:bg-gray-900/20 transition-colors">
-                    <td class="p-4 text-gray-500">{{ season.seasonNumber }}</td>
-                    <td class="p-4 text-white font-black">{{ season.teamId }}</td>
-                    <td class="p-4">{{ season.age }}</td>
-                    <td class="p-4 text-yellow-500">{{ season.ovr }}</td>
-                    <td class="p-4 text-gray-400">{{ season.mpg }}</td>
-                    <td class="p-4 text-white">{{ season.ppg }}</td>
-                    <td class="p-4">{{ season.rpg }}</td>
-                    <td class="p-4">{{ season.apg }}</td>
-                    <td class="p-4">{{ season.spg }}</td>
-                    <td class="p-4">{{ season.bpg }}</td>
-                    <td class="p-4">{{ season.tov }}</td>
-                    <td class="p-4 text-gray-500">{{ season.fgPct }}%</td>
-                    <td class="p-4 text-gray-500">{{ season.fg3Pct }}%</td>
-                    <td class="p-4 text-gray-500">{{ season.ftPct }}%</td>
-                    <td class="p-4" :class="season.plusMinus > 0 ? 'text-green-500' : 'text-red-500'">{{ season.plusMinus > 0 ? '+' : '' }}{{ season.plusMinus }}</td>
-                    <td class="p-4 text-center text-[10px] uppercase tracking-widest font-black" :class="season.wonRing ? 'text-yellow-500' : (season.playoffs.madePlayoffs ? 'text-gray-500' : 'text-red-900/50')">
-                      {{ season.wonRing ? '🏆 Champion' : (season.playoffs.madePlayoffs ? season.playoffs.eliminatedIn : 'Missed') }}
-                    </td>
-                    <td class="p-4 text-[10px] text-yellow-600 uppercase tracking-widest font-black">
-                      <div class="flex flex-wrap gap-1">
-                        <span v-for="award in season.awards" :key="award" class="bg-yellow-500/10 border border-yellow-500/20 px-1.5 py-0.5 rounded">
-                          {{ award }}
-                        </span>
-                      </div>
+                <tbody class="text-[10px] font-bold text-gray-300 font-mono">
+                  <tr v-for="season in history" :key="season.seasonNumber" 
+                      :class="season.seasonNumber === bestSeasonNumber ? 'bg-yellow-500/10 border-l-2 border-yellow-500' : 'border-b border-gray-800/50 hover:bg-gray-900/20'"
+                      class="transition-colors h-8">
+                    <td class="py-1 px-2 text-center text-gray-500">{{ season.seasonNumber }}</td>
+                    <td class="py-1 px-2 text-center text-white font-black font-sans">{{ season.teamId }}</td>
+                    <td class="py-1 px-2 text-center">{{ season.age }}</td>
+                    <td class="py-1 px-2 text-center text-yellow-500">{{ season.ovr }}</td>
+                    <td class="py-1 px-2 text-center text-white">{{ season.ppg }}</td>
+                    <td class="py-1 px-2 text-center">{{ season.rpg }}</td>
+                    <td class="py-1 px-2 text-center">{{ season.apg }}</td>
+                    <td class="py-1 px-2 text-center">{{ season.spg }}</td>
+                    <td class="py-1 px-2 text-center">{{ season.bpg }}</td>
+                    <td class="py-1 px-2 text-center">{{ season.tov }}</td>
+                    <td class="py-1 px-2 truncate text-yellow-600 font-sans tracking-widest text-[8px] uppercase">
+                      {{ season.wonRing ? '🏆 RING ' : '' }} {{ season.awards.join(' ') }}
                     </td>
                   </tr>
                 </tbody>
@@ -949,13 +940,26 @@ const retireManual = () => {
             </div>
           </div>
 
-          <!-- Ações Finais -->
-          <div class="pt-8 text-center flex justify-center gap-4">
-            <button @click="resetGame" class="bg-[#0a0a0a] border border-gray-800 hover:border-yellow-500 text-white font-black py-4 px-8 rounded-full transition-colors uppercase tracking-widest text-sm">
+          <!-- Atributos Originais e Botão -->
+          <div class="pt-4 text-center">
+            <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-6 mb-8 inline-block max-w-3xl w-full text-left">
+              <div class="flex justify-between items-center mb-4">
+                <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Original DNA</p>
+                <p class="text-green-500 text-sm font-black uppercase tracking-widest">Career Earnings: ${{ careerTotals.totalEarnings || 0 }}M</p>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <div v-for="(source, attr) in attributeSources" :key="attr" class="bg-black border border-gray-800 px-3 py-2 rounded flex-1 min-w-25">
+                  <span class="block text-[9px] text-gray-500 uppercase">{{ attr }}</span>
+                  <span class="block text-xs text-white font-bold truncate">{{ source }}</span>
+                </div>
+              </div>
+            </div>
+            
+            <br/>
+            <button @click="resetGame" class="bg-[#0a0a0a] border border-gray-800 hover:border-yellow-500 text-white font-black py-4 px-12 rounded-full transition-colors uppercase tracking-widest text-sm mb-12">
               New Career
             </button>
           </div>
-
         </div>
       </section>
 

@@ -38,6 +38,8 @@ export function useGameEngine() {
     totalRebounds: 0,
     totalSteals: 0,
     totalBlocks: 0,
+    totalTurnovers: 0,
+    totalEarnings: 0,
     mvps: 0,
     rings: 0,
     seasonsPlayed: 0
@@ -49,18 +51,21 @@ export function useGameEngine() {
   const pendingMilestones = ref<{ title: string; subtitle: string; icon: string }[]>([]);
   const achievedMilestones = ref<Set<string>>(new Set());
 
-  const initCareer = (name: string, pos: Position, nat: string, jersey: number, _draftMode: string, gameMode: string) => {
+  const initCareer = (name: string, pos: Position, nat: string, jersey: number, _draftMode: string) => {
     player.value.name = name;
     player.value.position = pos;
     player.value.nationality = nat;
     player.value.jerseyNumber = jersey;
-    player.value.gameMode = gameMode;
     player.value.isRetired = false;
     player.value.contractYearsLeft = 4;
     player.value.careerTimeline = [];
     
     history.value = [];
-    careerTotals.value = { gamesPlayed: 0, totalPoints: 0, totalAssists: 0, totalRebounds: 0, totalSteals: 0, totalBlocks: 0, mvps: 0, rings: 0, seasonsPlayed: 0 };
+    careerTotals.value = {
+      gamesPlayed: 0, totalPoints: 0, totalAssists: 0, totalRebounds: 0,
+      totalSteals: 0, totalBlocks: 0, totalTurnovers: 0, totalEarnings: 0,
+      mvps: 0, rings: 0, seasonsPlayed: 0
+    };
     pendingMilestones.value = [];
     achievedMilestones.value = new Set();
   };
@@ -168,39 +173,35 @@ export function useGameEngine() {
     player.value.ovr = Math.round(sum);
   };
 
+  const getRandomTeam = () => {
+    const randomTeam = leagueTeams.value[Math.floor(Math.random() * leagueTeams.value.length)];
+    return randomTeam.id;
+  };
+
   const generateOffers = () => {
-    freeAgencyOffers.value = [];
-
-    if (player.value.ovr < 70 && player.value.age > 32) {
-      forceRetirement();
-      return;
-    }
+    const offers = [];
+    const numOffers = Math.floor(Math.random() * 3) + 2;
     
-    const baseSalary = player.value.ovr >= 95 ? 50 : (player.value.ovr >= 85 ? 35 : (player.value.ovr >= 75 ? 20 : 5));
-    const role = player.value.ovr >= 88 ? 'Franchise Player' : (player.value.ovr >= 78 ? 'Starter' : 'Role Player');
-    const maxYears = player.value.age >= 35 ? 1 : (player.value.age >= 32 ? 2 : 4);
-
-    freeAgencyOffers.value.push({
-      teamId: player.value.teamId,
-      years: Math.min(maxYears, Math.floor(Math.random() * 2) + 3),
-      salary: Number((baseSalary * (Math.random() * 0.1 + 0.95)).toFixed(1)),
-      role
-    });
-
-    const numOffers = Math.floor(Math.random() * 2) + 2;
-    const availableTeams = leagueTeams.value
-      .filter((t: any) => t.id !== player.value.teamId)
-      .sort(() => 0.5 - Math.random())
-      .slice(0, numOffers);
-
-    availableTeams.forEach((team: any) => {
-      freeAgencyOffers.value.push({
-        teamId: team.id,
-        years: Math.min(maxYears, Math.floor(Math.random() * 3) + 2),
-        salary: Number((baseSalary * (Math.random() * 0.3 + 0.85)).toFixed(1)),
-        role
+    for (let i = 0; i < numOffers; i++) {
+      const isExtension = i === 0 && Math.random() > 0.3;
+      const team = isExtension ? player.value.teamId : getRandomTeam();
+      
+      let maxYears = 4;
+      if (player.value.age >= 39) maxYears = 1;
+      else if (player.value.age >= 36) maxYears = 2;
+      else if (player.value.age >= 34) maxYears = 3;
+      
+      const years = Math.floor(Math.random() * maxYears) + 1;
+      const salary = Math.floor(Math.random() * (player.value.ovr > 85 ? 15 : 5)) + (player.value.ovr > 80 ? 25 : 10);
+      
+      offers.push({ 
+        teamId: team, 
+        salary, 
+        years, 
+        role: player.value.ovr > 85 ? 'Franchise Player' : 'Starter' 
       });
-    });
+    }
+    freeAgencyOffers.value = offers;
   };
 
   const acceptOffer = (offer: ContractOffer) => {
@@ -295,14 +296,20 @@ export function useGameEngine() {
   const simulateSeason = () => {
     if (player.value.isRetired) return;
 
-    const currentTeam = leagueTeams.value.find((t: any) => t.id === player.value.teamId);
-    const teamBaseOvr = currentTeam ? currentTeam.baseOvr : 75;
+    // 1. Simulação de W/L para toda a liga
+    leagueTeams.value.forEach((team: { baseOvr: number; wins: number; losses: number; }) => {
+      const winProb = (team.baseOvr - 70) / 20; 
+      let wins = Math.floor(winProb * 82) + Math.floor(Math.random() * 12 - 6);
+      team.wins = Math.max(10, Math.min(73, wins));
+      team.losses = 82 - team.wins;
+    });
 
-    const teamPower = (teamBaseOvr * 0.65) + (player.value.ovr * 0.35);
-    let regularSeasonWins = Math.floor(41 + ((teamPower - 75) * 2.5) + (Math.random() * 10 - 5));
-    regularSeasonWins = Math.max(10, Math.min(74, regularSeasonWins)); 
+    const playerTeam = leagueTeams.value.find((t: { id: any; }) => t.id === player.value.teamId);
+    const teamWins = playerTeam ? playerTeam.wins : 41;
+    const teamBaseOvr = playerTeam ? playerTeam.baseOvr : 75;
 
-    const rawStats = calculateSeasonStats(
+    // 2. Cálculo de Estatísticas e Playoffs
+    const seasonStats = calculateSeasonStats(
       player.value.attributes, 
       player.value.position, 
       player.value.ovr, 
@@ -310,48 +317,65 @@ export function useGameEngine() {
       player.value.age
     );
 
-    const playoffRun = simulatePlayoffs(player.value.ovr, teamBaseOvr, regularSeasonWins);
-
-    const isRookie = history.value.length === 0;
-    const playerAwards = calculateAwards(
-      rawStats, 
+    const seasonPlayoffs = simulatePlayoffs(teamWins, player.value.ovr, teamBaseOvr);
+    
+    // 3. Premiações Individuais (passando a posição)
+    const seasonAwards = calculateAwards(
+      seasonStats, 
       player.value.attributes, 
       player.value.ovr, 
-      regularSeasonWins, 
-      isRookie,
+      teamWins, 
+      history.value.length === 0,
       player.value.position
     );
 
-    if (playoffRun.wonRing && player.value.ovr >= 90 && Math.random() > 0.2) {
-      playerAwards.push('Finals MVP');
-    }
+    // 4. Simulação de Prêmios Globais da Liga (NPCs)
+    const npcStars = ['L. Doncic', 'N. Jokic', 'S. Gilgeous-Alexander', 'A. Edwards', 'V. Wembanyama', 'G. Antetokounmpo'];
+    const getNPC = () => npcStars[Math.floor(Math.random() * npcStars.length)];
 
-    const gamesPlayedThisSeason = 75 + Math.floor(Math.random() * 8); 
-    
-    careerTotals.value.gamesPlayed += gamesPlayedThisSeason;
-    careerTotals.value.totalPoints += Math.floor(rawStats.ppg * gamesPlayedThisSeason);
-    careerTotals.value.totalAssists += Math.floor(rawStats.apg * gamesPlayedThisSeason);
-    careerTotals.value.totalRebounds += Math.floor(rawStats.rpg * gamesPlayedThisSeason);
-    
-    if (playoffRun.wonRing) careerTotals.value.rings += 1;
-    if (playerAwards.includes('MVP')) careerTotals.value.mvps += 1;
+    const leagueAwards = {
+      MVP: seasonAwards.includes('MVP') ? player.value.name : getNPC(),
+      DPOY: seasonAwards.includes('DPOY') ? player.value.name : getNPC(),
+      SMOTY: seasonAwards.includes('SMOTY') ? player.value.name : getNPC(),
+      FMVP: seasonPlayoffs.wonRing ? player.value.name : getNPC(),
+    };
 
-    checkMilestones(playerAwards, playoffRun.wonRing, rawStats.ppg);
+    const currentContract = player.value.currentContract;
 
+    // 5. Registro do Histórico da Temporada
     history.value.push({
       seasonNumber: history.value.length + 1,
       teamId: player.value.teamId,
       age: player.value.age,
       ovr: player.value.ovr,
-      ...rawStats,
-      playoffs: playoffRun,
-      awards: playerAwards,
-      wonRing: playoffRun.wonRing
+      salary: currentContract ? currentContract.salary : 0,
+      ...seasonStats,
+      playoffs: seasonPlayoffs,
+      awards: seasonAwards,
+      leagueAwards
     });
 
+    // 6. Acúmulo de Totais de Carreira
+    careerTotals.value.gamesPlayed += 82;
+    careerTotals.value.seasonsPlayed += 1;
+    careerTotals.value.totalPoints += Math.floor(seasonStats.ppg * 82);
+    careerTotals.value.totalRebounds += Math.floor(seasonStats.rpg * 82);
+    careerTotals.value.totalAssists += Math.floor(seasonStats.apg * 82);
+    careerTotals.value.totalSteals = (careerTotals.value.totalSteals || 0) + Math.floor(seasonStats.spg * 82);
+    careerTotals.value.totalBlocks = (careerTotals.value.totalBlocks || 0) + Math.floor(seasonStats.bpg * 82);
+    careerTotals.value.totalTurnovers = (careerTotals.value.totalTurnovers || 0) + Math.floor(seasonStats.tov * 82);
+    careerTotals.value.totalEarnings = (careerTotals.value.totalEarnings || 0) + (currentContract ? currentContract.salary : 0);
+
+    if (seasonAwards.includes('MVP')) careerTotals.value.mvps += 1;
+    if (seasonPlayoffs.wonRing) careerTotals.value.rings += 1;
+
+    checkMilestones(seasonAwards, seasonPlayoffs.wonRing, seasonStats.ppg);
+
+    // 7. Aplicação da Progressão e Declínio (Envelhecimento)
     applyOffseasonProgression();
 
-    if ((player.value.age >= 34 && player.value.ovr < 68) || player.value.age >= 39) {
+    // 8. Verificação de Aposentadoria Forçada
+    if (player.value.age >= 44 || (player.value.age >= 38 && player.value.ovr < 70)) {
       forceRetirement();
     }
   };

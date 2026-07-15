@@ -29,7 +29,7 @@ export async function runStressTest(iterationsPerPosition: number = 10) {
 
     for (let i = 0; i < iterationsPerPosition; i++) {
       // Injeta a posição atual do laço no motor
-      engine.initCareer('Bot Test', position as any, 'US', 23, 'pro', 'fast');
+      engine.initCareer('Bot Test', position as any, 'US', 23, 'pro');
       
       engine.player.value.age = 19;
       
