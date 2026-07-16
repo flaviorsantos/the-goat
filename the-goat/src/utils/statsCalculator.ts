@@ -78,7 +78,7 @@ export function calculateSeasonStats(
 
   let fgPct = 42 + (attributes.Shooting * 0.15) + (attributes.IQ * 0.08) - (usageRate * 0.2) + (Math.random() * 4 - 2);
   let fg3Pct = 25 + (attributes.Shooting * 0.2) + (attributes.IQ * 0.05) + (Math.random() * 6 - 3);
-  let ftPct = 60 + (attributes.Shooting * 0.2) + (attributes.Mentality * 0.15) + (Math.random() * 5 - 2.5);
+  let ftPct = 60 + (attributes.Shooting * 0.2) + /*(attributes.Mentality * 0.15)*/ + (Math.random() * 5 - 2.5);
 
   let plusMinus = ((teamBaseOvr - 75) * 0.4) + ((playerOvr - 75) * 0.2) + (Math.random() * 6 - 3);
   return {

@@ -820,7 +820,7 @@ watch(() => isDraftComplete.value, (newVal) => {
               <div class="mt-4">
                 <div class="flex justify-between text-xs font-bold uppercase tracking-widest mb-2">
                   <span class="text-white">Career Points</span>
-                  <span class="text-gray-500"><span class="text-yellow-500">{{ careerTotals.totalPoints }}</span> / {{ nbaRecords.points }} (LeBron)</span>
+                  <span class="text-gray-500"><span class="text-yellow-500">{{ careerTotals.totalPoints }}</span> / {{ nbaRecords.points }} (LeBron James)</span>
                 </div>
                 <div class="w-full bg-gray-900 rounded-full h-1.5">
                   <div class="bg-yellow-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(careerTotals.totalPoints, nbaRecords.points)}%`"></div>
@@ -831,7 +831,7 @@ watch(() => isDraftComplete.value, (newVal) => {
               <div class="mt-4">
                 <div class="flex justify-between text-xs font-bold uppercase tracking-widest mb-2">
                   <span class="text-white">Career Assists</span>
-                  <span class="text-gray-500"><span class="text-green-500">{{ careerTotals.totalAssists }}</span> / {{ nbaRecords.assists }} (Stockton)</span>
+                  <span class="text-gray-500"><span class="text-green-500">{{ careerTotals.totalAssists }}</span> / {{ nbaRecords.assists }} (John Stockton)</span>
                 </div>
                 <div class="w-full bg-gray-900 rounded-full h-1.5">
                   <div class="bg-green-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(careerTotals.totalAssists, nbaRecords.assists)}%`"></div>
@@ -842,7 +842,7 @@ watch(() => isDraftComplete.value, (newVal) => {
               <div class="mt-4">
                 <div class="flex justify-between text-xs font-bold uppercase tracking-widest mb-2">
                   <span class="text-white">Career Rebounds</span>
-                  <span class="text-gray-500"><span class="text-blue-500">{{ careerTotals.totalRebounds }}</span> / {{ nbaRecords.rebounds }} (Wilt)</span>
+                  <span class="text-gray-500"><span class="text-blue-500">{{ careerTotals.totalRebounds }}</span> / {{ nbaRecords.rebounds }} (Wilt Chamberlain)</span>
                 </div>
                 <div class="w-full bg-gray-900 rounded-full h-1.5">
                   <div class="bg-blue-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(careerTotals.totalRebounds, nbaRecords.rebounds)}%`"></div>
@@ -853,7 +853,7 @@ watch(() => isDraftComplete.value, (newVal) => {
               <div class="mt-4">
                 <div class="flex justify-between text-xs font-bold uppercase tracking-widest mb-2">
                   <span class="text-white">Career Steals</span>
-                  <span class="text-gray-500"><span class="text-purple-500">{{ careerTotals.totalSteals || 0 }}</span> / {{ nbaRecords.steals }}</span>
+                  <span class="text-gray-500"><span class="text-purple-500">{{ careerTotals.totalSteals || 0 }}</span> / {{ nbaRecords.steals }} (John Stockton)</span>
                 </div>
                 <div class="w-full bg-gray-900 rounded-full h-1.5"><div class="bg-purple-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(careerTotals.totalSteals || 0, nbaRecords.steals)}%`"></div></div>
               </div>
@@ -862,7 +862,7 @@ watch(() => isDraftComplete.value, (newVal) => {
               <div class="mt-4">
                 <div class="flex justify-between text-xs font-bold uppercase tracking-widest mb-2">
                   <span class="text-white">Career Blocks</span>
-                  <span class="text-gray-500"><span class="text-red-500">{{ careerTotals.totalBlocks || 0 }}</span> / {{ nbaRecords.blocks }}</span>
+                  <span class="text-gray-500"><span class="text-red-500">{{ careerTotals.totalBlocks || 0 }}</span> / {{ nbaRecords.blocks }} (Hakeem Olajuwon)</span>
                 </div>
                 <div class="w-full bg-gray-900 rounded-full h-1.5"><div class="bg-red-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(careerTotals.totalBlocks || 0, nbaRecords.blocks)}%`"></div></div>
               </div>
@@ -871,7 +871,7 @@ watch(() => isDraftComplete.value, (newVal) => {
               <div class="mt-4">
                 <div class="flex justify-between text-xs font-bold uppercase tracking-widest mb-2">
                   <span class="text-white">MVP Awards</span>
-                  <span class="text-gray-500"><span class="text-yellow-500">{{ trophyCabinet['MVP'] || 0 }}</span> / {{ nbaRecords.mvps }}</span>
+                  <span class="text-gray-500"><span class="text-yellow-500">{{ trophyCabinet['MVP'] || 0 }}</span> / {{ nbaRecords.mvps }} (Kareem Abdul-Jabbar)</span>
                 </div>
                 <div class="w-full bg-gray-900 rounded-full h-1.5"><div class="bg-yellow-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(trophyCabinet['MVP'] || 0, nbaRecords.mvps)}%`"></div></div>
               </div>
@@ -880,7 +880,7 @@ watch(() => isDraftComplete.value, (newVal) => {
               <div class="mt-4">
                 <div class="flex justify-between text-xs font-bold uppercase tracking-widest mb-2">
                   <span class="text-white">Championships</span>
-                  <span class="text-gray-500"><span class="text-purple-500">{{ trophyCabinet['Rings'] || 0 }}</span> / {{ nbaRecords.rings }} (Russell)</span>
+                  <span class="text-gray-500"><span class="text-purple-500">{{ trophyCabinet['Rings'] || 0 }}</span> / {{ nbaRecords.rings }} (Bill Russell)</span>
                 </div>
                 <div class="w-full bg-gray-900 rounded-full h-1.5">
                   <div class="bg-purple-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(trophyCabinet['Rings'] || 0, nbaRecords.rings)}%`"></div>
@@ -890,7 +890,7 @@ watch(() => isDraftComplete.value, (newVal) => {
               <div class="mt-4">
                 <div class="flex justify-between text-xs font-bold uppercase tracking-widest mb-2">
                   <span class="text-white">DPOY Awards</span>
-                  <span class="text-gray-500"><span class="text-blue-500">{{ trophyCabinet['DPOY'] || 0 }}</span> / 4 (Mutombo/Wallace)</span>
+                  <span class="text-gray-500"><span class="text-blue-500">{{ trophyCabinet['DPOY'] || 0 }}</span> / 4 (Mutombo/Wallace/Gobert)</span>
                 </div>
                 <div class="w-full bg-gray-900 rounded-full h-1.5"><div class="bg-blue-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(trophyCabinet['DPOY'] || 0, 4)}%`"></div></div>
               </div>

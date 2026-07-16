@@ -2,7 +2,7 @@ export type Position = 'PG' | 'SG' | 'SF' | 'PF' | 'C';
 export type Difficulty = 'amateur' | 'pro';
 export type GameMode = 'fast' | 'full';
 
-export type AttributeKey = 'Shooting' | 'Dribbling' | 'Defense' | 'IQ' | 'Athleticism' | 'Passing' | 'Rebounding' | 'Speed' | 'Mentality';
+export type AttributeKey = 'Shooting' | 'Dribbling' | 'Defense' | 'IQ' | 'Athleticism' | 'Passing' | 'Rebounding' | 'Speed' | 'Finishing';
 
 export type PlayerAttributes = Record<AttributeKey, number>;
 
