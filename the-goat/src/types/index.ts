@@ -47,7 +47,10 @@ export interface RealPlayer {
   id: number;
   name: string;
   position: Position;
+  age: number;
+  isRetired: boolean;
   attributes: PlayerAttributes;
+  career: string;
 }
 
 export interface PlayerProfile {

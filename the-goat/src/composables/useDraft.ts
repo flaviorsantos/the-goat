@@ -4,7 +4,7 @@ import { nbaTeams } from '../data/teams';
 
 export function useDraft() {
   const currentDrawnPlayer = ref<any>(null);
-  const attributeSources = ref<Record<string, string>>({});
+  const attributeSources = ref<Record<string, { attribute: string; player: string }>>({});
   
   const myAttributes = ref({
     Shooting: 0,

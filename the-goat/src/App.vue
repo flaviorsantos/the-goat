@@ -950,6 +950,7 @@ watch(() => isDraftComplete.value, (newVal) => {
               <div class="flex flex-wrap gap-2">
                 <div v-for="(source, attr) in attributeSources" :key="attr" class="bg-black border border-gray-800 px-3 py-2 rounded flex-1 min-w-25">
                   <span class="block text-[9px] text-gray-500 uppercase">{{ attr }}</span>
+                  <span class="block text-xs text-yellow-400 font-bold truncate">{{ myAttributes[attr as keyof typeof myAttributes] }}</span>
                   <span class="block text-xs text-white font-bold truncate">{{ source }}</span>
                 </div>
               </div>
