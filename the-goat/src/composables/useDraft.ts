@@ -4,7 +4,7 @@ import { nbaTeams } from '../data/teams';
 
 export function useDraft() {
   const currentDrawnPlayer = ref<any>(null);
-  const attributeSources = ref<Record<string, { attribute: string; player: string }>>({});
+  const attributeSources = ref<Record<string, { attribute: string; player: string; value: string }>>({});
   
   const myAttributes = ref({
     Shooting: 0,
@@ -15,7 +15,7 @@ export function useDraft() {
     Passing: 0,
     Rebounding: 0,
     Speed: 0,
-    Mentality: 0
+    Finishing: 0
   });
   
   const availableSlots = ref(Object.keys(myAttributes.value).length);
@@ -33,18 +33,38 @@ export function useDraft() {
       hasReroll.value = false;
     }
   };
-
+/*
   const selectAttribute = (key: keyof typeof myAttributes.value) => {
     if (currentDrawnPlayer.value && myAttributes.value[key] === 0) {
       myAttributes.value[key] = currentDrawnPlayer.value.attributes[key];
-      attributeSources.value[key] = currentDrawnPlayer.value.name;
+      attributeSources.value[key] = {
+        attribute: key,
+        player: currentDrawnPlayer.value.name
+      };
       
       availableSlots.value--;
-      hasReroll.value = true;
       
       if (availableSlots.value > 0) {
         drawRandomPlayer();
       } else {
+        isDraftComplete.value = true;
+      }
+    }
+  };*/
+
+  const selectAttribute = (key: keyof typeof myAttributes.value) => {
+    if (currentDrawnPlayer.value && myAttributes.value[key] === 0) {
+      myAttributes.value[key] = currentDrawnPlayer.value.attributes[key];
+      
+      attributeSources.value[key] = {
+        attribute: key,
+        player: currentDrawnPlayer.value.name,
+        value: currentDrawnPlayer.value.attributes[key] 
+      };
+      
+      drawRandomPlayer();
+      
+      if (Object.values(myAttributes.value).every(val => val > 0)) {
         isDraftComplete.value = true;
       }
     }
@@ -55,7 +75,7 @@ export function useDraft() {
                 (attributes.Defense * 0.15) + (attributes.IQ * 0.1) +
                 (attributes.Athleticism * 0.15) + (attributes.Passing * 0.1) +
                 (attributes.Rebounding * 0.1) + (attributes.Speed * 0.1) +
-                (attributes.Mentality * 0.05);
+                (attributes.Finishing * 0.05);
     return Math.floor(sum);
   };
 

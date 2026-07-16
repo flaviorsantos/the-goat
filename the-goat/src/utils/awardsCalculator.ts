@@ -1,9 +1,18 @@
-import type { SeasonStats } from './statsCalculator';
+interface SeasonStats {
+  ppg: number;
+  rpg: number;
+  apg: number;
+  spg: number;
+  bpg: number;
+  tov: number;
+  mpg: number;
+  plusMinus: number;
+}
 
 export function calculateAwards(
   stats: SeasonStats, 
   attributes: any, 
-  playerOvr: number, 
+  _playerOvr: number, 
   teamWins: number, 
   isRookie: boolean,
   position: string

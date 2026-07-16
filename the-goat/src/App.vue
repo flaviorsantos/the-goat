@@ -10,7 +10,7 @@ import type { Position, Difficulty } from './types';
 const { 
   player, history, careerTotals, leagueTeams, freeAgencyOffers, pendingMilestones, 
   initCareer, simulateSeason, generateOffers, acceptOffer, forceRetirement,
-  loadPastCareer 
+  loadPastCareer, simulateRemainingCareer
 } = useGameEngine();
 
 // Motor de Draft
@@ -100,11 +100,6 @@ const formattedTimeline = computed(() => {
       isLast
     };
   });
-});
-
-const currentOVR = computed(() => {
-  if (!currentDrawnPlayer.value) return 0;
-  return calculateStartingOVR(currentDrawnPlayer.value.attributes); 
 });
 
 const trophyCabinet = computed(() => {
@@ -215,7 +210,8 @@ const processDraftDay = () => {
     inputPosition.value as Position, 
     inputNationality.value, 
     inputJersey.value as number, 
-    selectedDifficulty.value
+    selectedDifficulty.value,
+    attributeSources.value
   );
   
   // Correção: Atualização das propriedades da ref `player` usando `.value`
@@ -234,7 +230,10 @@ const processDraftDay = () => {
   currentPhase.value = 'draft-day';
 };
 
-const startCareer = () => { currentPhase.value = 'playing'; };
+const startCareer = () => { 
+  player.value.originalDNA = JSON.parse(JSON.stringify(attributeSources.value));
+  currentPhase.value = 'playing';
+};
 const viewLegacy = () => { currentPhase.value = 'retired'; };
 
 const resetGame = () => {
@@ -429,13 +428,18 @@ watch(() => isDraftComplete.value, (newVal) => {
         </div>
 
         <!-- Banner da Lenda Atual -->
-        <div class="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6 mb-6 text-center relative overflow-hidden shadow-2xl">
-          <div class="absolute inset-0 bg-yellow-900/5 blur-3xl z-0"></div>
-          <div class="relative z-10">
-            <p class="text-yellow-600 font-black text-[9px] uppercase tracking-[0.3em] mb-2">Current Legend</p>
-            <h2 class="text-3xl font-black text-white uppercase tracking-tight">{{ currentDrawnPlayer?.name }}</h2>
-            <p class="text-gray-500 text-xs mt-1 font-bold uppercase tracking-widest">{{ currentDrawnPlayer?.position }} · {{ currentOVR }} OVR</p>
-          </div>
+        <div v-if="currentDrawnPlayer" class="relative z-10 flex flex-col items-center justify-center min-h-40">
+    
+          <h2 class="text-3xl md:text-5xl font-black text-white uppercase tracking-widest mb-2 text-center">
+            {{ selectedDifficulty === 'pro' ? 'Mystery Player' : currentDrawnPlayer.name }}
+          </h2>
+          
+          <p class="text-gray-500 font-bold uppercase tracking-widest text-sm md:text-lg text-center flex items-center justify-center gap-2">
+            {{ currentDrawnPlayer.position }} 
+            <span class="text-yellow-500">|</span> 
+            Era: {{ currentDrawnPlayer.career }} 
+          </p>
+          
         </div>
 
         <!-- Grid de Atributos -->
@@ -476,7 +480,7 @@ watch(() => isDraftComplete.value, (newVal) => {
                   <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">{{ key }}</span>
                   <span class="text-2xl font-black text-white" :class="val >= 90 ? 'text-yellow-500' : ''">{{ val }}</span>
                   <span class="text-[9px] text-gray-400 mt-2 truncate w-full text-center">
-                    {{ attributeSources[key] }}
+                     {{ attributeSources[key].player }}
                   </span>
                 </template>
                 
@@ -559,39 +563,43 @@ watch(() => isDraftComplete.value, (newVal) => {
                 <div class="grid grid-cols-2 gap-x-4 gap-y-2">
                   <div class="flex justify-between text-sm">
                     <span class="text-gray-400 font-bold">MPG</span>
-                    <span class="text-white font-black">{{ lastSeason ? lastSeason.mpg : '0.0' }}</span>
+                    <span class="text-white font-black">{{ lastSeason ? lastSeason.mpg.toFixed(1) : '0.0' }}</span>
                   </div>
                   <div class="flex justify-between text-sm">
                     <span class="text-gray-400 font-bold">PTS</span>
-                    <span class="text-white font-black">{{ lastSeason ? lastSeason.ppg : '0.0' }}</span>
+                    <span class="text-white font-black">{{ lastSeason ? lastSeason.ppg.toFixed(1) : '0.0' }}</span>
                   </div>
                   <div class="flex justify-between text-sm">
                     <span class="text-gray-400 font-bold">REB</span>
-                    <span class="text-white font-black">{{ lastSeason ? lastSeason.rpg : '0.0' }}</span>
+                    <span class="text-white font-black">{{ lastSeason ? lastSeason.rpg.toFixed(1) : '0.0' }}</span>
                   </div>
                   <div class="flex justify-between text-sm">
                     <span class="text-gray-400 font-bold">AST</span>
-                    <span class="text-white font-black">{{ lastSeason ? lastSeason.apg : '0.0' }}</span>
+                    <span class="text-white font-black">{{ lastSeason ? lastSeason.apg.toFixed(1) : '0.0' }}</span>
                   </div>
                   <div class="flex justify-between text-sm">
                     <span class="text-gray-400 font-bold">STL</span>
-                    <span class="text-white font-black">{{ lastSeason ? lastSeason.spg : '0.0' }}</span>
+                    <span class="text-white font-black">{{ lastSeason ? lastSeason.spg.toFixed(1) : '0.0' }}</span>
                   </div>
                   <div class="flex justify-between text-sm">
                     <span class="text-gray-400 font-bold">BLK</span>
-                    <span class="text-white font-black">{{ lastSeason ? lastSeason.bpg : '0.0' }}</span>
+                    <span class="text-white font-black">{{ lastSeason ? lastSeason.bpg.toFixed(1) : '0.0' }}</span>
                   </div>
                   <div class="flex justify-between text-sm">
                     <span class="text-gray-400 font-bold">FG%</span>
-                    <span class="text-white font-black">{{ lastSeason ? lastSeason.fgPct : '0.0' }}%</span>
+                    <span class="text-white font-black">{{ lastSeason ? lastSeason.fgPct.toFixed(3) : '0.000' }}%</span>
                   </div>
                   <div class="flex justify-between text-sm">
                     <span class="text-gray-400 font-bold">3P%</span>
-                    <span class="text-white font-black">{{ lastSeason ? lastSeason.fg3Pct : '0.0' }}%</span>
+                    <span class="text-white font-black">{{ lastSeason ? lastSeason.fg3Pct.toFixed(3) : '0.000' }}%</span>
                   </div>
                   <div class="flex justify-between text-sm">
                     <span class="text-gray-400 font-bold">FT%</span>
-                    <span class="text-white font-black">{{ lastSeason ? lastSeason.ftPct : '0.0' }}%</span>
+                    <span class="text-white font-black">{{ lastSeason ? lastSeason.ftPct.toFixed(3) : '0.000' }}%</span>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <span class="text-gray-400 font-bold">+/-</span>
+                    <span class="text-white font-black">{{ lastSeason ? lastSeason.plusMinus.toFixed(1) : '0.0' }}</span>
                   </div>
                 </div>
               </div>
@@ -654,6 +662,13 @@ watch(() => isDraftComplete.value, (newVal) => {
                 </p>
                 <button @click="simulateSeason" class="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-black py-5 rounded-lg transition-colors uppercase tracking-widest text-lg">
                   {{ player.gameMode === 'fast' ? 'Simulate Season' : 'Advance Week' }}
+                </button>
+                <button 
+                  @click="simulateRemainingCareer" 
+                  :disabled="player.contractYearsLeft === 0"
+                  class="bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-bold py-3 px-6 rounded shadow-lg transition-all"
+                >
+                  Simulate Career to End
                 </button>
                 <button v-if="player.age >= 32" @click="retireManual" class="w-full mt-4 bg-transparent border border-gray-800 hover:border-red-900 hover:bg-red-900/10 text-gray-600 hover:text-red-500 font-bold py-3 rounded-lg transition-colors uppercase tracking-widest text-xs">
                   Announce Retirement
@@ -914,6 +929,10 @@ watch(() => isDraftComplete.value, (newVal) => {
                     <th class="py-2 px-2 w-10 text-center">STL</th>
                     <th class="py-2 px-2 w-10 text-center">BLK</th>
                     <th class="py-2 px-2 w-10 text-center">TOV</th>
+                    <th class="py-2 px-2 w-10 text-center">FG%</th>
+                    <th class="py-2 px-2 w-10 text-center">3P%</th>
+                    <th class="py-2 px-2 w-10 text-center">FT%</th>
+                    <th class="py-2 px-2 w-10 text-center">+/-</th>
                     <th class="py-2 px-2 text-left">AWARDS & NOTES</th>
                   </tr>
                 </thead>
@@ -925,12 +944,16 @@ watch(() => isDraftComplete.value, (newVal) => {
                     <td class="py-1 px-2 text-center text-white font-black font-sans">{{ season.teamId }}</td>
                     <td class="py-1 px-2 text-center">{{ season.age }}</td>
                     <td class="py-1 px-2 text-center text-yellow-500">{{ season.ovr }}</td>
-                    <td class="py-1 px-2 text-center text-white">{{ season.ppg }}</td>
-                    <td class="py-1 px-2 text-center">{{ season.rpg }}</td>
-                    <td class="py-1 px-2 text-center">{{ season.apg }}</td>
-                    <td class="py-1 px-2 text-center">{{ season.spg }}</td>
-                    <td class="py-1 px-2 text-center">{{ season.bpg }}</td>
-                    <td class="py-1 px-2 text-center">{{ season.tov }}</td>
+                    <td class="py-1 px-2 text-center text-white">{{ season.ppg.toFixed(1) }}</td>
+                    <td class="py-1 px-2 text-center">{{ season.rpg.toFixed(1) }}</td>
+                    <td class="py-1 px-2 text-center">{{ season.apg.toFixed(1) }}</td>
+                    <td class="py-1 px-2 text-center">{{ season.spg.toFixed(1) }}</td>
+                    <td class="py-1 px-2 text-center">{{ season.bpg.toFixed(1) }}</td>
+                    <td class="py-1 px-2 text-center">{{ season.tov.toFixed(1) }}</td>
+                    <td class="py-1 px-2 text-center">{{ season.fgPct.toFixed(3) }}</td>
+                    <td class="py-1 px-2 text-center">{{ season.fg3Pct.toFixed(3) }}</td>
+                    <td class="py-1 px-2 text-center">{{ season.ftPct.toFixed(3) }}</td>
+                    <td class="py-1 px-2 text-center">{{ season.plusMinus.toFixed(1) }}</td>
                     <td class="py-1 px-2 truncate text-yellow-600 font-sans tracking-widest text-[8px] uppercase">
                       {{ season.wonRing ? '🏆 RING ' : '' }} {{ season.awards.join(' ') }}
                     </td>
@@ -948,11 +971,17 @@ watch(() => isDraftComplete.value, (newVal) => {
                 <p class="text-green-500 text-sm font-black uppercase tracking-widest">Career Earnings: ${{ careerTotals.totalEarnings || 0 }}M</p>
               </div>
               <div class="flex flex-wrap gap-2">
-                <div v-for="(source, attr) in attributeSources" :key="attr" class="bg-black border border-gray-800 px-3 py-2 rounded flex-1 min-w-25">
-                  <span class="block text-[9px] text-gray-500 uppercase">{{ attr }}</span>
-                  <span class="block text-xs text-yellow-400 font-bold truncate">{{ myAttributes[attr as keyof typeof myAttributes] }}</span>
-                  <span class="block text-xs text-white font-bold truncate">{{ source }}</span>
-                </div>
+                <div v-for="(data, attr) in player.originalDNA" :key="attr" class="border border-gray-800 bg-[#111] p-3 rounded-lg flex flex-col items-center justify-center text-center shadow-inner relative overflow-hidden">
+    
+                <span class="text-yellow-500 text-[10px] font-black uppercase tracking-widest mb-1">{{ attr }}</span>
+                
+                <span class= "text-gray-400 text-sm font-bold truncate w-full z-10">{{ data.player }}</span>
+                
+                <span class=" text-white text-xs font-mono mt-1 font-bold z-10">
+                  {{ data.value ? data.value : '?' }}
+                </span>
+                
+              </div>
               </div>
             </div>
             
