@@ -1,11 +1,142 @@
 import { ref } from 'vue';
 import { nbaTeams } from '../data/teams';
-import { calculateSeasonStats } from '../utils/statsCalculator';
+import { calculateOverall, calculateSeasonStats } from '../utils/statsCalculator';
 import { simulatePlayoffs } from '../utils/playoffsSimulation';
 import { calculateAwards } from '../utils/awardsCalculator';
 import { calculateGoatScore } from '../utils/careerEvaluator';
-import { simulateLeagueStandings } from '../utils/leagueSimulation';
-import type { Position } from '../types';
+import type {
+  CareerTimelineEntry,
+  Difficulty,
+  GameMode,
+  Position,
+  SeasonStats,
+  Team,
+} from '../types';
+
+type AttributeSource = {
+  attribute: string;
+  player: string;
+  value: string | number;
+};
+
+type PlayerDna = Record<string, AttributeSource>;
+
+type GamePlayer = {
+  name: string;
+  position: Position;
+  nationality: string;
+  jerseyNumber: number;
+  difficulty: Difficulty;
+  gameMode: GameMode;
+  teamId: string;
+  age: number;
+  ovr: number;
+  isRetired: boolean;
+  contractYearsLeft: number;
+  attributes: Record<string, number>;
+  potentialAttributes: Record<string, number>;
+  careerTimeline: CareerTimelineEntry[];
+  currentSalary: number;
+  originalDNA: PlayerDna;
+};
+
+type LeagueTeam = Team & {
+  wins: number;
+  losses: number;
+};
+
+type CareerTotals = {
+  gamesPlayed: number;
+  totalPoints: number;
+  totalAssists: number;
+  totalRebounds: number;
+  totalSteals: number;
+  totalBlocks: number;
+  totalTurnovers: number;
+  totalEarnings: number;
+  mvps: number;
+  rings: number;
+  seasonsPlayed: number;
+};
+
+type SavedCareer = {
+  id: string;
+  player: GamePlayer;
+  history: SeasonStats[];
+  careerTotals: CareerTotals;
+  goatScore: number;
+  goatTier: string;
+  rings: number;
+};
+
+const clone = <T>(value: T): T =>
+  JSON.parse(JSON.stringify(value)) as T;
+
+const readStorage = <T>(key: string, fallback: T): T => {
+  try {
+    const rawValue = localStorage.getItem(key);
+    return rawValue ? JSON.parse(rawValue) as T : fallback;
+  } catch {
+    localStorage.removeItem(key);
+    return fallback;
+  }
+};
+
+const createCareerTotals = (): CareerTotals => ({
+  gamesPlayed: 0,
+  totalPoints: 0,
+  totalAssists: 0,
+  totalRebounds: 0,
+  totalSteals: 0,
+  totalBlocks: 0,
+  totalTurnovers: 0,
+  totalEarnings: 0,
+  mvps: 0,
+  rings: 0,
+  seasonsPlayed: 0,
+});
+
+const createLeagueTeams = (): LeagueTeam[] =>
+  nbaTeams.map(team => ({ ...team, wins: 0, losses: 0 }));
+
+const initialPlayer: GamePlayer = {
+  name: '',
+  position: 'SG' as Position,
+  nationality: '',
+  jerseyNumber: 0,
+  age: 18,
+  teamId: '',
+  isRetired: true,
+  contractYearsLeft: 0,
+  currentSalary: 0,
+  difficulty: 'amateur',
+  gameMode: 'fast',
+  careerTimeline: [],
+  originalDNA: {},
+  attributes: {
+    Shooting: 30,
+    Defense: 30,
+    Athleticism: 30,
+    Dribbling: 30,
+    IQ: 30,
+    Passing: 30,
+    Rebounding: 30,
+    Speed: 30,
+    Finishing: 30
+  },
+  potentialAttributes: {
+    Shooting: 30,
+    Defense: 30,
+    Athleticism: 30,
+    Dribbling: 30,
+    IQ: 30,
+    Passing: 30,
+    Rebounding: 30,
+    Speed: 30,
+    Finishing: 30
+  },
+  ovr: 30
+};
 
 export interface ContractOffer {
   teamId: string;
@@ -14,47 +145,28 @@ export interface ContractOffer {
   role: string;
 }
 
-export function useGameEngine() {
-  const player = ref<any>({
-    name: '',
-    position: 'PG',
-    nationality: 'US',
-    jerseyNumber: 0,
-    age: 19,
-    ovr: 75,
-    attributes: {},
-    potentialAttributes: {},
-    teamId: '',
-    contractYearsLeft: 4,
-    currentSalary: 5,
-    originalDNA: {},
-    isRetired: false,
-    gameMode: 'fast',
-    careerTimeline: []
-  });
+export function useGameEngine(
+  { persistRetiredCareers = true }: { persistRetiredCareers?: boolean } = {},
+) {
+  const player = ref<GamePlayer>(clone(initialPlayer));
 
-  const history = ref<any[]>([]);
-  const careerTotals = ref({
-    gamesPlayed: 0,
-    totalPoints: 0,
-    totalAssists: 0,
-    totalRebounds: 0,
-    totalSteals: 0,
-    totalBlocks: 0,
-    totalTurnovers: 0,
-    totalEarnings: 0,
-    mvps: 0,
-    rings: 0,
-    seasonsPlayed: 0
-  });
+  const history = ref<SeasonStats[]>([]);
+  const careerTotals = ref<CareerTotals>(createCareerTotals());
 
-  const leagueTeams = ref(JSON.parse(JSON.stringify(nbaTeams)));
+  const leagueTeams = ref<LeagueTeam[]>(createLeagueTeams());
   const freeAgencyOffers = ref<ContractOffer[]>([]);
   
   const pendingMilestones = ref<{ title: string; subtitle: string; icon: string }[]>([]);
   const achievedMilestones = ref<Set<string>>(new Set());
 
-  const initCareer = (name: string, pos: Position, nat: string, jersey: number, _draftMode: string, dna: any = {}) => {
+  const initCareer = (
+    name: string,
+    pos: Position,
+    nat: string,
+    jersey: number,
+    draftMode: Difficulty,
+    dna: PlayerDna = {},
+  ) => {
     player.value.name = name;
     player.value.position = pos;
     player.value.nationality = nat;
@@ -63,15 +175,15 @@ export function useGameEngine() {
     player.value.contractYearsLeft = 4;
     player.value.currentSalary = 5;
     player.value.careerTimeline = [];
+    player.value.difficulty = draftMode;
+    player.value.gameMode = 'fast';
 
-    player.value.originalDNA = JSON.parse(JSON.stringify(dna));
+    player.value.originalDNA = clone(dna);
     
     history.value = [];
-    careerTotals.value = {
-      gamesPlayed: 0, totalPoints: 0, totalAssists: 0, totalRebounds: 0,
-      totalSteals: 0, totalBlocks: 0, totalTurnovers: 0, totalEarnings: 0,
-      mvps: 0, rings: 0, seasonsPlayed: 0
-    };
+    careerTotals.value = createCareerTotals();
+    leagueTeams.value = createLeagueTeams();
+    freeAgencyOffers.value = [];
     pendingMilestones.value = [];
     achievedMilestones.value = new Set();
   };
@@ -91,26 +203,26 @@ export function useGameEngine() {
     const mentals = ['IQ'] as const;
     const technicals = ['Shooting', 'Dribbling', 'Passing', 'Rebounding', 'Finishing'] as const;
 
-    if (age < 24) {
+    if (age < 26) {
       for (const key in attrs) {
         const k = key as keyof typeof attrs;
         if (attrs[k] < pots[k]) {
           const gap = pots[k] - attrs[k];
-          const yearsToPrime = 24 - age;
+          const yearsToPrime = 26 - age;
           const baseGrowth = Math.ceil(gap / yearsToPrime);
           const growthVariance = Math.floor(Math.random() * 2); 
           
           attrs[k] = Math.min(pots[k], attrs[k] + baseGrowth + growthVariance);
         }
       }
-    } else if (age >= 24 && age <= 29) {
+    } else if (age >= 26 && age <= 30) {
       for (const key in attrs) {
         const k = key as keyof typeof attrs;
         if (attrs[k] < pots[k]) {
           attrs[k] = pots[k];
         }
       }
-    } else if (age >= 30 && age <= 34) {
+    } else if (age >= 31 && age <= 34) {
       physicals.forEach(k => {
         attrs[k] = Math.max(30, attrs[k] - 1);
       });
@@ -135,34 +247,10 @@ export function useGameEngine() {
   };
 
   const recalculateOVR = () => {
-    const attrs = player.value.attributes;
-    const position = player.value.position; 
-
-    let weights = {
-      Shooting: 0.15, Defense: 0.15, Athleticism: 0.15,
-      Dribbling: 0.10, IQ: 0.10, Passing: 0.10, Rebounding: 0.05, Speed: 0.05,
-      Finishing: 0.15
-    };
-
-    if (position === 'C' || position === 'PF') {
-      weights = {
-        Shooting: 0.05, Defense: 0.20, Athleticism: 0.15,
-        Dribbling: 0.05, IQ: 0.10, Passing: 0.05, Rebounding: 0.25, Speed: 0.05,
-        Finishing: 0.10
-      };
-    } else if (position === 'PG') {
-      weights = {
-        Shooting: 0.15, Defense: 0.10, Athleticism: 0.10,
-        Dribbling: 0.20, IQ: 0.15, Passing: 0.20, Rebounding: 0.02, Speed: 0.03,
-        Finishing: 0.05
-      };
-    }
-
-    const sum = Object.keys(weights).reduce((acc, key) => {
-      const attrValue = attrs[key as keyof typeof attrs] || 30; 
-      return acc + (attrValue * weights[key as keyof typeof weights]);
-    }, 0);
-    player.value.ovr = Math.round(sum);
+    player.value.ovr = calculateOverall(
+      player.value.attributes,
+      player.value.position,
+    );
   };
 
   const getRandomTeam = () => {
@@ -261,13 +349,13 @@ export function useGameEngine() {
     const goat = calculateGoatScore(careerTotals.value, detailedAwards);
     const rings = history.value.filter(s => s.playoffs?.wonRing).length;
 
-    const savedList = JSON.parse(localStorage.getItem('the_goat_past_careers') || '[]');
+    const savedList = readStorage<SavedCareer[]>('the_goat_past_careers', []);
     
-    const newSave = {
+    const newSave: SavedCareer = {
       id: Date.now().toString(),
-      player: JSON.parse(JSON.stringify(player.value)),
-      history: JSON.parse(JSON.stringify(history.value)),
-      careerTotals: JSON.parse(JSON.stringify(careerTotals.value)),
+      player: clone(player.value),
+      history: clone(history.value),
+      careerTotals: clone(careerTotals.value),
       goatScore: goat.score,
       goatTier: goat.tier,
       rings
@@ -277,32 +365,55 @@ export function useGameEngine() {
     localStorage.setItem('the_goat_past_careers', JSON.stringify(savedList.slice(0, 8)));
   };
 
-  const loadPastCareer = (savedData: any) => {
+  const loadPastCareer = (savedData: SavedCareer) => {
     Object.assign(player.value, savedData.player);
-    history.value = savedData.history;
-    careerTotals.value = savedData.careerTotals;
+    history.value = clone(savedData.history).map(season => ({
+      ...season,
+      gamesPlayed: season.gamesPlayed ?? 82,
+    }));
+    const migratedGames = history.value.reduce(
+      (sum, season) => sum + season.gamesPlayed,
+      0,
+    );
+    careerTotals.value = {
+      ...createCareerTotals(),
+      ...clone(savedData.careerTotals),
+      gamesPlayed: savedData.careerTotals.gamesPlayed ?? migratedGames,
+    };
+    freeAgencyOffers.value = [];
+    pendingMilestones.value = [];
   };
 
   const forceRetirement = () => {
+    if (player.value.isRetired) return;
+
     player.value.isRetired = true;
     player.value.contractYearsLeft = 0;
     if (player.value.careerTimeline.length > 0 && player.value.careerTimeline[player.value.careerTimeline.length - 1].endYear === null) {
       player.value.careerTimeline[player.value.careerTimeline.length - 1].endYear = history.value.length;
     }
-    saveRetiredCareer();
+    if (persistRetiredCareers) {
+      saveRetiredCareer();
+    }
   };
 
   const simulateSeason = () => {
     if (player.value.isRetired) return;
 
-    leagueTeams.value.forEach((team: { baseOvr: number; wins: number; losses: number; }) => {
-      const winProb = (team.baseOvr - 70) / 20; 
-      let wins = Math.floor(winProb * 82) + Math.floor(Math.random() * 12 - 6);
-      team.wins = Math.max(10, Math.min(73, wins));
+    leagueTeams.value.forEach(team => {
+      const playerImpact = team.id === player.value.teamId
+        ? (player.value.ovr - 75) * 0.7
+        : 0;
+      const expectedWins =
+        41 +
+        (team.baseOvr - 78) * 2.2 +
+        playerImpact;
+      const wins = Math.round(expectedWins + (Math.random() + Math.random() - 1) * 7);
+      team.wins = Math.max(14, Math.min(70, wins));
       team.losses = 82 - team.wins;
     });
 
-    const playerTeam = leagueTeams.value.find((t: { id: any; }) => t.id === player.value.teamId);
+    const playerTeam = leagueTeams.value.find(team => team.id === player.value.teamId);
     const teamWins = playerTeam ? playerTeam.wins : 41;
     const teamBaseOvr = playerTeam ? playerTeam.baseOvr : 75;
 
@@ -314,25 +425,60 @@ export function useGameEngine() {
       player.value.age
     );
 
-    const seasonPlayoffs = simulatePlayoffs(teamWins, player.value.ovr, teamBaseOvr);
+    const seasonPlayoffs = simulatePlayoffs(
+      player.value.ovr,
+      teamBaseOvr,
+      teamWins,
+    );
+    const ageAvailabilityPenalty = Math.max(0, player.value.age - 30) * 0.7;
+    const routineAbsences = Math.floor((Math.random() + Math.random()) * 5);
+    const majorInjuryAbsences = Math.random() < 0.05
+      ? Math.floor(Math.random() * 21) + 15
+      : 0;
+    const gamesPlayed = Math.max(
+      35,
+      Math.min(
+        82,
+        Math.round(
+          78 -
+          ageAvailabilityPenalty -
+          routineAbsences -
+          majorInjuryAbsences,
+        ),
+      ),
+    );
     
     const seasonAwards = calculateAwards(
       seasonStats, 
       player.value.attributes, 
       player.value.ovr, 
-      teamWins, 
+      teamWins,
+      gamesPlayed,
       history.value.length === 0,
       player.value.position
     );
 
     const npcStars = ['L. Doncic', 'N. Jokic', 'S. Gilgeous-Alexander', 'A. Edwards', 'V. Wembanyama', 'G. Antetokounmpo'];
     const getNPC = () => npcStars[Math.floor(Math.random() * npcStars.length)];
+    const finalsMvpScore =
+      seasonStats.ppg +
+      seasonStats.rpg * 0.7 +
+      seasonStats.apg +
+      seasonStats.spg * 2 +
+      seasonStats.bpg * 2;
+    const wonFinalsMvp =
+      seasonPlayoffs.wonRing &&
+      finalsMvpScore >= 25 + Math.random() * 13;
+
+    if (wonFinalsMvp) {
+      seasonAwards.push('Finals MVP');
+    }
 
     const leagueAwards = {
       MVP: seasonAwards.includes('MVP') ? player.value.name : getNPC(),
       DPOY: seasonAwards.includes('DPOY') ? player.value.name : getNPC(),
       SMOTY: seasonAwards.includes('SMOTY') ? player.value.name : getNPC(),
-      FMVP: seasonPlayoffs.wonRing ? player.value.name : getNPC(),
+      FMVP: wonFinalsMvp ? player.value.name : getNPC(),
     };
 
     const seasonSalary = player.value.currentSalary || 0;
@@ -342,21 +488,29 @@ export function useGameEngine() {
       teamId: player.value.teamId,
       age: player.value.age,
       ovr: player.value.ovr,
-      salary: seasonSalary,
+      gamesPlayed,
+      teamWins,
+      teamLosses: 82 - teamWins,
       ...seasonStats,
-      playoffs: seasonPlayoffs,
+      playoffs: {
+        ...seasonPlayoffs,
+        series: [],
+        finalsLog: [],
+        overallAverages: null,
+      },
+      wonRing: seasonPlayoffs.wonRing,
       awards: seasonAwards,
       leagueAwards
     });
 
-    careerTotals.value.gamesPlayed += 82;
+    careerTotals.value.gamesPlayed += gamesPlayed;
     careerTotals.value.seasonsPlayed += 1;
-    careerTotals.value.totalPoints += Math.floor(seasonStats.ppg * 82);
-    careerTotals.value.totalRebounds += Math.floor(seasonStats.rpg * 82);
-    careerTotals.value.totalAssists += Math.floor(seasonStats.apg * 82);
-    careerTotals.value.totalSteals = (careerTotals.value.totalSteals || 0) + Math.floor(seasonStats.spg * 82);
-    careerTotals.value.totalBlocks = (careerTotals.value.totalBlocks || 0) + Math.floor(seasonStats.bpg * 82);
-    careerTotals.value.totalTurnovers = (careerTotals.value.totalTurnovers || 0) + Math.floor(seasonStats.tov * 82);
+    careerTotals.value.totalPoints += Math.floor(seasonStats.ppg * gamesPlayed);
+    careerTotals.value.totalRebounds += Math.floor(seasonStats.rpg * gamesPlayed);
+    careerTotals.value.totalAssists += Math.floor(seasonStats.apg * gamesPlayed);
+    careerTotals.value.totalSteals += Math.floor(seasonStats.spg * gamesPlayed);
+    careerTotals.value.totalBlocks += Math.floor(seasonStats.bpg * gamesPlayed);
+    careerTotals.value.totalTurnovers += Math.floor(seasonStats.tov * gamesPlayed);
     careerTotals.value.totalEarnings = (careerTotals.value.totalEarnings || 0) + seasonSalary;
 
     if (seasonAwards.includes('MVP')) careerTotals.value.mvps += 1;
@@ -372,12 +526,14 @@ export function useGameEngine() {
 
     if (currentAge >= 41) {
       shouldRetire = true; 
-    } else if (currentAge >= 39 && currentOvr < 80) {
-      shouldRetire = true; 
-    } else if (currentAge >= 38 && currentOvr < 75) {
-      shouldRetire = true; 
-    } else if (currentAge >= 39 && Math.random() > 0.5) {
-      shouldRetire = true; 
+    } else if (currentAge >= 39) {
+      shouldRetire = currentOvr < 84 || Math.random() > 0.35;
+    } else if (currentAge >= 37) {
+      shouldRetire = currentOvr < 85 || Math.random() > 0.35;
+    } else if (currentAge >= 35 && currentOvr < 82) {
+      shouldRetire = Math.random() > 0.35;
+    } else if (currentAge >= 33 && currentOvr < 77) {
+      shouldRetire = Math.random() > 0.55;
     }
 
     if (shouldRetire) {

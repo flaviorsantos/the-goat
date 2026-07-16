@@ -1,112 +1,177 @@
-import type { Position } from '../types';
+import type { PlayerAttributes, Position } from '../types';
+
+type AttributeInput = PlayerAttributes | Record<string, number>;
+
+type PositionModifiers = {
+  points: number;
+  assists: number;
+  rebounds: number;
+  steals: number;
+  blocks: number;
+};
+
+const POSITION_MODIFIERS: Record<Position, PositionModifiers> = {
+  PG: { points: 0.98, assists: 1.35, rebounds: 0.62, steals: 1.05, blocks: 0.35 },
+  SG: { points: 1.08, assists: 0.88, rebounds: 0.72, steals: 1.00, blocks: 0.45 },
+  SF: { points: 1.04, assists: 0.82, rebounds: 0.88, steals: 0.95, blocks: 0.75 },
+  PF: { points: 0.98, assists: 0.70, rebounds: 1.15, steals: 0.82, blocks: 1.30 },
+  C: { points: 0.94, assists: 0.64, rebounds: 1.35, steals: 0.75, blocks: 1.65 },
+};
+
+const OVR_WEIGHTS: Record<Position, PlayerAttributes> = {
+  PG: {
+    Shooting: 0.15, Dribbling: 0.20, Defense: 0.10, IQ: 0.15,
+    Athleticism: 0.10, Passing: 0.20, Rebounding: 0.02, Speed: 0.03,
+    Finishing: 0.05,
+  },
+  SG: {
+    Shooting: 0.22, Dribbling: 0.14, Defense: 0.12, IQ: 0.09,
+    Athleticism: 0.12, Passing: 0.07, Rebounding: 0.05, Speed: 0.07,
+    Finishing: 0.12,
+  },
+  SF: {
+    Shooting: 0.16, Dribbling: 0.10, Defense: 0.15, IQ: 0.10,
+    Athleticism: 0.14, Passing: 0.08, Rebounding: 0.08, Speed: 0.05,
+    Finishing: 0.14,
+  },
+  PF: {
+    Shooting: 0.07, Dribbling: 0.05, Defense: 0.20, IQ: 0.10,
+    Athleticism: 0.15, Passing: 0.05, Rebounding: 0.23, Speed: 0.04,
+    Finishing: 0.11,
+  },
+  C: {
+    Shooting: 0.04, Dribbling: 0.03, Defense: 0.22, IQ: 0.10,
+    Athleticism: 0.14, Passing: 0.04, Rebounding: 0.27, Speed: 0.03,
+    Finishing: 0.13,
+  },
+};
+
+const clamp = (value: number, minimum: number, maximum: number) =>
+  Math.min(maximum, Math.max(minimum, value));
+
+const randomVariation = (amplitude: number) =>
+  (Math.random() + Math.random() - 1) * amplitude;
+
+const getAttribute = (attrs: AttributeInput, key: keyof PlayerAttributes) =>
+  clamp(attrs[key] ?? 30, 30, 99);
+
+export const calculateOverall = (
+  attrs: AttributeInput,
+  position: Position,
+) => {
+  const weights = OVR_WEIGHTS[position];
+  const overall = Object.entries(weights).reduce(
+    (sum, [key, weight]) =>
+      sum + getAttribute(attrs, key as keyof PlayerAttributes) * weight,
+    0,
+  );
+
+  return Math.round(clamp(overall, 30, 99));
+};
 
 export const calculateSeasonStats = (
-  attrs: any, 
-  position: Position, 
-  ovr: number, 
-  teamOvr: number, 
-  _age: number
+  attrs: AttributeInput,
+  position: Position,
+  ovr: number,
+  teamOvr: number,
+  age: number,
 ) => {
-  // 1. Garante que nenhum atributo essencial venha vazio ou indefinido
-  const safeAttrs = {
-    Shooting: attrs.Shooting || 30,
-    Dribbling: attrs.Dribbling || 30,
-    Defense: attrs.Defense || 30,
-    IQ: attrs.IQ || 30,
-    Athleticism: attrs.Athleticism || 30,
-    Passing: attrs.Passing || 30,
-    Rebounding: attrs.Rebounding || 30,
-    Speed: attrs.Speed || 30,
-    Finishing: attrs.Finishing || attrs.Mentality || 30 
-  };
+  const shooting = getAttribute(attrs, 'Shooting');
+  const dribbling = getAttribute(attrs, 'Dribbling');
+  const defense = getAttribute(attrs, 'Defense');
+  const iq = getAttribute(attrs, 'IQ');
+  const athleticism = getAttribute(attrs, 'Athleticism');
+  const passing = getAttribute(attrs, 'Passing');
+  const rebounding = getAttribute(attrs, 'Rebounding');
+  const speed = getAttribute(attrs, 'Speed');
+  const finishing = getAttribute(attrs, 'Finishing');
+  const modifiers = POSITION_MODIFIERS[position];
 
-  // 2. NOVA FÓRMULA DE MINUTOS (Mais realista para o OVR)
-  // Superestrelas (85+ OVR) DEVEM jogar 34 a 38 minutos, independentemente da equipa.
-  let mpg = 20 + ((ovr - 65) * 1.1);
-  if (ovr >= 85) {
-    mpg = 34 + (Math.random() * 3); // Entre 34 e 37 minutos
-  }
-  if (mpg > 39.5) mpg = 39.5; 
-  if (mpg < 12) mpg = 12; // Mínimo de minutos aceitável para um jogador Draftado com potencial
+  const ageMinutesPenalty = age >= 37 ? (age - 36) * 0.8 : 0;
+  const mpg = clamp(
+    12 + (ovr - 60) * 0.78 - ageMinutesPenalty + randomVariation(1.4),
+    10,
+    37.5,
+  );
+  const minuteScale = mpg / 36;
 
-  // 3. NOVA FÓRMULA DE USAGE (Taxa de uso ofensivo)
-  // O peso do OVR do jogador agora dita o protagonismo, o time não pode "afogar" a estrela.
-  const starPower = (safeAttrs.Shooting + safeAttrs.Finishing + safeAttrs.Dribbling) / 3;
-  let usage = 15 + ((ovr / teamOvr) * 10) + (starPower * 0.12);
-  
-  // Se o jogador for um pontuador nato de alto overall, ele lidera o ataque obrigatoriamente
-  if (ovr >= 85) {
-    usage = Math.max(usage, 26 + (Math.random() * 6)); // Mínimo de 26% a 32% de Usage
-  }
-  if (usage > 38) usage = 38;
+  const offensiveSkill =
+    shooting * 0.38 +
+    finishing * 0.34 +
+    dribbling * 0.18 +
+    athleticism * 0.10;
 
-  // Modificadores suaves de posição para não engessar as builds híbridas
-  const posMods: Record<string, any> = {
-    PG: { pts: 1.0, ast: 1.45, reb: 0.85, stl: 1.15, blk: 0.5 },
-    SG: { pts: 1.12, ast: 0.95, reb: 0.90, stl: 1.05, blk: 0.6 },
-    SF: { pts: 1.08, ast: 0.90, reb: 1.00, stl: 1.00, blk: 0.8 },
-    PF: { pts: 1.02, ast: 0.80, reb: 1.18, stl: 0.85, blk: 1.15 },
-    C:  { pts: 0.95, ast: 0.70, reb: 1.25, stl: 0.75, blk: 1.30 },
-  };
-  const mod = posMods[position] || posMods['SF'];
+  const pointsPer36 =
+    (5 + (offensiveSkill - 50) * 0.42 + (ovr - 70) * 0.18) *
+    modifiers.points;
+  const assistsPer36 =
+    (1 + (passing - 50) * 0.12 + (iq - 50) * 0.04) *
+    modifiers.assists;
+  const reboundsPer36 =
+    (1.5 + (rebounding - 50) * 0.16 + (athleticism - 50) * 0.04) *
+    modifiers.rebounds;
+  const stealsPer36 =
+    (0.35 +
+      (defense - 50) * 0.025 +
+      (speed - 50) * 0.012 +
+      (iq - 50) * 0.008) *
+    modifiers.steals;
+  const blocksPer36 =
+    (0.15 + (defense - 50) * 0.018 + (athleticism - 50) * 0.012) *
+    modifiers.blocks;
 
-  // 4. EQUAÇÕES MATEMÁTICAS AMPLIADAS PARA REALISMO DA NBA
-  // O volume de pontos (ppgBase) precisa de uma base aritmética muito mais agressiva
-  let ppgBase = ((safeAttrs.Shooting * 0.40) + (safeAttrs.Finishing * 0.45) + (safeAttrs.Dribbling * 0.15)) * (usage / 100) * (mpg / 24);
-  
-  // Garantimos que o Passing + IQ escalem o APG de forma robusta
-  let apgBase = ((safeAttrs.Passing * 0.65) + (safeAttrs.IQ * 0.35)) * (usage / 100) * (mpg / 22);
-  
-  // Ressaltos devem ser agressivos se o atributo Rebounding for alto (Estilo Westbrook/Robertson)
-  let rpgBase = ((safeAttrs.Rebounding * 0.70) + (safeAttrs.Athleticism * 0.30)) * (mpg / 26);
-  
-  let spgBase = ((safeAttrs.Defense * 0.5) + (safeAttrs.Speed * 0.3) + (safeAttrs.IQ * 0.2)) * (mpg / 30);
-  let bpgBase = ((safeAttrs.Defense * 0.4) + (safeAttrs.Athleticism * 0.6)) * (mpg / 30);
+  const ppg = clamp(pointsPer36 * minuteScale + randomVariation(2.2), 2, 38);
+  const apg = clamp(assistsPer36 * minuteScale + randomVariation(0.7), 0.5, 12.5);
+  const rpg = clamp(reboundsPer36 * minuteScale + randomVariation(0.8), 0.8, 15.5);
+  const spg = clamp(stealsPer36 * minuteScale + randomVariation(0.18), 0.1, 3);
+  const bpg = clamp(blocksPer36 * minuteScale + randomVariation(0.2), 0.1, 4);
+  const tov = clamp(
+    0.65 + ppg * 0.06 + apg * 0.13 - (iq - 50) * 0.009 + randomVariation(0.35),
+    0.5,
+    5,
+  );
 
-  // 5. MODIFICADORES FINAIS LIVRES DE SUPER-NERFS
-  let ppg = ppgBase * mod.pts * 1.5 + (Math.random() * 3 - 1.5);
-  let apg = apgBase * mod.ast * 0.45 + (Math.random() * 1.2 - 0.6);
-  let rpg = rpgBase * mod.reb * 0.40 + (Math.random() * 1.5 - 0.75);
-  let spg = spgBase * mod.stl * 0.50 + (Math.random() * 0.3 - 0.15);
-  let bpg = bpgBase * mod.blk * 0.50 + (Math.random() * 0.3 - 0.15);
-  let tov = (usage * 0.13) - (safeAttrs.IQ * 0.01) + (Math.random() * 0.8);
-
-  // Garantia mínima realista baseada no OVR
-  if (ovr >= 85) {
-    ppg = Math.max(ppg, 20.0);
-    if (position === 'PG' && safeAttrs.Passing >= 85) {
-      apg = Math.max(apg, 7.5);
-    }
-    if (safeAttrs.Rebounding >= 85) {
-      rpg = Math.max(rpg, 7.5); // Garante o perfil Westbrook de Triplos-Duplos!
-    }
-  } else if (ovr >= 78) {
-    ppg = Math.max(ppg, 13.0);
-  }
-
-  // Percentagens de eficiência
-  let fgPctBase = 0.41 + (safeAttrs.Finishing * 0.0012) + (safeAttrs.Shooting * 0.0008);
-  if (position === 'C' || position === 'PF') fgPctBase += 0.04;
-  let fgPct = fgPctBase + (Math.random() * 0.03 - 0.015);
-  
-  let threepPct = 0.26 + (safeAttrs.Shooting * 0.0016) + (Math.random() * 0.03 - 0.015);
-  let ftPct = 0.65 + (safeAttrs.Shooting * 0.0025) + (Math.random() * 0.03 - 0.015);
-
-  // Plus/Minus
-  let plusMinusBase = ((teamOvr - 80) * 0.4) + ((ovr - 75) * 0.3);
-  let plusMinus = plusMinusBase + (Math.random() * 3 - 1.5);
+  const sizeEfficiencyBonus = position === 'C'
+    ? 0.025
+    : position === 'PF'
+      ? 0.012
+      : 0;
+  const fgPct = clamp(
+    0.36 +
+      shooting * 0.0007 +
+      finishing * 0.00125 +
+      sizeEfficiencyBonus +
+      randomVariation(0.012),
+    0.36,
+    0.65,
+  );
+  const fg3Pct = clamp(
+    0.255 + shooting * 0.00155 + randomVariation(0.012),
+    0.22,
+    0.46,
+  );
+  const ftPct = clamp(
+    0.61 + shooting * 0.0028 + iq * 0.00025 + randomVariation(0.012),
+    0.52,
+    0.94,
+  );
+  const plusMinus = clamp(
+    (teamOvr - 78) * 0.34 + (ovr - 75) * 0.24 + randomVariation(2),
+    -10,
+    12,
+  );
 
   return {
-    mpg: Number(Math.max(2, mpg).toFixed(1)),
-    ppg: Number(Math.max(2, ppg).toFixed(1)),
-    rpg: Number(Math.max(1, rpg).toFixed(1)),
-    apg: Number(Math.max(1, apg).toFixed(1)),
-    spg: Number(Math.max(0.1, spg).toFixed(1)),
-    bpg: Number(Math.max(0.1, bpg).toFixed(1)),
-    tov: Number(Math.max(0.5, tov).toFixed(1)),
-    fgPct: Number(Math.min(0.68, Math.max(0.33, fgPct)).toFixed(3)),
-    threepPct: Number(Math.min(0.50, Math.max(0.08, threepPct)).toFixed(3)),
-    ftPct: Number(Math.min(0.96, Math.max(0.35, ftPct)).toFixed(3)),
-    plusMinus: Number(plusMinus.toFixed(1))
+    mpg: Number(mpg.toFixed(1)),
+    ppg: Number(ppg.toFixed(1)),
+    rpg: Number(rpg.toFixed(1)),
+    apg: Number(apg.toFixed(1)),
+    spg: Number(spg.toFixed(1)),
+    bpg: Number(bpg.toFixed(1)),
+    tov: Number(tov.toFixed(1)),
+    fgPct: Number(fgPct.toFixed(3)),
+    fg3Pct: Number(fg3Pct.toFixed(3)),
+    ftPct: Number(ftPct.toFixed(3)),
+    plusMinus: Number(plusMinus.toFixed(1)),
   };
 };

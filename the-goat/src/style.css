@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "flag-icons/css/flag-icons.min.css";
 
 body {
   @apply bg-black text-white min-h-screen font-sans;

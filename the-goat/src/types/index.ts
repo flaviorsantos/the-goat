@@ -95,13 +95,12 @@ export interface PlayoffRunStats {
   overallAverages: PlayoffGameStats & { gamesPlayed: number } | null;
 }
 
-//export type SeasonStatsFields = Pick<SeasonStats, 'mpg' | 'ppg' | 'rpg' | 'apg' | 'spg' | 'bpg' | 'topg' | 'fgPct' | 'fg3Pct' | 'ftPct' | 'plusMinus' | 'teamWins'>;
-
 export interface SeasonStats {
   seasonNumber: number;
   age: number;
   ovr: number;
   teamId: string;
+  gamesPlayed: number;
   teamWins: number;
   teamLosses: number;
   mpg: number;
@@ -110,7 +109,7 @@ export interface SeasonStats {
   apg: number;
   spg: number;
   bpg: number;
-  topg: number;
+  tov: number;
   fgPct: number;
   fg3Pct: number;
   ftPct: number;
@@ -121,11 +120,14 @@ export interface SeasonStats {
   playoffs: PlayoffRunStats;
 }
 export interface CareerTotals {
+  gamesPlayed: number;
   totalPoints: number;
   totalRebounds: number;
   totalAssists: number;
   totalSteals: number;
   totalBlocks: number;
+  totalTurnovers: number;
+  totalEarnings: number;
   rings: number;
   mvps: number;
   seasonsPlayed: number;

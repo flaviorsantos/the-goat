@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useGameEngine } from './composables/useGameEngine';
 import { useDraft } from './composables/useDraft';
 import { calculateGoatScore } from './utils/careerEvaluator';
-import { runStressTest } from './utils/stressTest';
-import type { Position, Difficulty } from './types';
+import { compareCareer } from './utils/careerComparison';
+import { calculateOverall } from './utils/statsCalculator';
+import type { Difficulty, PlayerAttributes, Position } from './types';
 
 // Motor do Jogo
 const { 
@@ -22,7 +23,6 @@ const {
   drawRandomPlayer, 
   useReroll, 
   selectAttribute, 
-  calculateStartingOVR, 
   getRandomTeam,
   generateRookieAttributes,
   calculateDraftPick,
@@ -33,14 +33,32 @@ const {
 const availableSlots = computed(() => Object.keys(myAttributes.value) as Array<keyof typeof myAttributes.value>);
 
 // Utilitários de Dev/Teste
-const executeStressTest = () => {
-  console.log("Iniciando bateria de testes...");
-  runStressTest(50);
+const executeStressTest = async () => {
+  if (!import.meta.env.DEV) return;
+
+  const { runStressTest } = await import('./utils/stressTest');
+  const attributeValues = [85, 90, 95, 99];
+
+  for (const fixedAttributeValue of attributeValues) {
+    await runStressTest({
+      iterationsPerPosition: 50,
+      fixedAttributeValue,
+    });
+  }
 };
 
 // Estados do Formulário e do Jogo
 type GamePhase = 'setup' | 'draft-steal' | 'draft-day' | 'playing' | 'retired';
+type PastCareer = Parameters<typeof loadPastCareer>[0];
+type LastSetup = {
+  name?: string;
+  position?: Position;
+  nationality?: string;
+  jersey?: number;
+};
+
 const currentPhase = ref<GamePhase>('setup');
+const isDev = import.meta.env.DEV;
 
 const inputName = ref('');
 const inputPosition = ref<Position | ''>('');
@@ -48,14 +66,10 @@ const inputNationality = ref('');
 const inputJersey = ref<number | ''>('');
 const selectedDifficulty = ref<Difficulty>('amateur');
 const draftPickResult = ref(60);
-const pastCareers = ref<any[]>([]);
+const pastCareers = ref<PastCareer[]>([]);
+const milestoneButton = ref<HTMLButtonElement | null>(null);
 
-// Carregamento de Legados Antigos
-onMounted(() => {
-  pastCareers.value = JSON.parse(localStorage.getItem('the_goat_past_careers') || '[]');
-});
-
-const viewPastCareer = (career: any) => {
+const viewPastCareer = (career: PastCareer) => {
   loadPastCareer(career);
   currentPhase.value = 'retired';
 };
@@ -87,9 +101,39 @@ const newsFeed = computed(() => {
   return news;
 });
 
+function readStorage<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) as T : fallback;
+  } catch {
+    localStorage.removeItem(key);
+    return fallback;
+  }
+}
+
+const refreshPastCareerScores = (careers: PastCareer[]) =>
+  careers.map(career => {
+    const counts: Record<string, number> = {};
+    career.history.forEach(season => {
+      season.awards?.forEach(award => {
+        counts[award] = (counts[award] ?? 0) + 1;
+      });
+    });
+    const evaluation = calculateGoatScore(
+      career.careerTotals,
+      Object.entries(counts),
+    );
+
+    return {
+      ...career,
+      goatScore: evaluation.score,
+      goatTier: evaluation.tier,
+    };
+  });
+
 const formattedTimeline = computed(() => {
   if (!player.value.careerTimeline) return [];
-  return player.value.careerTimeline.map((entry: any, index: number) => {
+  return player.value.careerTimeline.map((entry, index) => {
     const isLast = index === player.value.careerTimeline.length - 1;
     const end = entry.endYear !== null ? entry.endYear : history.value.length;
     const startAge = 19 + entry.startYear - 1;
@@ -124,10 +168,17 @@ const detailedAwards = computed(() => {
 });
 
 const goatEvaluation = computed(() => calculateGoatScore(careerTotals.value, detailedAwards.value));
+const careerComparisons = computed(() => compareCareer({
+  position: player.value.position,
+  totals: careerTotals.value,
+  awards: trophyCabinet.value,
+}));
 
 const getRecordPercentage = (current: number, record: number) => {
   return Math.min(100, (current / record) * 100).toFixed(1);
 };
+
+const formatPercentage = (value: number) => `${(value * 100).toFixed(1)}%`;
 
 
 // --- CONSTANTES E OPÇÕES ---
@@ -157,16 +208,16 @@ const easternTeams = computed(() => {
   if (!leagueTeams.value) return [];
   const eastIds = ['BOS','NYK','PHI','MIL','CLE','IND','MIA','ORL','CHI','ATL','BKN','TOR','CHA','WAS','DET'];
   return leagueTeams.value
-    .filter((t: { id: string; }) => eastIds.includes(t.id))
-    .sort((a: { wins: any; }, b: { wins: any; }) => (b.wins || 0) - (a.wins || 0));
+    .filter(team => eastIds.includes(team.id))
+    .sort((a, b) => (b.wins || 0) - (a.wins || 0));
 });
 
 const westernTeams = computed(() => {
   if (!leagueTeams.value) return [];
   const westIds = ['DEN','OKC','MIN','LAC','DAL','PHX','LAL','NOP','SAC','GSW','HOU','UTA','MEM','SAS','POR'];
   return leagueTeams.value
-    .filter((t: { id: string; }) => westIds.includes(t.id) || !['BOS','NYK','PHI','MIL','CLE','IND','MIA','ORL','CHI','ATL','BKN','TOR','CHA','WAS','DET'].includes(t.id))
-    .sort((a: { wins: any; }, b: { wins: any; }) => (b.wins || 0) - (a.wins || 0));
+    .filter(team => westIds.includes(team.id))
+    .sort((a, b) => (b.wins || 0) - (a.wins || 0));
 });
 
 // --- AÇÕES DO JOGO ---
@@ -190,17 +241,19 @@ const bestSeasonNumber = computed(() => {
   let best = history.value[0];
   let maxScore = 0;
   history.value.forEach(s => {
-    // Cálculo simples de impacto: Produção + Prêmios
-    const score = s.ppg + s.apg + s.rpg + (s.wonRing ? 10 : 0) + (s.awards?.includes('MVP') ? 15 : 0);
+    const score = s.ppg + s.apg + s.rpg + (s.playoffs?.wonRing ? 10 : 0) + (s.awards?.includes('MVP') ? 15 : 0);
     if (score > maxScore) { maxScore = score; best = s; }
   });
   return best.seasonNumber;
 });
 
 const processDraftDay = () => {
-  const peakAttributes = { ...myAttributes.value } as any;
+  const peakAttributes: PlayerAttributes = { ...myAttributes.value };
   const rookieAttributes = generateRookieAttributes(peakAttributes);
-  const initialOvr = calculateStartingOVR(rookieAttributes);
+  const initialOvr = calculateOverall(
+    rookieAttributes,
+    inputPosition.value as Position,
+  );
   const draftedTeam = getRandomTeam();
   
   draftPickResult.value = calculateDraftPick(initialOvr);
@@ -237,7 +290,9 @@ const startCareer = () => {
 const viewLegacy = () => { currentPhase.value = 'retired'; };
 
 const resetGame = () => {
-  pastCareers.value = JSON.parse(localStorage.getItem('the_goat_past_careers') || '[]');
+  pastCareers.value = refreshPastCareerScores(
+    readStorage<PastCareer[]>('the_goat_past_careers', []),
+  );
   resetDraft();
   currentPhase.value = 'setup';
 };
@@ -251,20 +306,38 @@ const retireManual = () => {
 };
 
 onMounted(() => {
-  pastCareers.value = JSON.parse(localStorage.getItem('the_goat_past_careers') || '[]');
-  const lastSetup = JSON.parse(localStorage.getItem('the_goat_last_setup') || '{}');
+  pastCareers.value = refreshPastCareerScores(
+    readStorage<PastCareer[]>('the_goat_past_careers', []),
+  );
+  const lastSetup = readStorage<LastSetup>('the_goat_last_setup', {});
   if (lastSetup.name) {
     inputName.value = lastSetup.name;
-    inputPosition.value = lastSetup.position;
-    inputNationality.value = lastSetup.nationality;
-    inputJersey.value = lastSetup.jersey;
+    inputPosition.value = lastSetup.position ?? '';
+    inputNationality.value = lastSetup.nationality ?? '';
+    inputJersey.value = lastSetup.jersey ?? '';
   }
 });
 
+let draftTimer: ReturnType<typeof setTimeout> | undefined;
+
 watch(() => isDraftComplete.value, (newVal) => {
   if (newVal) {
-    setTimeout(() => { processDraftDay(); }, 600); // 600ms para feedback visual da última escolha
+    draftTimer = setTimeout(processDraftDay, 600);
   }
+});
+
+watch(
+  () => pendingMilestones.value.length,
+  async length => {
+    if (length > 0) {
+      await nextTick();
+      milestoneButton.value?.focus();
+    }
+  },
+);
+
+onBeforeUnmount(() => {
+  if (draftTimer) clearTimeout(draftTimer);
 });
 </script>
 
@@ -280,88 +353,112 @@ watch(() => isDraftComplete.value, (newVal) => {
       <section v-if="currentPhase === 'setup'" class="max-w-3xl mx-auto pb-12">
         <div class="mb-12 border-b border-gray-800 pb-8">
           <p class="text-yellow-500 font-bold tracking-widest text-xs uppercase mb-2">How it works</p>
-          <h1 class="text-4xl font-black text-white uppercase leading-tight">Steal attributes from legends. Live a career. Discover if you are the Goat.</h1>
+          <h2 class="text-4xl font-black text-white uppercase leading-tight">Steal attributes from legends. Live a career. Discover if you are the Goat.</h2>
         </div>
         
         <div class="space-y-10">
           
           <!-- Nome -->
           <div>
-            <label class="block text-xl font-black text-white mb-4 uppercase">Your Name</label>
-            <input v-model="inputName" type="text" class="w-full bg-[#0a0a0a] border border-gray-800 rounded-lg px-6 py-5 text-xl text-white font-bold focus:outline-none focus:border-yellow-500 transition-colors" placeholder="How will the world call you?" />
+            <label for="player-name" class="block text-xl font-black text-white mb-4 uppercase">Your Name</label>
+            <input
+              id="player-name"
+              v-model.trim="inputName"
+              type="text"
+              autocomplete="name"
+              class="w-full bg-[#0a0a0a] border border-gray-800 rounded-lg px-6 py-5 text-xl text-white font-bold transition-colors focus-visible:outline-none focus-visible:border-yellow-500 focus-visible:ring-2 focus-visible:ring-yellow-500"
+              placeholder="How will the world call you?"
+            />
           </div>
 
           <!-- Nacionalidade -->
-          <div>
-            <label class="block text-xl font-black text-white mb-4 uppercase">Nationality</label>
+          <fieldset>
+            <legend class="block text-xl font-black text-white mb-4 uppercase">Nationality</legend>
             <div class="grid grid-cols-7 gap-2">
               <button 
                 v-for="nat in nationalities" 
                 :key="nat.code"
+                type="button"
                 @click="inputNationality = nat.code"
                 :class="inputNationality === nat.code ? 'bg-yellow-500 text-black border-yellow-500' : 'bg-[#0a0a0a] border-gray-800 text-gray-400 hover:border-gray-500'"
                 class="border rounded py-2 flex flex-col items-center justify-center transition-colors"
+                :aria-pressed="inputNationality === nat.code"
+                :aria-label="`Select nationality: ${nat.name}`"
               >
                 <span class="font-black text-sm">{{ nat.code }}</span>
               </button>
             </div>
-          </div>
+          </fieldset>
 
           <!-- Posição -->
-          <div>
-            <label class="block text-xl font-black text-white mb-4 uppercase">Choose your Position</label>
+          <fieldset>
+            <legend class="block text-xl font-black text-white mb-4 uppercase">Choose your Position</legend>
             <div class="grid grid-cols-5 gap-3">
               <button 
                 v-for="pos in positions" 
                 :key="pos.code"
+                type="button"
                 @click="inputPosition = pos.code as Position"
                 :class="inputPosition === pos.code ? 'bg-yellow-500 text-black border-yellow-500' : 'bg-[#0a0a0a] border-gray-800 text-gray-400 hover:border-gray-500'"
                 class="border rounded-lg py-4 flex flex-col items-center justify-center transition-colors"
+                :aria-pressed="inputPosition === pos.code"
+                :aria-label="`Select position: ${pos.name}`"
               >
                 <span class="font-black text-xl">{{ pos.code }}</span>
                 <span class="text-[9px] uppercase font-bold opacity-80 mt-1">{{ pos.name }}</span>
               </button>
             </div>
-          </div>
+          </fieldset>
 
           <!-- Número da Camisa -->
           <div>
-            <label class="block text-xl font-black text-white mb-4 uppercase">Jersey Number</label>
-            <input 
-              v-model="inputJersey" 
-              type="number" min="0" max="99" 
-              class="w-32 bg-[#0a0a0a] border border-gray-800 rounded-lg px-6 py-4 text-2xl text-center text-white font-black focus:outline-none focus:border-yellow-500 transition-colors" 
-              placeholder="0-99" 
+            <label for="jersey-number" class="block text-xl font-black text-white mb-4 uppercase">Jersey Number</label>
+            <input
+              id="jersey-number"
+              v-model.number="inputJersey"
+              type="number"
+              min="0"
+              max="99"
+              inputmode="numeric"
+              class="w-32 bg-[#0a0a0a] border border-gray-800 rounded-lg px-6 py-4 text-2xl text-center text-white font-black transition-colors focus-visible:outline-none focus-visible:border-yellow-500 focus-visible:ring-2 focus-visible:ring-yellow-500"
+              placeholder="0-99"
             />
           </div>
 
           <!-- Modos de Jogo e Dificuldade -->
           <div class="space-y-6 pt-6 border-t border-gray-800">
-            <div>
-              <label class="block text-sm font-bold text-gray-500 mb-3 uppercase tracking-widest">Difficulty</label>
+            <fieldset>
+              <legend class="block text-sm font-bold text-gray-500 mb-3 uppercase tracking-widest">Difficulty</legend>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <button 
+                  type="button"
                   @click="selectedDifficulty = 'amateur'"
                   :class="selectedDifficulty === 'amateur' ? 'border-yellow-500 bg-[#12120a]' : 'border-gray-800 bg-[#0a0a0a]'"
                   class="border p-5 rounded-lg text-left transition-colors"
+                  :aria-pressed="selectedDifficulty === 'amateur'"
+                  aria-label="Select difficulty: Amateur"
                 >
                   <p class="font-black text-white text-lg uppercase mb-1" :class="selectedDifficulty === 'amateur' ? 'text-yellow-500' : ''">Amateur <span v-if="selectedDifficulty === 'amateur'" class="text-yellow-500 text-xs ml-1">●</span></p>
                   <p class="text-xs text-gray-400 font-bold">See legends' exact numbers. 1 blind reroll.</p>
                 </button>
                 <button 
+                  type="button"
                   @click="selectedDifficulty = 'pro'"
                   :class="selectedDifficulty === 'pro' ? 'border-yellow-500 bg-[#12120a]' : 'border-gray-800 bg-[#0a0a0a]'"
                   class="border p-5 rounded-lg text-left transition-colors"
+                  :aria-pressed="selectedDifficulty === 'pro'"
+                  aria-label="Select difficulty: Pro"
                 >
                   <p class="font-black text-white text-lg uppercase mb-1" :class="selectedDifficulty === 'pro' ? 'text-yellow-500' : ''">Pro</p>
                   <p class="text-xs text-gray-400 font-bold">No numbers. No rerolls. For purists.</p>
                 </button>
               </div>
-            </div>
+            </fieldset>
           </div>
 
           <div class="text-center mt-12">
             <button 
+              type="button"
               @click="startDraftSteal" 
               :disabled="!inputName || !inputPosition || !inputNationality || inputJersey === ''"
               class="mx-auto bg-yellow-500 text-black font-black py-5 px-16 rounded-full hover:bg-yellow-400 uppercase tracking-widest transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-xl shadow-lg"
@@ -371,9 +468,11 @@ watch(() => isDraftComplete.value, (newVal) => {
           </div>
 
           <!-- Debug Button (Posicionado discretamente no canto) -->
-          <button 
-            @click="executeStressTest" 
+          <button
+            v-if="isDev"
+            type="button"
             class="fixed bottom-4 right-4 bg-red-900/50 hover:bg-red-600 text-white p-2 rounded text-[9px] uppercase font-black tracking-widest opacity-30 hover:opacity-100 transition-opacity z-50"
+            @click="executeStressTest"
           >
             Run Stress Test
           </button>
@@ -587,15 +686,15 @@ watch(() => isDraftComplete.value, (newVal) => {
                   </div>
                   <div class="flex justify-between text-sm">
                     <span class="text-gray-400 font-bold">FG%</span>
-                    <span class="text-white font-black">{{ lastSeason ? lastSeason.fgPct.toFixed(3) : '0.000' }}%</span>
+                    <span class="text-white font-black">{{ lastSeason ? (lastSeason.fgPct * 100).toFixed(1) : '0.0' }}%</span>
                   </div>
                   <div class="flex justify-between text-sm">
                     <span class="text-gray-400 font-bold">3P%</span>
-                    <span class="text-white font-black">{{ lastSeason ? lastSeason.fg3Pct.toFixed(3) : '0.000' }}%</span>
+                    <span class="text-white font-black">{{ lastSeason ? (lastSeason.fg3Pct * 100).toFixed(1) : '0.0' }}%</span>
                   </div>
                   <div class="flex justify-between text-sm">
                     <span class="text-gray-400 font-bold">FT%</span>
-                    <span class="text-white font-black">{{ lastSeason ? lastSeason.ftPct.toFixed(3) : '0.000' }}%</span>
+                    <span class="text-white font-black">{{ lastSeason ? (lastSeason.ftPct * 100).toFixed(1) : '0.0' }}%</span>
                   </div>
                   <div class="flex justify-between text-sm">
                     <span class="text-gray-400 font-bold">+/-</span>
@@ -739,7 +838,7 @@ watch(() => isDraftComplete.value, (newVal) => {
         <!-- Cabeçalho do Legado -->
         <div class="flex items-end gap-6 mb-10 border-b border-gray-800 pb-8">
           <div class="bg-[#0a0a0a] border border-gray-800 p-6 rounded-xl text-center min-w-30">
-            <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">Final OVR</p>
+            <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">GOAT Score</p>
             <p class="text-5xl font-black text-yellow-500">{{ goatEvaluation.score }}</p>
           </div>
           <div>
@@ -754,7 +853,7 @@ watch(() => isDraftComplete.value, (newVal) => {
           <!-- Números da Carreira (Totais) -->
           <div>
             <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-3">Career Numbers</p>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div class="bg-[#0a0a0a] border border-yellow-500/30 p-6 rounded-lg text-center relative overflow-hidden">
                 <div class="absolute inset-0 bg-yellow-500/5"></div>
                 <p class="text-yellow-600 text-[10px] font-bold uppercase tracking-widest mb-1 relative z-10">Points</p>
@@ -768,6 +867,44 @@ watch(() => isDraftComplete.value, (newVal) => {
                 <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">Assists</p>
                 <p class="text-3xl font-black text-white">{{ careerTotals.totalAssists }}</p>
               </div>
+              <div class="bg-[#0a0a0a] border border-gray-800 p-6 rounded-lg text-center">
+                <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">Games</p>
+                <p class="text-3xl font-black text-white">{{ careerTotals.gamesPlayed }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Comparações com carreiras reais -->
+          <div class="mt-8">
+            <div class="flex justify-between items-end mb-3">
+              <p class="text-gray-500 text-xs font-bold uppercase tracking-widest">NBA Career Comparisons</p>
+              <p class="text-yellow-500 text-[10px] font-black uppercase tracking-widest">Closest historical profiles</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <article
+                v-for="(comparison, index) in careerComparisons"
+                :key="comparison.player.id"
+                class="bg-[#0a0a0a] border rounded-xl p-5"
+                :class="index === 0 ? 'border-yellow-500/60' : 'border-gray-800'"
+              >
+                <div class="flex items-start justify-between gap-4 mb-3">
+                  <div>
+                    <p class="text-gray-500 text-[9px] font-bold uppercase tracking-widest">
+                      {{ index === 0 ? 'Closest Career' : `Alternative #${index + 1}` }}
+                    </p>
+                    <h2 class="text-white text-lg font-black uppercase mt-1">{{ comparison.player.name }}</h2>
+                    <p class="text-gray-600 text-[10px] font-bold uppercase tracking-widest">
+                      {{ comparison.player.positions.join('/') }} · {{ comparison.player.era }}
+                    </p>
+                  </div>
+                  <span class="text-yellow-500 text-2xl font-black">{{ comparison.similarity }}%</span>
+                </div>
+                <p class="text-gray-400 text-xs leading-relaxed mb-4">{{ comparison.player.summary }}</p>
+                <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
+                  Similar: <span class="text-gray-300">{{ comparison.sharedTraits.join(' · ') }}</span>
+                </p>
+                <p class="text-gray-600 text-[10px] mt-2">{{ comparison.mainDifference }}</p>
+              </article>
             </div>
           </div>
 
@@ -915,14 +1052,16 @@ watch(() => isDraftComplete.value, (newVal) => {
           <!-- Tabela de Histórico (Year-by-Year) -->
           <div class="mt-8 mb-12">
             <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-3">Year-by-Year Stats</p>
-            <div class="bg-[#0a0a0a] border border-gray-800 rounded-xl overflow-hidden">
+            <div class="bg-[#0a0a0a] border border-gray-800 rounded-xl overflow-x-auto">
               <table class="w-full text-left border-collapse table-fixed whitespace-nowrap">
+                <caption class="sr-only">Season-by-season career statistics</caption>
                 <thead>
                   <tr class="bg-gray-900/50 border-b border-gray-800 text-[9px] text-gray-500 uppercase tracking-widest font-black">
                     <th class="py-2 px-2 w-8 text-center">Yr</th>
                     <th class="py-2 px-2 w-10 text-center">Tm</th>
                     <th class="py-2 px-2 w-8 text-center">Ag</th>
                     <th class="py-2 px-2 w-8 text-center">OV</th>
+                    <th class="py-2 px-2 w-8 text-center">G</th>
                     <th class="py-2 px-2 w-10 text-center">PTS</th>
                     <th class="py-2 px-2 w-10 text-center">REB</th>
                     <th class="py-2 px-2 w-10 text-center">AST</th>
@@ -944,18 +1083,19 @@ watch(() => isDraftComplete.value, (newVal) => {
                     <td class="py-1 px-2 text-center text-white font-black font-sans">{{ season.teamId }}</td>
                     <td class="py-1 px-2 text-center">{{ season.age }}</td>
                     <td class="py-1 px-2 text-center text-yellow-500">{{ season.ovr }}</td>
+                    <td class="py-1 px-2 text-center">{{ season.gamesPlayed ?? 82 }}</td>
                     <td class="py-1 px-2 text-center text-white">{{ season.ppg.toFixed(1) }}</td>
                     <td class="py-1 px-2 text-center">{{ season.rpg.toFixed(1) }}</td>
                     <td class="py-1 px-2 text-center">{{ season.apg.toFixed(1) }}</td>
                     <td class="py-1 px-2 text-center">{{ season.spg.toFixed(1) }}</td>
                     <td class="py-1 px-2 text-center">{{ season.bpg.toFixed(1) }}</td>
                     <td class="py-1 px-2 text-center">{{ season.tov.toFixed(1) }}</td>
-                    <td class="py-1 px-2 text-center">{{ season.fgPct.toFixed(3) }}</td>
-                    <td class="py-1 px-2 text-center">{{ season.fg3Pct.toFixed(3) }}</td>
-                    <td class="py-1 px-2 text-center">{{ season.ftPct.toFixed(3) }}</td>
+                    <td class="py-1 px-2 text-center">{{ formatPercentage(season.fgPct) }}</td>
+                    <td class="py-1 px-2 text-center">{{ formatPercentage(season.fg3Pct) }}</td>
+                    <td class="py-1 px-2 text-center">{{ formatPercentage(season.ftPct) }}</td>
                     <td class="py-1 px-2 text-center">{{ season.plusMinus.toFixed(1) }}</td>
                     <td class="py-1 px-2 truncate text-yellow-600 font-sans tracking-widest text-[8px] uppercase">
-                      {{ season.wonRing ? '🏆 RING ' : '' }} {{ season.awards.join(' ') }}
+                      {{ season.playoffs?.wonRing ? '🏆 RING ' : '' }} {{ season.awards.join(' ') }}
                     </td>
                   </tr>
                 </tbody>
@@ -997,29 +1137,41 @@ watch(() => isDraftComplete.value, (newVal) => {
   </main>
 
   <!-- OVERLAY DE MILESTONES (POP-UP) -->
-    <div v-if="pendingMilestones.length > 0" class="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-sm p-4">
-      <div class="bg-[#0a0a0a] border border-gray-800 rounded-xl p-10 max-w-md w-full text-center shadow-2xl animate-fade-in relative overflow-hidden">
-        
-        <!-- Efeito de Fundo -->
-        <div class="absolute inset-0 bg-yellow-500/5 blur-3xl z-0 pointer-events-none"></div>
-        
-        <div class="relative z-10">
-          <div class="flex justify-between items-center mb-8 border-b border-gray-800 pb-3">
-            <p class="text-yellow-500 text-[10px] font-black uppercase tracking-widest">Breaking News</p>
-            <p class="text-gray-600 text-[10px] font-bold uppercase tracking-widest">Season {{ history.length }}</p>
-          </div>
-          
-          <div class="text-6xl mb-6">{{ pendingMilestones[0].icon }}</div>
-          
-          <h2 class="text-2xl font-black text-white uppercase mb-3 leading-tight">{{ pendingMilestones[0].title }}</h2>
-          <p class="text-gray-400 text-sm font-bold uppercase tracking-widest mb-10">{{ pendingMilestones[0].subtitle }}</p>
-          
-          <button @click="dismissMilestone" class="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-black py-4 px-12 rounded-lg transition-colors uppercase tracking-widest text-sm">
-            Continue
-          </button>
+  <div
+    v-if="pendingMilestones.length > 0"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-sm p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="milestone-title"
+    aria-describedby="milestone-description"
+    @keydown.esc="dismissMilestone"
+  >
+    <div class="bg-[#0a0a0a] border border-gray-800 rounded-xl p-10 max-w-md w-full text-center shadow-2xl animate-fade-in relative overflow-hidden">
+      <div class="absolute inset-0 bg-yellow-500/5 blur-3xl z-0 pointer-events-none"></div>
+
+      <div class="relative z-10">
+        <div class="flex justify-between items-center mb-8 border-b border-gray-800 pb-3">
+          <p class="text-yellow-500 text-[10px] font-black uppercase tracking-widest">Breaking News</p>
+          <p class="text-gray-600 text-[10px] font-bold uppercase tracking-widest">Season {{ history.length }}</p>
         </div>
-        
+
+        <div class="text-6xl mb-6" aria-hidden="true">{{ pendingMilestones[0].icon }}</div>
+        <h2 id="milestone-title" class="text-2xl font-black text-white uppercase mb-3 leading-tight">
+          {{ pendingMilestones[0].title }}
+        </h2>
+        <p id="milestone-description" class="text-gray-400 text-sm font-bold uppercase tracking-widest mb-10">
+          {{ pendingMilestones[0].subtitle }}
+        </p>
+
+        <button
+          ref="milestoneButton"
+          type="button"
+          class="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-black py-4 px-12 rounded-lg transition-colors uppercase tracking-widest text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          @click="dismissMilestone"
+        >
+          Continue
+        </button>
       </div>
     </div>
+  </div>
 </template>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.3.2/css/flag-icons.min.css" />
