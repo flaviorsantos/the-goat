@@ -76,16 +76,21 @@ export interface PlayoffGameStats {
   round: string;
   won: boolean;
   home: boolean;
+  opponentTeamId: string;
   opponentOvr: number;
   points: number;
   rebounds: number;
   assists: number;
   steals: number;
   blocks: number;
+  fgPct: number;
+  fg3Pct: number;
+  ftPct: number;
 }
 
 export interface PlayoffSeriesStats {
   round: string;
+  opponentTeamId: string;
   opponentOvr: number;
   gamesPlayed: number;
   wins: number;

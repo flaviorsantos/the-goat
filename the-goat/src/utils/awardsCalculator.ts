@@ -1,4 +1,4 @@
-import type { PlayerAttributes, Position } from '../types';
+import type { PlayerAttributes, PlayoffGameStats, Position } from '../types';
 
 interface SeasonStats {
   ppg: number;
@@ -13,6 +13,28 @@ interface SeasonStats {
 
 const randomBetween = (minimum: number, maximum: number) =>
   minimum + Math.random() * (maximum - minimum);
+
+export function calculateFinalsMvp(
+  finalsAverages: Pick<
+    PlayoffGameStats,
+    'gameNumber' | 'points' | 'rebounds' | 'assists' | 'steals' | 'blocks'
+  > | null,
+  wonRing: boolean,
+) {
+  if (!wonRing || !finalsAverages || finalsAverages.gameNumber < 4) return false;
+
+  const impactScore =
+    finalsAverages.points +
+    finalsAverages.rebounds * 0.65 +
+    finalsAverages.assists * 0.85 +
+    finalsAverages.steals * 2.25 +
+    finalsAverages.blocks * 2.25;
+
+  return (
+    finalsAverages.points >= 12 &&
+    impactScore >= randomBetween(29, 37)
+  );
+}
 
 export function calculateAwards(
   stats: SeasonStats,
@@ -46,6 +68,15 @@ export function calculateAwards(
     awards.push('MVP');
   }
 
+  if (
+    gamesPlayed >= 55 &&
+    playerOvr >= 82 &&
+    stats.mpg >= 27 &&
+    mvpScore >= randomBetween(33, 39)
+  ) {
+    awards.push('All-Star');
+  }
+
   if (isAwardEligible && mvpScore >= 48 && stats.mpg >= 30) {
     awards.push('All-NBA 1st Team');
   } else if (isAwardEligible && mvpScore >= 43 && stats.mpg >= 28) {
@@ -56,7 +87,7 @@ export function calculateAwards(
 
   if (isRookie && gamesPlayed >= 55 && stats.mpg >= 22) {
     const rookieScore = stats.ppg + stats.rpg + stats.apg;
-    if (rookieScore >= randomBetween(17, 26)) {
+    if (rookieScore >= randomBetween(24, 34)) {
       awards.push('ROTY');
     }
   }
@@ -73,14 +104,13 @@ export function calculateAwards(
 
   const defenseAttribute = attributes.Defense ?? 30;
   const positionBonus =
-    position === 'C' ? 2.5 :
-    position === 'PF' ? 1.5 :
-    position === 'SF' ? 0.5 :
+    position === 'C' ? 0.5 :
+    position === 'PF' ? 0.25 :
     0;
   const defensiveScore =
-    (defenseAttribute - 65) * 0.22 +
+    (defenseAttribute - 65) * 0.35 +
     stats.spg * 5.5 +
-    stats.bpg * 5 +
+    stats.bpg * 3.5 +
     stats.plusMinus * 0.3 +
     teamBonus * 0.4 +
     positionBonus;
@@ -89,12 +119,12 @@ export function calculateAwards(
     playerOvr >= 84 &&
     isAwardEligible &&
     stats.mpg >= 28 &&
-    defensiveScore >= randomBetween(29, 39)
+    defensiveScore >= randomBetween(24, 34)
   ) {
     awards.push('DPOY', 'All-Defense 1st Team');
-  } else if (isAwardEligible && stats.mpg >= 27 && defensiveScore >= 25) {
+  } else if (isAwardEligible && stats.mpg >= 27 && defensiveScore >= 24) {
     awards.push('All-Defense 1st Team');
-  } else if (isAwardEligible && stats.mpg >= 25 && defensiveScore >= 22) {
+  } else if (isAwardEligible && stats.mpg >= 25 && defensiveScore >= 20) {
     awards.push('All-Defense 2nd Team');
   }
 

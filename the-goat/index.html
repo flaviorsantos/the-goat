@@ -4,7 +4,14 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>the-goat</title>
+    <meta name="theme-color" content="#0b0c0e" />
+    <meta name="description" content="Simule uma carreira no basquete e descubra se você é o GOAT." />
+    <title>GOAT Simulator</title>
+    <script>
+      const savedTheme = localStorage.getItem('the_goat_theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.classList.toggle('dark', savedTheme === 'dark' || (!savedTheme && prefersDark));
+    </script>
   </head>
   <body>
     <div id="app"></div>

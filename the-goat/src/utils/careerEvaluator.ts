@@ -45,10 +45,27 @@ export function calculateGoatScore(
     10,
   );
 
-  let finalScore = rawScore;
-  if (rawScore > 90) {
-    finalScore = 90 + (rawScore - 90) * 0.45;
-  }
+  let finalScore = rawScore > 82
+    ? 82 + (rawScore - 82) * 0.32
+    : rawScore;
+
+  const rings = totals.rings;
+  const mvps = getCount('MVP');
+  const finalsMvps = getCount('Finals MVP');
+  const allNbaFirstTeams = getCount('All-NBA 1st Team');
+  const careerPpg = totals.totalPoints / Math.max(1, totals.gamesPlayed);
+  const goatResume =
+    rings >= 4 &&
+    mvps >= 3 &&
+    finalsMvps >= 3 &&
+    allNbaFirstTeams >= 8 &&
+    (totals.totalPoints >= 28_000 || careerPpg >= 27);
+
+  if (rings === 0) finalScore = Math.min(finalScore, 96);
+  else if (finalsMvps === 0) finalScore = Math.min(finalScore, 95);
+  else if (rings < 2 || mvps < 2) finalScore = Math.min(finalScore, 96);
+  if (!goatResume) finalScore = Math.min(finalScore, 98);
+
   finalScore = Math.floor(clamp(finalScore, 40, 99));
 
   let tier = 'Journeyman';

@@ -1,4 +1,5 @@
-// src/data/players.ts
+// Ratings represent each player's established NBA archetype/peak, not only
+// the most recent season. Scale: 30 (replacement level) to 99 (historic).
 import type { RealPlayer } from '../types';
 
 export const nbaPlayers: RealPlayer[] = [
@@ -7192,6 +7193,33 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: true,
     career: '2014-2015',
     attributes: {Shooting: 74, Dribbling: 75, Defense: 72, IQ: 78, Athleticism: 76, Passing: 72, Rebounding: 62, Speed: 78, Finishing: 62}
+  },
+{
+    id: 800,
+    name: 'Victor Wembanyama',
+    position: 'C',
+    age: 22,
+    isRetired: false,
+    career: '2023-present',
+    attributes: {Shooting: 86, Dribbling: 82, Defense: 99, IQ: 92, Athleticism: 91, Passing: 80, Rebounding: 95, Speed: 82, Finishing: 93}
+  },
+{
+    id: 801,
+    name: 'Amen Thompson',
+    position: 'SF',
+    age: 23,
+    isRetired: false,
+    career: '2023-present',
+    attributes: {Shooting: 65, Dribbling: 88, Defense: 96, IQ: 87, Athleticism: 99, Passing: 88, Rebounding: 90, Speed: 97, Finishing: 94}
+  },
+{
+    id: 802,
+    name: 'Cooper Flagg',
+    position: 'SF',
+    age: 19,
+    isRetired: false,
+    career: '2025-present',
+    attributes: {Shooting: 84, Dribbling: 86, Defense: 88, IQ: 88, Athleticism: 92, Passing: 85, Rebounding: 84, Speed: 89, Finishing: 89}
   }
 ];
 

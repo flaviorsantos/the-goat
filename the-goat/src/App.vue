@@ -9,6 +9,230 @@ import { calculateRetiredJerseys } from './utils/legacyCalculator';
 import { findBestSeasonNumber } from './utils/seasonEvaluator';
 import type { Difficulty, PlayerAttributes, Position } from './types';
 
+type Locale = 'pt' | 'en' | 'es';
+type Theme = 'light' | 'dark';
+
+const messages = {
+  pt: {
+    appName: 'GOAT Simulator', tagline: 'Construa a carreira. Entre para a história.', howItWorks: 'Como funciona',
+    heroTitle: 'Roube atributos de lendas. Viva uma carreira. Descubra se você é o GOAT.',
+    playerName: 'Seu nome', namePlaceholder: 'Como o mundo vai chamar você?', nationality: 'Nacionalidade',
+    position: 'Escolha sua posição', jersey: 'Número da camisa', difficulty: 'Dificuldade', amateur: 'Amador', pro: 'Pro',
+    amateurDesc: 'Veja os números exatos das lendas. 1 nova tentativa às cegas.', proDesc: 'Números visíveis. Identidades ocultas. Sem novas tentativas.',
+    startDraft: 'Começar draft', recentCareers: 'Suas carreiras recentes', filledSlots: 'Atributos preenchidos', blindReroll: 'Nova tentativa',
+    noRerolls: 'Modo Pro: sem novas tentativas', mysteryPlayer: 'Jogador misterioso', identityHidden: 'Identidade oculta', era: 'Era',
+    selected: 'Escolhido', yourPlayer: 'Seu jogador', withPick: 'Com a escolha', selects: 'seleciona', startingOvr: 'OVR inicial',
+    signContract: 'Assinar contrato de calouro', age: 'Idade', morale: 'Moral do time', rookieSeason: 'Temporada de estreia',
+    seasonStats: 'Números da temporada', playoffs: 'Playoffs', game: 'Jogo', result: 'Resultado', court: 'Quadra',
+    simulateSeries: 'Simular série', simulateGame: 'Simular jogo', gameLocked: 'Modo por jogo ativo até o fim da série',
+    playoffsComplete: 'Playoffs concluídos', continue: 'Continuar', careerEnded: 'Carreira encerrada', viewLegacy: 'Ver legado',
+    transferWindow: 'Mercado de transferências', yearsOld: 'anos', contractExpired: 'Seu contrato terminou', listenOffers: 'Ouvir propostas',
+    contract: 'Contrato', yearsLeft: 'anos restantes', simulateSeason: 'Simular temporada', simulateCareer: 'Simular carreira até o fim',
+    preferredTeam: 'Time preferido', requestTrade: 'Pedir troca', retire: 'Anunciar aposentadoria', press: 'Imprensa',
+    standings: 'Classificação', eastern: 'Leste', western: 'Oeste', seasonLeaders: 'Líderes da temporada',
+    legacy: 'Legado', careerScore: 'Pontuação da carreira', careerTotals: 'Totais da carreira', points: 'Pontos', rebounds: 'Rebotes',
+    assists: 'Assistências', games: 'Jogos', comparisons: 'Comparações históricas', careerPath: 'Caminho da carreira',
+    trophyCabinet: 'Sala de troféus', records: 'Recordes e legado', yearByYear: 'Temporada por temporada', originalDna: 'DNA original',
+    earnings: 'Ganhos na carreira', newCareer: 'Nova carreira', breakingNews: 'Última hora', season: 'Temporada', seasons: 'Temporadas',
+    themeLight: 'Ativar modo claro', themeDark: 'Ativar modo escuro', language: 'Idioma', careerAverages: 'Médias da carreira',
+    retiredJerseys: 'Camisas aposentadas', closestProfiles: 'Perfis históricos mais próximos', rings: 'Títulos', allTime: 'Ranking histórico da NBA',
+    steals: 'Roubos', blocks: 'Tocos', mvpAwards: 'Prêmios de MVP', championships: 'Campeonatos', dpoyAwards: 'Prêmios de DPOY',
+    awardsNotes: 'Prêmios e notas', rookieReady: 'O novato está pronto. O mundo está de olho.', playoffBegins: '{team} inicia sua campanha nos playoffs.',
+    championNews: '{player} leva {team} ao título da NBA!', missesPlayoffs: 'Desastre! {team} fica fora dos playoffs.',
+    eliminatedNews: '{team} foi eliminado em {round}.', historicScoring: '{player} teve uma temporada histórica com média de {ppg} PPG.',
+    namedMvp: '{player} foi eleito MVP!', injuryNews: '{injury}: {games} jogos perdidos.',
+    year: 'ano', years: 'anos', seasonSingular: 'temporada', seasonPlural: 'temporadas', stayAt: 'Permanecer no {team}', ageSuffix: 'anos',
+    closestCareer: 'Carreira mais próxima', alternative: 'Alternativa #{number}', fullLegacy: 'Perfil completo de legado',
+    statisticalProfile: 'Perfil estatístico', similar: 'Em comum', careerSnapshot: '{seasons} temporadas · {points} pontos · {rings} títulos',
+    differenceMore: 'Mais {dimension} que {player}', differenceLess: 'Menos {dimension} que {player}', tableCaption: 'Estatísticas da carreira por temporada',
+    yearShort: 'Ano', teamShort: 'Tm', ageShort: 'Id',
+    confirmRetire: 'Tem certeza de que deseja encerrar sua carreira? Esta ação não pode ser desfeita.'
+  },
+  en: {
+    appName: 'GOAT Simulator', tagline: 'Build the career. Enter the history books.', howItWorks: 'How it works',
+    heroTitle: 'Steal attributes from legends. Live a career. Discover if you are the GOAT.',
+    playerName: 'Your name', namePlaceholder: 'What will the world call you?', nationality: 'Nationality', position: 'Choose your position',
+    jersey: 'Jersey number', difficulty: 'Difficulty', amateur: 'Amateur', pro: 'Pro',
+    amateurDesc: "See legends' exact numbers. 1 blind reroll.", proDesc: 'Visible numbers. Hidden identities. No rerolls.',
+    startDraft: 'Start draft', recentCareers: 'Your recent careers', filledSlots: 'Filled slots', blindReroll: 'Blind reroll',
+    noRerolls: 'Pro mode: no rerolls', mysteryPlayer: 'Mystery player', identityHidden: 'Identity hidden', era: 'Era',
+    selected: 'Selected', yourPlayer: 'Your player', withPick: 'With pick', selects: 'selects', startingOvr: 'Starting OVR',
+    signContract: 'Sign rookie contract', age: 'Age', morale: 'Team morale', rookieSeason: 'Rookie season', seasonStats: 'Season stats',
+    playoffs: 'Playoffs', game: 'Game', result: 'Result', court: 'Court', simulateSeries: 'Simulate series', simulateGame: 'Simulate game',
+    gameLocked: 'Game mode locked until series ends', playoffsComplete: 'Playoffs complete', continue: 'Continue', careerEnded: 'Career ended',
+    viewLegacy: 'View legacy', transferWindow: 'Transfer window', yearsOld: 'years old', contractExpired: 'Your contract expired',
+    listenOffers: 'Listen to offers', contract: 'Contract', yearsLeft: 'years left', simulateSeason: 'Simulate season',
+    simulateCareer: 'Simulate career to end', preferredTeam: 'Preferred team', requestTrade: 'Request trade', retire: 'Announce retirement',
+    press: 'The press', standings: 'League standings', eastern: 'Eastern', western: 'Western', seasonLeaders: 'Season leaders',
+    legacy: 'Legacy', careerScore: 'Career score', careerTotals: 'Career totals', points: 'Points', rebounds: 'Rebounds', assists: 'Assists',
+    games: 'Games', comparisons: 'NBA career comparisons', careerPath: 'Career path', trophyCabinet: 'Trophy cabinet',
+    records: 'Records & legacy', yearByYear: 'Year-by-year stats', originalDna: 'Original DNA', earnings: 'Career earnings',
+    newCareer: 'New career', breakingNews: 'Breaking news', season: 'Season', seasons: 'Seasons', themeLight: 'Switch to light mode',
+    themeDark: 'Switch to dark mode', language: 'Language', careerAverages: 'Career averages', retiredJerseys: 'Retired jerseys',
+    closestProfiles: 'Closest historical profiles', rings: 'Rings', allTime: 'All-time NBA leaderboard', steals: 'Steals', blocks: 'Blocks',
+    mvpAwards: 'MVP awards', championships: 'Championships', dpoyAwards: 'DPOY awards', awardsNotes: 'Awards & notes',
+    rookieReady: 'The rookie is ready. The world is watching.', playoffBegins: '{team} begins its playoff run.',
+    championNews: '{player} leads {team} to the NBA championship!', missesPlayoffs: 'Disaster! {team} misses the playoffs.',
+    eliminatedNews: '{team} was eliminated in {round}.', historicScoring: '{player} had a historic scoring season averaging {ppg} PPG.',
+    namedMvp: '{player} was named MVP!', injuryNews: '{injury}: {games} games missed.',
+    year: 'year', years: 'years', seasonSingular: 'season', seasonPlural: 'seasons', stayAt: 'Stay at {team}', ageSuffix: 'yo',
+    closestCareer: 'Closest career', alternative: 'Alternative #{number}', fullLegacy: 'Full legacy profile', statisticalProfile: 'Statistical profile',
+    similar: 'Similar', careerSnapshot: '{seasons} seasons · {points} points · {rings} rings',
+    differenceMore: 'More {dimension} than {player}', differenceLess: 'Less {dimension} than {player}', tableCaption: 'Season-by-season career statistics',
+    yearShort: 'Yr', teamShort: 'Tm', ageShort: 'Age',
+    confirmRetire: 'Are you sure you want to end your career? This action cannot be undone.'
+  },
+  es: {
+    appName: 'GOAT Simulator', tagline: 'Construye la carrera. Entra en la historia.', howItWorks: 'Cómo funciona',
+    heroTitle: 'Roba atributos de leyendas. Vive una carrera. Descubre si eres el GOAT.', playerName: 'Tu nombre',
+    namePlaceholder: '¿Cómo te llamará el mundo?', nationality: 'Nacionalidad', position: 'Elige tu posición', jersey: 'Número de camiseta',
+    difficulty: 'Dificultad', amateur: 'Amateur', pro: 'Pro', amateurDesc: 'Mira los números exactos de las leyendas. 1 nuevo intento a ciegas.',
+    proDesc: 'Números visibles. Identidades ocultas. Sin nuevos intentos.', startDraft: 'Comenzar draft', recentCareers: 'Tus carreras recientes',
+    filledSlots: 'Atributos elegidos', blindReroll: 'Nuevo intento', noRerolls: 'Modo Pro: sin nuevos intentos', mysteryPlayer: 'Jugador misterioso',
+    identityHidden: 'Identidad oculta', era: 'Era', selected: 'Elegido', yourPlayer: 'Tu jugador', withPick: 'Con la selección',
+    selects: 'selecciona', startingOvr: 'OVR inicial', signContract: 'Firmar contrato de novato', age: 'Edad', morale: 'Moral del equipo',
+    rookieSeason: 'Temporada de novato', seasonStats: 'Números de la temporada', playoffs: 'Playoffs', game: 'Partido', result: 'Resultado',
+    court: 'Cancha', simulateSeries: 'Simular serie', simulateGame: 'Simular partido', gameLocked: 'Modo por partido activo hasta el final de la serie',
+    playoffsComplete: 'Playoffs terminados', continue: 'Continuar', careerEnded: 'Carrera terminada', viewLegacy: 'Ver legado',
+    transferWindow: 'Mercado de fichajes', yearsOld: 'años', contractExpired: 'Tu contrato terminó', listenOffers: 'Escuchar ofertas',
+    contract: 'Contrato', yearsLeft: 'años restantes', simulateSeason: 'Simular temporada', simulateCareer: 'Simular carrera hasta el final',
+    preferredTeam: 'Equipo preferido', requestTrade: 'Pedir traspaso', retire: 'Anunciar retiro', press: 'La prensa', standings: 'Clasificación',
+    eastern: 'Este', western: 'Oeste', seasonLeaders: 'Líderes de la temporada', legacy: 'Legado', careerScore: 'Puntuación de carrera',
+    careerTotals: 'Totales de carrera', points: 'Puntos', rebounds: 'Rebotes', assists: 'Asistencias', games: 'Partidos',
+    comparisons: 'Comparaciones históricas', careerPath: 'Trayectoria', trophyCabinet: 'Sala de trofeos', records: 'Récords y legado',
+    yearByYear: 'Temporada por temporada', originalDna: 'ADN original', earnings: 'Ganancias de carrera', newCareer: 'Nueva carrera',
+    breakingNews: 'Última hora', season: 'Temporada', seasons: 'Temporadas', themeLight: 'Activar modo claro', themeDark: 'Activar modo oscuro', language: 'Idioma',
+    careerAverages: 'Promedios de carrera', retiredJerseys: 'Camisetas retiradas', closestProfiles: 'Perfiles históricos más cercanos',
+    rings: 'Títulos', allTime: 'Ranking histórico de la NBA', steals: 'Robos', blocks: 'Tapones', mvpAwards: 'Premios MVP',
+    championships: 'Campeonatos', dpoyAwards: 'Premios DPOY', awardsNotes: 'Premios y notas',
+    rookieReady: 'El novato está listo. El mundo está mirando.', playoffBegins: '{team} comienza su camino en los playoffs.',
+    championNews: '¡{player} lleva a {team} al título de la NBA!', missesPlayoffs: '¡Desastre! {team} queda fuera de los playoffs.',
+    eliminatedNews: '{team} fue eliminado en {round}.', historicScoring: '{player} tuvo una temporada histórica con {ppg} PPG.',
+    namedMvp: '¡{player} fue elegido MVP!', injuryNews: '{injury}: {games} partidos perdidos.',
+    year: 'año', years: 'años', seasonSingular: 'temporada', seasonPlural: 'temporadas', stayAt: 'Quedarse en {team}', ageSuffix: 'años',
+    closestCareer: 'Carrera más cercana', alternative: 'Alternativa #{number}', fullLegacy: 'Perfil completo de legado',
+    statisticalProfile: 'Perfil estadístico', similar: 'En común', careerSnapshot: '{seasons} temporadas · {points} puntos · {rings} títulos',
+    differenceMore: 'Más {dimension} que {player}', differenceLess: 'Menos {dimension} que {player}', tableCaption: 'Estadísticas de carrera por temporada',
+    yearShort: 'Año', teamShort: 'Eq', ageShort: 'Ed',
+    confirmRetire: '¿Seguro que quieres terminar tu carrera? Esta acción no se puede deshacer.'
+  }
+} as const;
+
+type MessageKey = keyof typeof messages.pt;
+const locale = ref<Locale>('en');
+const theme = ref<Theme>('dark');
+const t = (key: MessageKey) => messages[locale.value][key];
+const tf = (key: MessageKey, values: Record<string, string | number>) =>
+  Object.entries(values).reduce((text, [name, value]) => text.replace(`{${name}}`, String(value)), t(key));
+
+type DataGroup = 'attributes' | 'positions' | 'roles' | 'rounds' | 'locations' | 'results' | 'tiers' | 'injuries' | 'awards' | 'dimensions' | 'countries';
+const dataLabels: Record<Locale, Record<DataGroup, Record<string, string>>> = {
+  en: {
+    attributes: { Shooting: 'Shooting', Dribbling: 'Dribbling', Defense: 'Defense', IQ: 'Basketball IQ', Athleticism: 'Athleticism', Passing: 'Passing', Rebounding: 'Rebounding', Speed: 'Speed', Finishing: 'Finishing' },
+    positions: { PG: 'Point Guard', SG: 'Shooting Guard', SF: 'Small Forward', PF: 'Power Forward', C: 'Center' },
+    roles: { Star: 'Star', 'Franchise Player': 'Franchise player', Starter: 'Starter', Bench: 'Bench' },
+    rounds: { '1st Round': 'First round', 'Conf. Semis': 'Conference semifinals', 'Conf. Finals': 'Conference finals', 'NBA Finals': 'NBA Finals' },
+    locations: { HOME: 'Home', AWAY: 'Away' },
+    results: { W: 'W', L: 'L' },
+    tiers: { Journeyman: 'Journeyman', 'The Undisputed GOAT': 'The undisputed GOAT', 'Mount Rushmore': 'Mount Rushmore', 'Generational Talent': 'Generational talent', 'First Ballot Hall of Famer': 'First-ballot Hall of Famer', 'Hall of Famer': 'Hall of Famer', 'All-Time Great': 'All-time great', 'Multiple-Time All-Star': 'Multiple-time All-Star', 'Solid Starter': 'Solid starter', 'Role Player': 'Role player' },
+    injuries: { 'Catastrophic knee injury': 'Catastrophic knee injury', 'Ankle sprain': 'Ankle sprain', 'Back tightness': 'Back tightness', 'Hamstring strain': 'Hamstring strain', 'Knee sprain': 'Knee sprain', 'Shoulder injury': 'Shoulder injury', 'Calf strain': 'Calf strain', 'ACL tear': 'ACL tear', 'Achilles tear': 'Achilles tear', 'Foot fracture': 'Foot fracture', 'Career-Ending Injury': 'Career-ending injury' },
+    awards: { MVP: 'MVP', DPOY: 'Defensive Player of the Year', SMOTY: 'Sixth Man of the Year', ROTY: 'Rookie of the Year', 'All-Star': 'All-Star', 'Finals MVP': 'Finals MVP', 'All-NBA 1st Team': 'All-NBA First Team', 'All-NBA 2nd Team': 'All-NBA Second Team', 'All-NBA 3rd Team': 'All-NBA Third Team', 'All-Defense 1st Team': 'All-Defensive First Team', 'All-Defense 2nd Team': 'All-Defensive Second Team' },
+    dimensions: { 'scoring production': 'scoring production', playmaking: 'playmaking', rebounding: 'rebounding', 'defensive production': 'defensive production', longevity: 'longevity', 'individual accolades': 'individual accolades', 'championship success': 'championship success' }
+    ,countries: { US: 'United States', RS: 'Serbia', SI: 'Slovenia', FR: 'France', CA: 'Canada', AU: 'Australia', ES: 'Spain', GR: 'Greece', DE: 'Germany', BR: 'Brazil', IT: 'Italy', HR: 'Croatia', LT: 'Lithuania', AR: 'Argentina' }
+  },
+  pt: {
+    attributes: { Shooting: 'Arremesso', Dribbling: 'Drible', Defense: 'Defesa', IQ: 'QI de basquete', Athleticism: 'Atletismo', Passing: 'Passe', Rebounding: 'Rebote', Speed: 'Velocidade', Finishing: 'Finalização' },
+    positions: { PG: 'Armador', SG: 'Ala-armador', SF: 'Ala', PF: 'Ala-pivô', C: 'Pivô' },
+    roles: { Star: 'Estrela', 'Franchise Player': 'Jogador da franquia', Starter: 'Titular', Bench: 'Reserva' },
+    rounds: { '1st Round': 'Primeira rodada', 'Conf. Semis': 'Semifinais de conferência', 'Conf. Finals': 'Finais de conferência', 'NBA Finals': 'Finais da NBA' },
+    locations: { HOME: 'Casa', AWAY: 'Fora' },
+    results: { W: 'V', L: 'D' },
+    tiers: { Journeyman: 'Veterano itinerante', 'The Undisputed GOAT': 'O GOAT incontestável', 'Mount Rushmore': 'Monte Rushmore', 'Generational Talent': 'Talento geracional', 'First Ballot Hall of Famer': 'Hall da Fama em primeira categoria', 'Hall of Famer': 'Hall da Fama', 'All-Time Great': 'Lenda', 'Multiple-Time All-Star': 'All-Star várias vezes', 'Solid Starter': 'Titular sólido', 'Role Player': 'Jogador de rotação' },
+    injuries: { 'Catastrophic knee injury': 'Lesão catastrófica no joelho', 'Ankle sprain': 'Entorse no tornozelo', 'Back tightness': 'Rigidez nas costas', 'Hamstring strain': 'Distensão na coxa', 'Knee sprain': 'Entorse no joelho', 'Shoulder injury': 'Lesão no ombro', 'Calf strain': 'Distensão na panturrilha', 'ACL tear': 'Ruptura do ligamento cruzado', 'Achilles tear': 'Ruptura do tendão de Aquiles', 'Foot fracture': 'Fratura no pé', 'Career-Ending Injury': 'Lesão que encerrou a carreira' },
+    awards: { MVP: 'MVP', DPOY: 'Defensor do Ano', SMOTY: 'Sexto Homem do Ano', ROTY: 'Novato do Ano', 'All-Star': 'All-Star', 'Finals MVP': 'MVP das Finais', 'All-NBA 1st Team': 'Primeiro time All-NBA', 'All-NBA 2nd Team': 'Segundo time All-NBA', 'All-NBA 3rd Team': 'Terceiro time All-NBA', 'All-Defense 1st Team': 'Primeiro time de defesa', 'All-Defense 2nd Team': 'Segundo time de defesa' },
+    dimensions: { 'scoring production': 'produção ofensiva', playmaking: 'criação de jogadas', rebounding: 'rebotes', 'defensive production': 'produção defensiva', longevity: 'longevidade', 'individual accolades': 'prêmios individuais', 'championship success': 'sucesso em campeonatos' }
+    ,countries: { US: 'Estados Unidos', RS: 'Sérvia', SI: 'Eslovênia', FR: 'França', CA: 'Canadá', AU: 'Austrália', ES: 'Espanha', GR: 'Grécia', DE: 'Alemanha', BR: 'Brasil', IT: 'Itália', HR: 'Croácia', LT: 'Lituânia', AR: 'Argentina' }
+  },
+  es: {
+    attributes: { Shooting: 'Tiro', Dribbling: 'Regate', Defense: 'Defensa', IQ: 'IQ de baloncesto', Athleticism: 'Atletismo', Passing: 'Pase', Rebounding: 'Rebote', Speed: 'Velocidad', Finishing: 'Finalización' },
+    positions: { PG: 'Base', SG: 'Escolta', SF: 'Alero', PF: 'Ala-pívot', C: 'Pívot' },
+    roles: { Star: 'Estrella', 'Franchise Player': 'Jugador franquicia', Starter: 'Titular', Bench: 'Suplente' },
+    rounds: { '1st Round': 'Primera ronda', 'Conf. Semis': 'Semifinales de conferencia', 'Conf. Finals': 'Finales de conferencia', 'NBA Finals': 'Finales de la NBA' },
+    locations: { HOME: 'Local', AWAY: 'Visitante' },
+    results: { W: 'V', L: 'D' },
+    tiers: { Journeyman: 'Trotamundos', 'The Undisputed GOAT': 'El GOAT indiscutible', 'Mount Rushmore': 'Monte Rushmore', 'Generational Talent': 'Talento generacional', 'First Ballot Hall of Famer': 'Salón de la Fama en primera votación', 'Hall of Famer': 'Salón de la Fama', 'All-Time Great': 'Leyenda histórica', 'Multiple-Time All-Star': 'All-Star varias veces', 'Solid Starter': 'Titular sólido', 'Role Player': 'Jugador de rotación' },
+    injuries: { 'Catastrophic knee injury': 'Lesión catastrófica de rodilla', 'Ankle sprain': 'Esguince de tobillo', 'Back tightness': 'Rigidez lumbar', 'Hamstring strain': 'Distensión de isquiotibiales', 'Knee sprain': 'Esguince de rodilla', 'Shoulder injury': 'Lesión de hombro', 'Calf strain': 'Distensión de pantorrilla', 'ACL tear': 'Rotura del ligamento cruzado', 'Achilles tear': 'Rotura del tendón de Aquiles', 'Foot fracture': 'Fractura de pie', 'Career-Ending Injury': 'Lesión que terminó la carrera' },
+    awards: { MVP: 'MVP', DPOY: 'Defensor del Año', SMOTY: 'Sexto Hombre del Año', ROTY: 'Novato del Año', 'All-Star': 'All-Star', 'Finals MVP': 'MVP de las Finales', 'All-NBA 1st Team': 'Primer equipo All-NBA', 'All-NBA 2nd Team': 'Segundo equipo All-NBA', 'All-NBA 3rd Team': 'Tercer equipo All-NBA', 'All-Defense 1st Team': 'Primer equipo defensivo', 'All-Defense 2nd Team': 'Segundo equipo defensivo' },
+    dimensions: { 'scoring production': 'producción anotadora', playmaking: 'creación de juego', rebounding: 'rebotes', 'defensive production': 'producción defensiva', longevity: 'longevidad', 'individual accolades': 'premios individuales', 'championship success': 'éxito en campeonatos' }
+    ,countries: { US: 'Estados Unidos', RS: 'Serbia', SI: 'Eslovenia', FR: 'Francia', CA: 'Canadá', AU: 'Australia', ES: 'España', GR: 'Grecia', DE: 'Alemania', BR: 'Brasil', IT: 'Italia', HR: 'Croacia', LT: 'Lituania', AR: 'Argentina' }
+  }
+};
+
+const label = (group: DataGroup, value: string) => dataLabels[locale.value][group][value] ?? value;
+const localizeComparisonDifference = (value: string) => {
+  const match = value.match(/^(More|Less) (.+) than (.+)$/);
+  if (!match) return value;
+  return tf(match[1] === 'More' ? 'differenceMore' : 'differenceLess', { dimension: label('dimensions', match[2]), player: match[3] });
+};
+
+const localizeDynamicText = (value: string) => {
+  const activeLocale = locale.value;
+  if (activeLocale === 'en') return value;
+  const fixed: Record<'pt' | 'es', Record<string, string>> = {
+    pt: {
+      'Trade request denied.': 'Pedido de troca negado.', 'Trade Request Denied': 'Pedido de troca negado',
+      'Your production, team record or contract convinced the club to retain you.': 'Sua produção, a campanha do time ou o contrato convenceram o clube a manter você.',
+      'The club moved you after morale collapsed.': 'O clube trocou você após a queda de moral.', 'Your trade request was accepted.': 'Seu pedido de troca foi aceito.',
+      'The injury forces an immediate retirement.': 'A lesão força uma aposentadoria imediata.',
+      '10,000 Career Points': '10.000 pontos na carreira', '20,000 Career Points': '20.000 pontos na carreira', '30,000 Career Points': '30.000 pontos na carreira',
+      'A star is born.': 'Nasce uma estrela.', 'Entering the Hall of Fame discussion.': 'Entrando na conversa do Hall da Fama.', 'Absolute Legend.': 'Lenda absoluta.',
+      'Scoring Machine': 'Máquina de pontos', 'MVP Award': 'Prêmio de MVP', 'The best player in the world.': 'O melhor jogador do mundo.',
+      'Defensive Player of the Year': 'Defensor do Ano', "The league's best defender.": 'O melhor defensor da liga.',
+      'Sixth Man of the Year': 'Sexto Homem do Ano', "The league's best player off the bench.": 'O melhor reserva da liga.',
+      'Rookie of the Year': 'Novato do Ano', 'The best rookie in the league.': 'O melhor novato da liga.', 'NBA Champion': 'Campeão da NBA',
+      'Another ring added to your legacy.': 'Mais um título para o seu legado.', 'The best player on the biggest stage.': 'O melhor jogador no maior palco.'
+    },
+    es: {
+      'Trade request denied.': 'Solicitud de traspaso rechazada.', 'Trade Request Denied': 'Solicitud de traspaso rechazada',
+      'Your production, team record or contract convinced the club to retain you.': 'Tu producción, el récord del equipo o el contrato convencieron al club de retenerte.',
+      'The club moved you after morale collapsed.': 'El club te traspasó tras la caída de la moral.', 'Your trade request was accepted.': 'Tu solicitud de traspaso fue aceptada.',
+      'The injury forces an immediate retirement.': 'La lesión obliga a un retiro inmediato.',
+      '10,000 Career Points': '10.000 puntos de carrera', '20,000 Career Points': '20.000 puntos de carrera', '30,000 Career Points': '30.000 puntos de carrera',
+      'A star is born.': 'Nace una estrella.', 'Entering the Hall of Fame discussion.': 'Entrando en la conversación del Salón de la Fama.', 'Absolute Legend.': 'Leyenda absoluta.',
+      'Scoring Machine': 'Máquina anotadora', 'MVP Award': 'Premio MVP', 'The best player in the world.': 'El mejor jugador del mundo.',
+      'Defensive Player of the Year': 'Defensor del Año', "The league's best defender.": 'El mejor defensor de la liga.',
+      'Sixth Man of the Year': 'Sexto Hombre del Año', "The league's best player off the bench.": 'El mejor suplente de la liga.',
+      'Rookie of the Year': 'Novato del Año', 'The best rookie in the league.': 'El mejor novato de la liga.', 'NBA Champion': 'Campeón de la NBA',
+      'Another ring added to your legacy.': 'Otro título para tu legado.', 'The best player on the biggest stage.': 'El mejor jugador en el mayor escenario.'
+    }
+  };
+  if (fixed[activeLocale][value]) return fixed[activeLocale][value];
+  const traded = value.match(/^Traded to (.+)\.?$/);
+  if (traded) return activeLocale === 'pt' ? `Trocado para ${traded[1].replace(/\.$/, '')}.` : `Traspasado a ${traded[1].replace(/\.$/, '')}.`;
+  const missed = value.match(/^(\d+) games missed\.$/);
+  if (missed) return activeLocale === 'pt' ? `${missed[1]} jogos perdidos.` : `${missed[1]} partidos perdidos.`;
+  const averaged = value.match(/^Averaged (.+) PPG this season\.$/);
+  if (averaged) return activeLocale === 'pt' ? `Média de ${averaged[1]} PPG nesta temporada.` : `Promedio de ${averaged[1]} PPG esta temporada.`;
+  return label('injuries', label('awards', value));
+};
+
+const applyTheme = () => {
+  document.documentElement.classList.toggle('dark', theme.value === 'dark');
+  document.documentElement.style.colorScheme = theme.value;
+};
+
+const toggleTheme = () => {
+  theme.value = theme.value === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('the_goat_theme', theme.value);
+  applyTheme();
+};
+
+const setLocale = (value: Locale) => {
+  locale.value = value;
+  localStorage.setItem('the_goat_locale', value);
+  document.documentElement.lang = value;
+};
+
 // Motor do Jogo
 const { 
   player, history, careerTotals, leagueTeams, freeAgencyOffers, pendingMilestones,
@@ -102,29 +326,27 @@ const tradeTargets = computed(() =>
 );
 
 const newsFeed = computed(() => {
-  if (!lastSeason.value) return ['The rookie is ready. The world is watching.'];
+  if (!lastSeason.value) return [t('rookieReady')];
   if (playoffPresentation.value.active) {
-    return [`${player.value.teamId} begins its playoff run.`];
+    return [tf('playoffBegins', { team: player.value.teamId })];
   }
   const news = [];
   
   // Segurança com "?." caso playoffs não tenha sido gerado
   if (lastSeason.value.playoffs?.wonRing) {
-    news.push(`${player.value.name} leads the ${player.value.teamId} to the NBA Championship!`);
+    news.push(tf('championNews', { player: player.value.name, team: player.value.teamId }));
   } else if (!lastSeason.value.playoffs?.madePlayoffs) {
-    news.push(`Disaster! ${player.value.teamId} misses the playoffs.`);
+    news.push(tf('missesPlayoffs', { team: player.value.teamId }));
   } else {
-    news.push(`${player.value.teamId} eliminated in ${lastSeason.value.playoffs?.eliminatedIn}.`);
+    news.push(tf('eliminatedNews', { team: player.value.teamId, round: label('rounds', lastSeason.value.playoffs?.eliminatedIn ?? '') }));
   }
 
-  if (lastSeason.value.ppg > 30) news.push(`${player.value.name} has a historic scoring season averaging ${lastSeason.value.ppg} PPG.`);
-  if (lastSeason.value.awards?.includes('MVP')) news.push(`${player.value.name} named the Most Valuable Player!`);
+  if (lastSeason.value.ppg > 30) news.push(tf('historicScoring', { player: player.value.name, ppg: lastSeason.value.ppg }));
+  if (lastSeason.value.awards?.includes('MVP')) news.push(tf('namedMvp', { player: player.value.name }));
   if (lastSeason.value.injury) {
-    news.push(
-      `${lastSeason.value.injury.name}: ${lastSeason.value.injury.gamesMissed} games missed.`,
-    );
+    news.push(tf('injuryNews', { injury: label('injuries', lastSeason.value.injury.name), games: lastSeason.value.injury.gamesMissed }));
   }
-  if (lastTransactionMessage.value) news.push(lastTransactionMessage.value);
+  if (lastTransactionMessage.value) news.push(localizeDynamicText(lastTransactionMessage.value));
   
   return news;
 });
@@ -204,7 +426,7 @@ const careerComparisons = computed(() => compareCareer({
 
 const careerAverages = computed(() => {
   const games = Math.max(1, careerTotals.value.gamesPlayed);
-  const weighted = (key: 'ovr' | 'fgPct' | 'fg3Pct' | 'ftPct') =>
+  const weighted = (key: 'fgPct' | 'fg3Pct' | 'ftPct') =>
     history.value.reduce(
       (sum, season) => sum + season[key] * (season.gamesPlayed ?? 82),
       0,
@@ -216,7 +438,6 @@ const careerAverages = computed(() => {
     apg: careerTotals.value.totalAssists / games,
     spg: careerTotals.value.totalSteals / games,
     bpg: careerTotals.value.totalBlocks / games,
-    ovr: weighted('ovr'),
     fgPct: weighted('fgPct'),
     fg3Pct: weighted('fg3Pct'),
     ftPct: weighted('ftPct'),
@@ -245,13 +466,13 @@ const nbaRecords = {
 };
 
 const nationalities = [
-  { code: 'US', name: 'USA' }, { code: 'RS', name: 'Serbia' },
-  { code: 'SI', name: 'Slovenia' }, { code: 'FR', name: 'France' },
-  { code: 'CA', name: 'Canada' }, { code: 'AU', name: 'Australia' },
-  { code: 'ES', name: 'Spain' }, { code: 'GR', name: 'Greece' },
-  { code: 'DE', name: 'Germany' }, { code: 'BR', name: 'Brazil' },
-  { code: 'IT', name: 'Italy' }, { code: 'HR', name: 'Croatia' },
-  { code: 'LT', name: 'Lithuania' }, { code: 'AR', name: 'Argentina' }
+  { code: 'US', name: 'USA', flag: '🇺🇸' }, { code: 'RS', name: 'Serbia', flag: '🇷🇸' },
+  { code: 'SI', name: 'Slovenia', flag: '🇸🇮' }, { code: 'FR', name: 'France', flag: '🇫🇷' },
+  { code: 'CA', name: 'Canada', flag: '🇨🇦' }, { code: 'AU', name: 'Australia', flag: '🇦🇺' },
+  { code: 'ES', name: 'Spain', flag: '🇪🇸' }, { code: 'GR', name: 'Greece', flag: '🇬🇷' },
+  { code: 'DE', name: 'Germany', flag: '🇩🇪' }, { code: 'BR', name: 'Brazil', flag: '🇧🇷' },
+  { code: 'IT', name: 'Italy', flag: '🇮🇹' }, { code: 'HR', name: 'Croatia', flag: '🇭🇷' },
+  { code: 'LT', name: 'Lithuania', flag: '🇱🇹' }, { code: 'AR', name: 'Argentina', flag: '🇦🇷' }
 ];
 
 const positions = [
@@ -356,12 +577,21 @@ const submitTradeRequest = () => {
 };
 
 const retireManual = () => {
-  if (confirm("Are you sure you want to end your career? This action cannot be undone.")) {
+  if (confirm(t('confirmRetire'))) {
     forceRetirement();
   }
 };
 
 onMounted(() => {
+  const savedTheme = localStorage.getItem('the_goat_theme');
+  theme.value = savedTheme === 'light' || savedTheme === 'dark'
+    ? savedTheme
+    : window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  const savedLocale = localStorage.getItem('the_goat_locale');
+  const hasCurrentLocalePreference = localStorage.getItem('the_goat_locale_version') === '2';
+  setLocale(hasCurrentLocalePreference && (savedLocale === 'pt' || savedLocale === 'es') ? savedLocale : 'en');
+  localStorage.setItem('the_goat_locale_version', '2');
+  applyTheme();
   pastCareers.value = refreshPastCareerScores(
     readStorage<PastCareer[]>('the_goat_past_careers', []),
   );
@@ -398,77 +628,107 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <main class="min-h-screen bg-gray-900 text-gray-100 font-sans p-6">
-    <div class="max-w-6xl mx-auto">
-      
-      <header class="text-center mb-10">
-        <h1 class="text-4xl font-black uppercase tracking-widest text-white">The Goat Simulator</h1>
+  <main class="min-h-screen bg-[#f4f1ea] text-zinc-950 transition-colors duration-300 dark:bg-[#0b0c0e] dark:text-zinc-100">
+    <div class="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
+      <header class="mb-12 flex min-h-24 items-center justify-between border-b border-black/10 dark:border-white/10">
+        <button type="button" class="group text-left" @click="resetGame">
+          <span class="block text-xl font-black uppercase tracking-[-0.04em] sm:text-2xl">GOAT<span class="text-amber-700 dark:text-red-400">//</span>SIM</span>
+          <span class="hidden text-[10px] font-bold uppercase tracking-[0.22em] text-zinc-500 sm:block">{{ t('tagline') }}</span>
+        </button>
+        <div class="flex items-center gap-2">
+          <div class="flex rounded-full border border-black/10 bg-white p-1 dark:border-white/10 dark:bg-zinc-900" :aria-label="t('language')">
+            <button
+              v-for="language in (['pt', 'en', 'es'] as const)"
+              :key="language"
+              type="button"
+              class="rounded-full px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider transition-colors"
+              :class="locale === language ? 'bg-zinc-950 text-white dark:bg-red-500 dark:text-white' : 'text-zinc-500 hover:text-zinc-950 dark:hover:text-white'"
+              :aria-pressed="locale === language"
+              @click="setLocale(language)"
+            >
+              {{ language }}
+            </button>
+          </div>
+          <button
+            type="button"
+            class="grid size-10 place-items-center rounded-full border border-black/10 bg-white text-lg transition hover:-rotate-6 hover:border-amber-500 dark:hover:border-red-500 dark:border-white/10 dark:bg-zinc-900"
+            :aria-label="theme === 'dark' ? t('themeLight') : t('themeDark')"
+            @click="toggleTheme"
+          >
+            <span aria-hidden="true">{{ theme === 'dark' ? '☀' : '☾' }}</span>
+          </button>
+        </div>
       </header>
 
       <!-- FASE 1: SETUP (Estilo Dark/Grids) -->
-      <section v-if="currentPhase === 'setup'" class="max-w-3xl mx-auto pb-12">
-        <div class="mb-12 border-b border-gray-800 pb-8">
-          <p class="text-yellow-500 font-bold tracking-widest text-xs uppercase mb-2">How it works</p>
-          <h2 class="text-4xl font-black text-white uppercase leading-tight">Steal attributes from legends. Live a career. Discover if you are the Goat.</h2>
+      <section v-if="currentPhase === 'setup'" class="mx-auto max-w-5xl pb-12">
+        <div class="mb-12 grid gap-5 border-b border-black/10 pb-10 dark:border-white/10 md:grid-cols-[1fr_2fr] md:items-end">
+          <p class="text-xs font-black uppercase tracking-[0.24em] text-amber-700 dark:text-red-400">01 — {{ t('howItWorks') }}</p>
+          <h2 class="max-w-3xl text-4xl font-black uppercase leading-[0.92] tracking-[-0.055em] text-zinc-950 dark:text-white sm:text-6xl">{{ t('heroTitle') }}</h2>
         </div>
         
-        <div class="space-y-10">
+        <div class="grid gap-4 lg:grid-cols-12">
           
           <!-- Nome -->
-          <div>
-            <label for="player-name" class="block text-xl font-black text-white mb-4 uppercase">Your Name</label>
+          <div class="rounded-2xl border border-black/10 bg-white p-5 dark:border-white/10 dark:bg-zinc-950 sm:p-7 lg:col-span-8">
+            <label for="player-name" class="mb-4 block text-xs font-black uppercase tracking-[0.2em] text-gray-500">{{ t('playerName') }}</label>
             <input
               id="player-name"
               v-model.trim="inputName"
               type="text"
               autocomplete="name"
-              class="w-full bg-[#0a0a0a] border border-gray-800 rounded-lg px-6 py-5 text-xl text-white font-bold transition-colors focus-visible:outline-none focus-visible:border-yellow-500 focus-visible:ring-2 focus-visible:ring-yellow-500"
-              placeholder="How will the world call you?"
+              class="w-full rounded-xl border border-black/10 bg-white px-6 py-5 text-xl font-bold text-zinc-950 transition-colors focus-visible:border-amber-500 dark:focus-visible:border-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 dark:focus-visible:ring-red-500 dark:border-white/10 dark:bg-zinc-950 dark:text-white"
+              :placeholder="t('namePlaceholder')"
             />
           </div>
 
           <!-- Nacionalidade -->
-          <fieldset>
-            <legend class="block text-xl font-black text-white mb-4 uppercase">Nationality</legend>
-            <div class="grid grid-cols-7 gap-2">
+          <fieldset class="rounded-2xl border border-black/10 bg-white p-5 dark:border-white/10 dark:bg-zinc-950 sm:p-7 lg:col-span-12">
+            <legend class="px-2 text-xs font-black uppercase tracking-[0.2em] text-gray-500">{{ t('nationality') }}</legend>
+            <div class="grid grid-cols-4 gap-2 sm:grid-cols-7">
               <button 
                 v-for="nat in nationalities" 
                 :key="nat.code"
                 type="button"
                 @click="inputNationality = nat.code"
-                :class="inputNationality === nat.code ? 'bg-yellow-500 text-black border-yellow-500' : 'bg-[#0a0a0a] border-gray-800 text-gray-400 hover:border-gray-500'"
-                class="border rounded py-2 flex flex-col items-center justify-center transition-colors"
+                :class="inputNationality === nat.code ? 'border-amber-500 dark:border-red-500 bg-amber-400 dark:bg-red-500 text-black dark:text-white -translate-y-0.5 shadow-[0_5px_0_0_rgba(0,0,0,0.16)]' : 'border-black/10 bg-stone-50 text-zinc-600 hover:-translate-y-0.5 hover:border-gray-500 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-400'"
+                class="flex aspect-square items-center justify-center rounded-xl border transition-all"
                 :aria-pressed="inputNationality === nat.code"
-                :aria-label="`Select nationality: ${nat.name}`"
+                :aria-label="label('countries', nat.code)"
+                :title="label('countries', nat.code)"
               >
-                <span class="font-black text-sm">{{ nat.code }}</span>
+                <img
+                  :src="`https://flagcdn.com/w80/${nat.code.toLowerCase()}.png`"
+                  :alt="label('countries', nat.code)"
+                  class="h-7 w-10 rounded-sm object-cover shadow-sm"
+                />
               </button>
             </div>
           </fieldset>
 
           <!-- Posição -->
-          <fieldset>
-            <legend class="block text-xl font-black text-white mb-4 uppercase">Choose your Position</legend>
-            <div class="grid grid-cols-5 gap-3">
+          <fieldset class="rounded-2xl border border-black/10 bg-white p-5 dark:border-white/10 dark:bg-zinc-950 sm:p-7 lg:col-span-12">
+            <legend class="px-2 text-xs font-black uppercase tracking-[0.2em] text-gray-500">{{ t('position') }}</legend>
+            <div class="grid grid-cols-2 gap-3 sm:grid-cols-5">
               <button 
                 v-for="pos in positions" 
                 :key="pos.code"
                 type="button"
                 @click="inputPosition = pos.code as Position"
-                :class="inputPosition === pos.code ? 'bg-yellow-500 text-black border-yellow-500' : 'bg-[#0a0a0a] border-gray-800 text-gray-400 hover:border-gray-500'"
-                class="border rounded-lg py-4 flex flex-col items-center justify-center transition-colors"
+                :class="inputPosition === pos.code ? 'bg-amber-400 dark:bg-red-500 text-black dark:text-white border-amber-500 dark:border-red-500' : 'bg-white dark:bg-zinc-950 border-black/10 dark:border-white/10 text-zinc-600 dark:text-zinc-400 hover:border-gray-500'"
+                class="flex min-h-24 flex-col items-center justify-center rounded-xl border py-4 transition-all hover:-translate-y-0.5"
                 :aria-pressed="inputPosition === pos.code"
-                :aria-label="`Select position: ${pos.name}`"
+                :aria-label="label('positions', pos.code)"
               >
                 <span class="font-black text-xl">{{ pos.code }}</span>
-                <span class="text-[9px] uppercase font-bold opacity-80 mt-1">{{ pos.name }}</span>
+                <span class="mt-1 text-[9px] font-bold uppercase opacity-80">{{ label('positions', pos.code) }}</span>
               </button>
             </div>
           </fieldset>
 
           <!-- Número da Camisa -->
-          <div>
-            <label for="jersey-number" class="block text-xl font-black text-white mb-4 uppercase">Jersey Number</label>
+          <div class="rounded-2xl border border-black/10 bg-white p-5 dark:border-white/10 dark:bg-zinc-950 sm:p-7 lg:col-span-4 lg:col-start-9 lg:row-start-1">
+            <label for="jersey-number" class="mb-4 block text-xs font-black uppercase tracking-[0.2em] text-gray-500">{{ t('jersey') }}</label>
             <input
               id="jersey-number"
               v-model.number="inputJersey"
@@ -476,50 +736,50 @@ onBeforeUnmount(() => {
               min="0"
               max="99"
               inputmode="numeric"
-              class="w-32 bg-[#0a0a0a] border border-gray-800 rounded-lg px-6 py-4 text-2xl text-center text-white font-black transition-colors focus-visible:outline-none focus-visible:border-yellow-500 focus-visible:ring-2 focus-visible:ring-yellow-500"
+              class="w-full appearance-none rounded-xl border border-black/10 bg-stone-50 px-6 py-5 text-center text-4xl font-black text-zinc-950 transition-colors focus-visible:border-amber-500 dark:focus-visible:border-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 dark:focus-visible:ring-red-500 dark:border-white/10 dark:bg-zinc-900 dark:text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
               placeholder="0-99"
             />
           </div>
 
           <!-- Modos de Jogo e Dificuldade -->
-          <div class="space-y-6 pt-6 border-t border-gray-800">
+          <div class="rounded-2xl border border-black/10 bg-white p-5 dark:border-white/10 dark:bg-zinc-950 sm:p-7 lg:col-span-12">
             <fieldset>
-              <legend class="block text-sm font-bold text-gray-500 mb-3 uppercase tracking-widest">Difficulty</legend>
+              <legend class="block text-sm font-bold text-gray-500 mb-3 uppercase tracking-widest">{{ t('difficulty') }}</legend>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <button 
                   type="button"
                   @click="selectedDifficulty = 'amateur'"
-                  :class="selectedDifficulty === 'amateur' ? 'border-yellow-500 bg-[#12120a]' : 'border-gray-800 bg-[#0a0a0a]'"
+                  :class="selectedDifficulty === 'amateur' ? 'border-amber-500 dark:border-red-500 bg-stone-50 dark:bg-zinc-900' : 'border-black/10 dark:border-white/10 bg-white dark:bg-zinc-950'"
                   class="border p-5 rounded-lg text-left transition-colors"
                   :aria-pressed="selectedDifficulty === 'amateur'"
-                  aria-label="Select difficulty: Amateur"
+                  :aria-label="`${t('difficulty')}: ${t('amateur')}`"
                 >
-                  <p class="font-black text-white text-lg uppercase mb-1" :class="selectedDifficulty === 'amateur' ? 'text-yellow-500' : ''">Amateur <span v-if="selectedDifficulty === 'amateur'" class="text-yellow-500 text-xs ml-1">●</span></p>
-                  <p class="text-xs text-gray-400 font-bold">See legends' exact numbers. 1 blind reroll.</p>
+                  <p class="font-black text-zinc-950 dark:text-white text-lg uppercase mb-1" :class="selectedDifficulty === 'amateur' ? 'text-amber-700 dark:text-red-400' : ''">{{ t('amateur') }} <span v-if="selectedDifficulty === 'amateur'" class="text-amber-700 dark:text-red-400 text-xs ml-1">●</span></p>
+                  <p class="text-xs text-zinc-600 dark:text-zinc-400 font-bold">{{ t('amateurDesc') }}</p>
                 </button>
                 <button 
                   type="button"
                   @click="selectedDifficulty = 'pro'"
-                  :class="selectedDifficulty === 'pro' ? 'border-yellow-500 bg-[#12120a]' : 'border-gray-800 bg-[#0a0a0a]'"
+                  :class="selectedDifficulty === 'pro' ? 'border-amber-500 dark:border-red-500 bg-stone-50 dark:bg-zinc-900' : 'border-black/10 dark:border-white/10 bg-white dark:bg-zinc-950'"
                   class="border p-5 rounded-lg text-left transition-colors"
                   :aria-pressed="selectedDifficulty === 'pro'"
-                  aria-label="Select difficulty: Pro"
+                  :aria-label="`${t('difficulty')}: ${t('pro')}`"
                 >
-                  <p class="font-black text-white text-lg uppercase mb-1" :class="selectedDifficulty === 'pro' ? 'text-yellow-500' : ''">Pro</p>
-                  <p class="text-xs text-gray-400 font-bold">No numbers. No rerolls. For purists.</p>
+                  <p class="font-black text-zinc-950 dark:text-white text-lg uppercase mb-1" :class="selectedDifficulty === 'pro' ? 'text-amber-700 dark:text-red-400' : ''">{{ t('pro') }}</p>
+                  <p class="text-xs text-zinc-600 dark:text-zinc-400 font-bold">{{ t('proDesc') }}</p>
                 </button>
               </div>
             </fieldset>
           </div>
 
-          <div class="text-center mt-12">
+          <div class="pt-4 text-center lg:col-span-12">
             <button 
               type="button"
               @click="startDraftSteal" 
               :disabled="!inputName || !inputPosition || !inputNationality || inputJersey === ''"
-              class="mx-auto bg-yellow-500 text-black font-black py-5 px-16 rounded-full hover:bg-yellow-400 uppercase tracking-widest transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-xl shadow-lg"
+              class="mx-auto bg-amber-400 dark:bg-red-500 text-black dark:text-white font-black py-5 px-16 rounded-full hover:bg-amber-300 dark:hover:bg-red-400 uppercase tracking-widest transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-xl shadow-lg"
             >
-              Start Draft
+              {{ t('startDraft') }}
             </button>
           </div>
 
@@ -527,33 +787,33 @@ onBeforeUnmount(() => {
           <button
             v-if="isDev"
             type="button"
-            class="fixed bottom-4 right-4 bg-red-900/50 hover:bg-red-600 text-white p-2 rounded text-[9px] uppercase font-black tracking-widest opacity-30 hover:opacity-100 transition-opacity z-50"
+            class="fixed bottom-4 right-4 bg-red-900/50 hover:bg-red-600 text-zinc-950 dark:text-white p-2 rounded text-[9px] uppercase font-black tracking-widest opacity-30 hover:opacity-100 transition-opacity z-50"
             @click="executeStressTest"
           >
             Run Stress Test
           </button>
         </div>
       <!-- NOVO: Histórico de Carreiras Aposentadas -->
-        <div v-if="pastCareers.length > 0" class="mt-20 pt-10 border-t border-gray-800">
-          <p class="text-sm font-bold text-gray-500 mb-6 uppercase tracking-widest">Your Recent Careers</p>
+        <div v-if="pastCareers.length > 0" class="mt-20 pt-10 border-t border-black/10 dark:border-white/10">
+          <p class="text-sm font-bold text-gray-500 mb-6 uppercase tracking-widest">{{ t('recentCareers') }}</p>
           
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
              <button 
                 v-for="car in pastCareers" 
                 :key="car.id" 
                 @click="viewPastCareer(car)" 
-                class="bg-[#0a0a0a] border border-gray-800 hover:border-yellow-500 p-6 rounded-xl text-left transition-colors group relative overflow-hidden"
+                class="bg-white dark:bg-zinc-950 border border-black/10 dark:border-white/10 hover:border-amber-500 dark:hover:border-red-500 p-6 rounded-xl text-left transition-colors group relative overflow-hidden"
              >
-                <div class="absolute inset-0 bg-yellow-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="absolute inset-0 bg-amber-400/5 dark:bg-red-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 <div class="relative z-10 flex justify-between items-start mb-3">
-                   <span class="text-3xl font-black text-yellow-500">{{ car.goatScore }}</span>
-                   <span class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">{{ car.player.position }} · {{ car.player.nationality }}</span>
+                   <span class="text-3xl font-black text-amber-700 dark:text-red-400">{{ car.goatScore }}</span>
+                   <span class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">{{ label('positions', car.player.position) }} · {{ label('countries', car.player.nationality) }}</span>
                 </div>
-                <h4 class="relative z-10 text-white font-black uppercase text-lg mb-1">{{ car.player.name }}</h4>
-                <p class="relative z-10 text-yellow-600 text-[10px] font-bold uppercase tracking-widest mb-3">{{ car.goatTier }}</p>
-                <div class="relative z-10 text-gray-400 text-xs font-bold border-t border-gray-800 pt-3 mt-3 flex justify-between">
+                <h4 class="relative z-10 text-zinc-950 dark:text-white font-black uppercase text-lg mb-1">{{ car.player.name }}</h4>
+                <p class="relative z-10 mb-3 text-[10px] font-bold uppercase tracking-widest text-amber-700 dark:text-red-400">{{ label('tiers', car.goatTier) }}</p>
+                <div class="relative z-10 text-zinc-600 dark:text-zinc-400 text-xs font-bold border-t border-black/10 dark:border-white/10 pt-3 mt-3 flex justify-between">
                    <span>{{ car.careerTotals.totalPoints }} PTS</span>
-                   <span class="text-yellow-500">{{ car.rings }} 🏆</span>
+                   <span class="text-amber-700 dark:text-red-400">{{ car.rings }} {{ t('rings') }}</span>
                 </div>
              </button>
           </div>
@@ -563,64 +823,66 @@ onBeforeUnmount(() => {
       <!-- FASE 2: DRAFT STEAL -->
       <section v-if="currentPhase === 'draft-steal'" class="max-w-4xl mx-auto pb-12">
         <!-- Status Bar -->
-        <div class="flex justify-between items-center mb-6 border-b border-gray-800 pb-4">
+        <div class="flex justify-between items-center mb-6 border-b border-black/10 dark:border-white/10 pb-4">
           <div class="text-gray-500 text-xs font-bold uppercase tracking-widest">
-            <span>Filled Slots {{ Object.values(myAttributes).filter(v => v > 0).length }}/9</span>
-            <span class="text-yellow-500 ml-2">{{ inputPosition }} · {{ selectedDifficulty }}</span>
+            <span>{{ t('filledSlots') }} {{ Object.values(myAttributes).filter(v => v > 0).length }}/9</span>
+            <span class="text-amber-700 dark:text-red-400 ml-2">{{ label('positions', inputPosition) }} · {{ selectedDifficulty === 'amateur' ? t('amateur') : t('pro') }}</span>
           </div>
           
           <button 
             v-if="selectedDifficulty === 'amateur'"
             @click="useReroll"
             :disabled="!hasReroll"
-            class="border border-yellow-500 text-yellow-500 font-black py-2 px-6 rounded-full hover:bg-yellow-500 hover:text-black uppercase text-[10px] tracking-widest transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            class="border border-amber-500 dark:border-red-500 text-amber-700 dark:text-red-400 font-black py-2 px-6 rounded-full hover:bg-amber-400 dark:hover:bg-red-500 hover:text-black dark:hover:text-white uppercase text-[10px] tracking-widest transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
-            Blind Reroll ({{ hasReroll ? '1' : '0' }})
+            {{ t('blindReroll') }} ({{ hasReroll ? '1' : '0' }})
           </button>
-          <div v-else class="text-gray-600 text-[10px] uppercase font-black tracking-widest px-4 py-2 bg-gray-900 rounded-full">
-            Pro Mode: No rerolls
+          <div v-else class="text-gray-600 text-[10px] uppercase font-black tracking-widest px-4 py-2 bg-stone-100 dark:bg-zinc-900 rounded-full">
+            {{ t('noRerolls') }}
           </div>
         </div>
 
         <!-- Banner da Lenda Atual -->
         <div v-if="currentDrawnPlayer" class="relative z-10 flex flex-col items-center justify-center min-h-40">
     
-          <h2 class="text-3xl md:text-5xl font-black text-white uppercase tracking-widest mb-2 text-center">
-            {{ selectedDifficulty === 'pro' ? 'Mystery Player' : currentDrawnPlayer.name }}
+          <h2 class="text-3xl md:text-5xl font-black text-zinc-950 dark:text-white uppercase tracking-widest mb-2 text-center">
+            {{ selectedDifficulty === 'pro' ? t('mysteryPlayer') : currentDrawnPlayer.name }}
           </h2>
           
           <p class="text-gray-500 font-bold uppercase tracking-widest text-sm md:text-lg text-center flex items-center justify-center gap-2">
-            {{ currentDrawnPlayer.position }} 
-            <span class="text-yellow-500">|</span> 
-            Era: {{ currentDrawnPlayer.career }} 
+            <template v-if="selectedDifficulty === 'amateur'">
+              {{ label('positions', currentDrawnPlayer.position) }}
+              <span class="text-amber-700 dark:text-red-400">|</span>
+              {{ t('era') }}: {{ currentDrawnPlayer.career }}
+            </template>
+            <template v-else>{{ t('identityHidden') }}</template>
           </p>
           
         </div>
 
         <!-- Grid de Atributos -->
-        <div class="grid grid-cols-3 gap-2 mb-6">
+        <div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
           <button 
             v-for="slot in availableSlots" 
             :key="slot"
             @click="selectAttribute(slot)"
             :disabled="myAttributes[slot] > 0"
-            :class="myAttributes[slot] > 0 ? 'opacity-20 cursor-not-allowed border-gray-900' : 'hover:border-yellow-500'"
-            class="bg-[#0a0a0a] border border-gray-800 rounded-lg p-4 flex flex-col items-center justify-center transition-all group"
+            :class="myAttributes[slot] > 0 ? 'opacity-20 cursor-not-allowed border-gray-900' : 'hover:border-amber-500 dark:hover:border-red-500'"
+            class="group flex min-h-28 flex-col items-center justify-center rounded-xl border border-black/10 bg-white p-4 transition-all hover:-translate-y-0.5 dark:border-white/10 dark:bg-zinc-950"
           >
-            <span :class="myAttributes[slot] > 0 ? 'line-through text-gray-700' : 'text-gray-500 group-hover:text-yellow-500'" class="text-[9px] font-bold uppercase tracking-widest mb-1 transition-colors">
-              {{ slot }}
+            <span :class="myAttributes[slot] > 0 ? 'line-through text-gray-700' : 'text-gray-500 group-hover:text-amber-700 dark:group-hover:text-red-400'" class="text-[9px] font-bold uppercase tracking-widest mb-1 transition-colors">
+              {{ label('attributes', slot) }}
             </span>
             <template v-if="myAttributes[slot] === 0">
-              <span v-if="selectedDifficulty === 'amateur'" class="text-xl font-black text-white">{{ currentDrawnPlayer?.attributes[slot] }}</span>
-              <span v-else class="text-xl font-black text-gray-700 tracking-widest">???</span>
+              <span class="text-xl font-black text-zinc-950 dark:text-white">{{ currentDrawnPlayer?.attributes[slot] }}</span>
             </template>
-            <span v-else class="text-[10px] font-black text-yellow-500 mt-1">SELECTED</span>
+            <span v-else class="text-[10px] font-black text-amber-700 dark:text-red-400 mt-1">{{ t('selected') }}</span>
           </button>
         </div>
 
           <!-- Painel: Seu Jogador (Slots Fixos) -->
-          <div class="mt-12 border-t border-gray-800 pt-8">
-            <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-6">Seu Jogador</p>
+          <div class="mt-12 border-t border-black/10 dark:border-white/10 pt-8">
+            <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-6">{{ t('yourPlayer') }}</p>
             
             <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               <!-- Itera sobre todas as chaves de atributos base (Shooting, Speed, etc) -->
@@ -628,20 +890,20 @@ onBeforeUnmount(() => {
                 v-for="(val, key) in myAttributes" 
                 :key="key"
                 class="flex flex-col items-center justify-center p-4 border rounded-xl h-28 transition-all duration-300"
-                :class="val > 0 ? 'bg-gray-950 border-gray-700 shadow-lg' : 'bg-transparent border-gray-800 border-dashed opacity-40'"
+                :class="val > 0 ? 'bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-700 shadow-lg' : 'bg-transparent border-black/10 dark:border-white/10 border-dashed opacity-40'"
               >
                 <!-- Estado: Preenchido -->
                 <template v-if="val > 0">
-                  <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">{{ key }}</span>
-                  <span class="text-2xl font-black text-white" :class="val >= 90 ? 'text-yellow-500' : ''">{{ val }}</span>
-                  <span class="text-[9px] text-gray-400 mt-2 truncate w-full text-center">
-                     {{ attributeSources[key].player }}
+                  <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">{{ label('attributes', key) }}</span>
+                  <span class="text-2xl font-black text-zinc-950 dark:text-white" :class="val >= 90 ? 'text-amber-700 dark:text-red-400' : ''">{{ val }}</span>
+                  <span class="text-[9px] text-zinc-600 dark:text-zinc-400 mt-2 truncate w-full text-center">
+                     {{ selectedDifficulty === 'pro' ? t('mysteryPlayer') : attributeSources[key].player }}
                   </span>
                 </template>
                 
                 <!-- Estado: Vazio (Aguardando Escolha) -->
                 <template v-else>
-                  <span class="text-[10px] font-bold text-gray-600 uppercase tracking-widest">{{ key }}</span>
+                  <span class="text-[10px] font-bold text-gray-600 uppercase tracking-widest">{{ label('attributes', key) }}</span>
                 </template>
               </div>
             </div>
@@ -649,22 +911,22 @@ onBeforeUnmount(() => {
       </section>
 
       <!-- FASE 3: DRAFT DAY REVEAL (Adaptado ao Dark Mode) -->
-      <section v-if="currentPhase === 'draft-day'" class="bg-[#0a0a0a] p-10 rounded-xl border border-gray-800 max-w-xl mx-auto text-center shadow-2xl relative overflow-hidden mt-12">
-        <div class="absolute inset-0 bg-yellow-900/10 blur-3xl z-0"></div>
+      <section v-if="currentPhase === 'draft-day'" class="bg-white dark:bg-zinc-950 p-10 rounded-xl border border-black/10 dark:border-white/10 max-w-xl mx-auto text-center shadow-2xl relative overflow-hidden mt-12">
+        <div class="absolute inset-0 bg-amber-400/5 dark:bg-red-500/5 blur-3xl z-0"></div>
         <div class="relative z-10">
-          <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">With the Pick #{{ draftPickResult }} in the NBA Draft...</p>
-          <h2 class="text-3xl font-black text-white mb-2">The <span class="text-yellow-500">{{ player.teamId }}</span> select</h2>
-          <h1 class="text-5xl font-black text-white my-8 uppercase tracking-tighter">{{ player.name }}</h1>
+          <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">{{ t('withPick') }} #{{ draftPickResult }}...</p>
+          <h2 class="text-3xl font-black text-zinc-950 dark:text-white mb-2"><span class="text-amber-700 dark:text-red-400">{{ player.teamId }}</span> {{ t('selects') }}</h2>
+          <h1 class="text-5xl font-black text-zinc-950 dark:text-white my-8 uppercase tracking-tighter">{{ player.name }}</h1>
           
-          <div class="flex justify-center gap-12 mb-10 border-y border-gray-800 py-8 bg-[#12120a]/50 rounded-lg">
+          <div class="flex justify-center gap-12 mb-10 border-y border-black/10 dark:border-white/10 py-8 bg-stone-50 dark:bg-zinc-900/50 rounded-lg">
             <div>
-              <p class="text-gray-500 text-[10px] uppercase font-black tracking-widest mb-1">Starting OVR</p>
-              <p class="text-5xl font-black text-yellow-500">{{ player.ovr }}</p>
+              <p class="text-gray-500 text-[10px] uppercase font-black tracking-widest mb-1">{{ t('startingOvr') }}</p>
+              <p class="text-5xl font-black text-amber-700 dark:text-red-400">{{ player.ovr }}</p>
             </div>
-            <div class="w-px bg-gray-800"></div>
+            <div class="w-px bg-black/10 dark:bg-white/10"></div>
             <div>
-              <p class="text-gray-500 text-[10px] uppercase font-black tracking-widest mb-1">Position</p>
-              <p class="text-5xl font-black text-white">{{ player.position }}</p>
+              <p class="text-gray-500 text-[10px] uppercase font-black tracking-widest mb-1">{{ t('position') }}</p>
+              <p class="text-3xl font-black text-zinc-950 dark:text-white">{{ label('positions', player.position) }}</p>
             </div>
           </div>
 
@@ -672,7 +934,7 @@ onBeforeUnmount(() => {
             @click="startCareer"
             class="w-full bg-white hover:bg-gray-200 text-black font-black py-5 rounded-full transition-colors uppercase tracking-widest text-lg"
           >
-            Sign Rookie Contract
+            {{ t('signContract') }}
           </button>
         </div>
       </section>
@@ -683,88 +945,88 @@ onBeforeUnmount(() => {
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           <!-- COLUNA ESQUERDA: Card do Jogador -->
-          <div class="lg:col-span-3 space-y-6">
-            <div class="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6 relative overflow-hidden">
+          <div class="space-y-6 lg:sticky lg:top-6 lg:col-span-3 lg:self-start">
+            <div class="bg-white dark:bg-zinc-950 border border-black/10 dark:border-white/10 rounded-xl p-6 relative overflow-hidden">
               <div class="absolute top-0 right-0 p-4 opacity-10">
                 <span class="text-6xl font-black">{{ player.jerseyNumber }}</span>
               </div>
               
               <div class="flex items-center gap-4 mb-6">
-                <div class="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center font-black text-white text-xl">
+                <div class="flex size-12 items-center justify-center rounded-full bg-zinc-200 text-xl font-black text-zinc-950 dark:bg-zinc-800 dark:text-white">
                   {{ player.teamId }}
                 </div>
                 <div>
-                  <h3 class="text-white font-black uppercase text-xl">{{ player.name }}</h3>
-                  <p class="text-gray-500 text-xs font-bold uppercase tracking-widest">{{ player.position }} · {{ player.nationality }}</p>
+                  <h3 class="text-zinc-950 dark:text-white font-black uppercase text-xl">{{ player.name }}</h3>
+                  <p class="text-gray-500 text-xs font-bold uppercase tracking-widest">{{ label('positions', player.position) }} · {{ label('countries', player.nationality) }}</p>
                 </div>
               </div>
 
-              <div class="grid grid-cols-2 gap-4 border-y border-gray-800 py-4 mb-4">
+              <div class="grid grid-cols-2 gap-4 border-y border-black/10 dark:border-white/10 py-4 mb-4">
                 <div>
                   <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest">OVR</p>
-                  <p class="text-3xl font-black text-yellow-500">{{ player.ovr }}</p>
+                  <p class="text-3xl font-black text-amber-700 dark:text-red-400">{{ player.ovr }}</p>
                 </div>
                 <div>
-                  <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Age</p>
-                  <p class="text-3xl font-black text-white">{{ player.age }}</p>
+                  <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest">{{ t('age') }}</p>
+                  <p class="text-3xl font-black text-zinc-950 dark:text-white">{{ player.age }}</p>
                 </div>
               </div>
 
               <div class="mb-5">
                 <div class="flex justify-between text-[10px] font-black uppercase tracking-widest mb-2">
-                  <span class="text-gray-500">Team Morale</span>
-                  <span class="text-yellow-500">{{ player.morale }}</span>
+                  <span class="text-gray-500">{{ t('morale') }}</span>
+                  <span class="text-amber-700 dark:text-red-400">{{ player.morale }}</span>
                 </div>
-                <div class="h-1.5 rounded-full bg-gray-900 overflow-hidden">
-                  <div class="h-full bg-yellow-500 transition-all" :style="`width: ${player.morale}%`"></div>
+                <div class="h-1.5 rounded-full bg-stone-100 dark:bg-zinc-900 overflow-hidden">
+                  <div class="h-full bg-amber-400 dark:bg-red-500 transition-all" :style="`width: ${player.morale}%`"></div>
                 </div>
               </div>
 
-              <!-- Médias da Última Temporada -->
+              <!-- Médias da última temporada -->
               <div>
                 <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-3">
-                  {{ lastSeason ? `Season ${lastSeason.seasonNumber} Stats` : 'Rookie Season' }}
+                  {{ lastSeason ? `${t('seasonStats')} ${lastSeason.seasonNumber}` : t('rookieSeason') }}
                 </p>
                 <div class="grid grid-cols-2 gap-x-4 gap-y-2">
                   <div class="flex justify-between text-sm">
-                    <span class="text-gray-400 font-bold">MPG</span>
-                    <span class="text-white font-black">{{ lastSeason ? lastSeason.mpg.toFixed(1) : '0.0' }}</span>
+                    <span class="text-zinc-600 dark:text-zinc-400 font-bold">MPG</span>
+                    <span class="text-zinc-950 dark:text-white font-black">{{ lastSeason ? lastSeason.mpg.toFixed(1) : '0.0' }}</span>
                   </div>
                   <div class="flex justify-between text-sm">
-                    <span class="text-gray-400 font-bold">PTS</span>
-                    <span class="text-white font-black">{{ lastSeason ? lastSeason.ppg.toFixed(1) : '0.0' }}</span>
+                    <span class="text-zinc-600 dark:text-zinc-400 font-bold">PTS</span>
+                    <span class="text-zinc-950 dark:text-white font-black">{{ lastSeason ? lastSeason.ppg.toFixed(1) : '0.0' }}</span>
                   </div>
                   <div class="flex justify-between text-sm">
-                    <span class="text-gray-400 font-bold">REB</span>
-                    <span class="text-white font-black">{{ lastSeason ? lastSeason.rpg.toFixed(1) : '0.0' }}</span>
+                    <span class="text-zinc-600 dark:text-zinc-400 font-bold">REB</span>
+                    <span class="text-zinc-950 dark:text-white font-black">{{ lastSeason ? lastSeason.rpg.toFixed(1) : '0.0' }}</span>
                   </div>
                   <div class="flex justify-between text-sm">
-                    <span class="text-gray-400 font-bold">AST</span>
-                    <span class="text-white font-black">{{ lastSeason ? lastSeason.apg.toFixed(1) : '0.0' }}</span>
+                    <span class="text-zinc-600 dark:text-zinc-400 font-bold">AST</span>
+                    <span class="text-zinc-950 dark:text-white font-black">{{ lastSeason ? lastSeason.apg.toFixed(1) : '0.0' }}</span>
                   </div>
                   <div class="flex justify-between text-sm">
-                    <span class="text-gray-400 font-bold">STL</span>
-                    <span class="text-white font-black">{{ lastSeason ? lastSeason.spg.toFixed(1) : '0.0' }}</span>
+                    <span class="text-zinc-600 dark:text-zinc-400 font-bold">STL</span>
+                    <span class="text-zinc-950 dark:text-white font-black">{{ lastSeason ? lastSeason.spg.toFixed(1) : '0.0' }}</span>
                   </div>
                   <div class="flex justify-between text-sm">
-                    <span class="text-gray-400 font-bold">BLK</span>
-                    <span class="text-white font-black">{{ lastSeason ? lastSeason.bpg.toFixed(1) : '0.0' }}</span>
+                    <span class="text-zinc-600 dark:text-zinc-400 font-bold">BLK</span>
+                    <span class="text-zinc-950 dark:text-white font-black">{{ lastSeason ? lastSeason.bpg.toFixed(1) : '0.0' }}</span>
                   </div>
                   <div class="flex justify-between text-sm">
-                    <span class="text-gray-400 font-bold">FG%</span>
-                    <span class="text-white font-black">{{ lastSeason ? (lastSeason.fgPct * 100).toFixed(1) : '0.0' }}%</span>
+                    <span class="text-zinc-600 dark:text-zinc-400 font-bold">FG%</span>
+                    <span class="text-zinc-950 dark:text-white font-black">{{ lastSeason ? (lastSeason.fgPct * 100).toFixed(1) : '0.0' }}%</span>
                   </div>
                   <div class="flex justify-between text-sm">
-                    <span class="text-gray-400 font-bold">3P%</span>
-                    <span class="text-white font-black">{{ lastSeason ? (lastSeason.fg3Pct * 100).toFixed(1) : '0.0' }}%</span>
+                    <span class="text-zinc-600 dark:text-zinc-400 font-bold">3P%</span>
+                    <span class="text-zinc-950 dark:text-white font-black">{{ lastSeason ? (lastSeason.fg3Pct * 100).toFixed(1) : '0.0' }}%</span>
                   </div>
                   <div class="flex justify-between text-sm">
-                    <span class="text-gray-400 font-bold">FT%</span>
-                    <span class="text-white font-black">{{ lastSeason ? (lastSeason.ftPct * 100).toFixed(1) : '0.0' }}%</span>
+                    <span class="text-zinc-600 dark:text-zinc-400 font-bold">FT%</span>
+                    <span class="text-zinc-950 dark:text-white font-black">{{ lastSeason ? (lastSeason.ftPct * 100).toFixed(1) : '0.0' }}%</span>
                   </div>
                   <div class="flex justify-between text-sm">
-                    <span class="text-gray-400 font-bold">+/-</span>
-                    <span class="text-white font-black">{{ lastSeason ? lastSeason.plusMinus.toFixed(1) : '0.0' }}</span>
+                    <span class="text-zinc-600 dark:text-zinc-400 font-bold">+/-</span>
+                    <span class="text-zinc-950 dark:text-white font-black">{{ lastSeason ? lastSeason.plusMinus.toFixed(1) : '0.0' }}</span>
                   </div>
                 </div>
               </div>
@@ -772,64 +1034,92 @@ onBeforeUnmount(() => {
           </div>
 
           <!-- COLUNA CENTRAL: Ação e Imprensa -->
-          <div class="lg:col-span-6 space-y-6">
+          <div class="space-y-6 lg:col-span-9">
             
             <!-- Janela de Ação (Contrato ou Simulação) -->
-            <div class="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6">
+            <div class="bg-white dark:bg-zinc-950 border border-black/10 dark:border-white/10 rounded-xl p-6">
               <div v-if="playoffPresentation.active">
-                <p class="text-yellow-500 text-[10px] font-black uppercase tracking-widest mb-2">Playoffs</p>
+                <p class="text-amber-700 dark:text-red-400 text-[10px] font-black uppercase tracking-widest mb-2">{{ t('playoffs') }}</p>
                 <div v-if="!playoffPresentation.complete && currentPlayoffSeries">
-                  <h3 class="text-2xl font-black text-white uppercase mb-4">{{ currentPlayoffSeries.round }}</h3>
-                  <div v-if="revealedCurrentPlayoffGames.length" class="space-y-1 mb-4">
-                    <div v-for="game in revealedCurrentPlayoffGames" :key="game.gameNumber" class="flex justify-between text-xs bg-gray-900 rounded px-3 py-2">
-                      <span class="text-gray-400">Game {{ game.gameNumber }}</span>
-                      <span :class="game.won ? 'text-green-500' : 'text-red-500'" class="font-black">{{ game.won ? 'W' : 'L' }} · {{ game.points }} PTS</span>
-                    </div>
+                  <h3 class="text-2xl font-black text-zinc-950 dark:text-white uppercase mb-4">{{ label('rounds', currentPlayoffSeries.round) }} vs {{ currentPlayoffSeries.opponentTeamId }}</h3>
+                  <div v-if="revealedCurrentPlayoffGames.length" class="overflow-x-auto mb-4">
+                    <table class="w-full min-w-190 text-xs text-center">
+                      <thead class="text-[9px] text-gray-500 uppercase tracking-widest">
+                        <tr>
+                          <th class="px-2 py-2 text-left">{{ t('game') }}</th>
+                          <th class="px-2 py-2">{{ t('result') }}</th>
+                          <th class="px-2 py-2">{{ t('court') }}</th>
+                          <th class="px-2 py-2">PTS</th>
+                          <th class="px-2 py-2">REB</th>
+                          <th class="px-2 py-2">AST</th>
+                          <th class="px-2 py-2">STL</th>
+                          <th class="px-2 py-2">BLK</th>
+                          <th class="px-2 py-2">FG%</th>
+                          <th class="px-2 py-2">3PT%</th>
+                          <th class="px-2 py-2">FT%</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="game in revealedCurrentPlayoffGames" :key="game.gameNumber" class="bg-stone-100 dark:bg-zinc-900 border-t border-black/10 dark:border-white/10">
+                          <td class="px-2 py-2 text-left text-zinc-600 dark:text-zinc-400">{{ t('game') }} {{ game.gameNumber }}</td>
+                          <td :class="game.won ? 'text-green-500' : 'text-red-500'" class="px-2 py-2 font-black">{{ label('results', game.won ? 'W' : 'L') }}</td>
+                          <td class="px-2 py-2 text-zinc-600 dark:text-zinc-400">{{ label('locations', game.home ? 'HOME' : 'AWAY') }}</td>
+                          <td class="px-2 py-2 font-black text-zinc-950 dark:text-white">{{ game.points }}</td>
+                          <td class="px-2 py-2 text-zinc-950 dark:text-white">{{ game.rebounds }}</td>
+                          <td class="px-2 py-2 text-zinc-950 dark:text-white">{{ game.assists }}</td>
+                          <td class="px-2 py-2 text-zinc-950 dark:text-white">{{ game.steals }}</td>
+                          <td class="px-2 py-2 text-zinc-950 dark:text-white">{{ game.blocks }}</td>
+                          <td class="px-2 py-2 text-zinc-600 dark:text-zinc-400">{{ formatPercentage(game.fgPct) }}</td>
+                          <td class="px-2 py-2 text-zinc-600 dark:text-zinc-400">{{ formatPercentage(game.fg3Pct) }}</td>
+                          <td class="px-2 py-2 text-zinc-600 dark:text-zinc-400">{{ formatPercentage(game.ftPct) }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                   <div class="grid grid-cols-2 gap-2">
                     <button
                       :disabled="playoffPresentation.mode === 'games' && playoffPresentation.currentGame > 0"
-                      class="bg-yellow-500 disabled:opacity-30 text-black font-black py-4 rounded uppercase tracking-widest text-xs"
+                      class="bg-amber-400 dark:bg-red-500 disabled:opacity-30 text-black dark:text-white font-black py-4 rounded uppercase tracking-widest text-xs"
                       @click="simulateNextPlayoffSeries"
                     >
-                      Simulate Series
+                      {{ t('simulateSeries') }}
                     </button>
-                    <button class="border border-yellow-500 text-yellow-500 font-black py-4 rounded uppercase tracking-widest text-xs" @click="simulateNextPlayoffGame">
-                      Simulate Game
+                    <button class="border border-amber-500 dark:border-red-500 text-amber-700 dark:text-red-400 font-black py-4 rounded uppercase tracking-widest text-xs" @click="simulateNextPlayoffGame">
+                      {{ t('simulateGame') }}
                     </button>
                   </div>
-                  <p v-if="playoffPresentation.mode === 'games'" class="text-gray-600 text-[9px] uppercase mt-2">Game mode locked until series ends</p>
+                  <p v-if="playoffPresentation.mode === 'games'" class="text-gray-600 text-[9px] uppercase mt-2">{{ t('gameLocked') }}</p>
                 </div>
                 <div v-else>
-                  <h3 class="text-2xl font-black text-white uppercase mb-4">Playoffs Complete</h3>
-                  <button class="w-full bg-yellow-500 text-black font-black py-4 rounded uppercase tracking-widest" @click="finishPlayoffPresentation">Continue</button>
+                  <h3 class="text-2xl font-black text-zinc-950 dark:text-white uppercase mb-4">{{ t('playoffsComplete') }}</h3>
+                  <button class="w-full bg-amber-400 dark:bg-red-500 text-black dark:text-white font-black py-4 rounded uppercase tracking-widest" @click="finishPlayoffPresentation">{{ t('continue') }}</button>
                 </div>
-                <div v-if="completedPlayoffSeries.length" class="mt-4 pt-4 border-t border-gray-800 space-y-1">
+                <div v-if="completedPlayoffSeries.length" class="mt-4 pt-4 border-t border-black/10 dark:border-white/10 space-y-1">
                   <div v-for="series in completedPlayoffSeries" :key="series.round" class="flex justify-between text-xs">
-                    <span class="text-gray-500">{{ series.round }}</span>
-                    <span class="text-white font-black">{{ series.wins }}-{{ series.losses }}</span>
+                    <span class="text-gray-500">{{ label('rounds', series.round) }} vs {{ series.opponentTeamId }}</span>
+                    <span class="text-zinc-950 dark:text-white font-black">{{ series.wins }}-{{ series.losses }}</span>
                   </div>
                 </div>
               </div>
 
               <div v-else-if="player.isRetired">
-                <h3 class="text-2xl font-black text-white uppercase text-center mb-4">Career Ended</h3>
-                <button @click="viewLegacy" class="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-black py-4 rounded-lg transition-colors uppercase tracking-widest">View Legacy</button>
+                <h3 class="text-2xl font-black text-zinc-950 dark:text-white uppercase text-center mb-4">{{ t('careerEnded') }}</h3>
+                <button @click="viewLegacy" class="w-full bg-amber-400 dark:bg-red-500 hover:bg-amber-300 dark:hover:bg-red-400 text-black dark:text-white font-black py-4 rounded-lg transition-colors uppercase tracking-widest">{{ t('viewLegacy') }}</button>
               </div>
               
               <div v-else-if="isFreeAgent">
                 <div class="flex justify-between items-center mb-4">
-                  <p class="text-yellow-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                    <span class="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></span> Transfer Window
+                  <p class="text-amber-700 dark:text-red-400 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                    <span class="w-2 h-2 bg-amber-400 dark:bg-red-500 rounded-full animate-pulse"></span> {{ t('transferWindow') }}
                   </p>
-                  <p class="text-gray-500 text-[10px] font-bold uppercase">{{ player.age }} Years Old</p>
+                  <p class="text-gray-500 text-[10px] font-bold uppercase">{{ player.age }} {{ t('yearsOld') }}</p>
                 </div>
                 
-                <h3 class="text-2xl font-black text-white uppercase mb-6 leading-none">Your contract expired</h3>
+                <h3 class="text-2xl font-black text-zinc-950 dark:text-white uppercase mb-6 leading-none">{{ t('contractExpired') }}</h3>
                 
                 <div v-if="freeAgencyOffers.length === 0" class="text-center">
-                  <button @click="generateOffers" class="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-black py-4 rounded-lg transition-colors uppercase tracking-widest text-sm">
-                    Listen to Offers
+                  <button @click="generateOffers" class="w-full bg-amber-400 dark:bg-red-500 hover:bg-amber-300 dark:hover:bg-red-400 text-black dark:text-white font-black py-4 rounded-lg transition-colors uppercase tracking-widest text-sm">
+                    {{ t('listenOffers') }}
                   </button>
                 </div>
                 
@@ -838,20 +1128,20 @@ onBeforeUnmount(() => {
                     v-for="(offer, idx) in freeAgencyOffers" 
                     :key="idx"
                     @click="acceptOffer(offer)"
-                    class="w-full bg-[#12120a] border border-gray-800 hover:border-yellow-500 rounded-lg p-4 flex justify-between items-center transition-all group"
+                    class="w-full bg-stone-50 dark:bg-zinc-900 border border-black/10 dark:border-white/10 hover:border-amber-500 dark:hover:border-red-500 rounded-lg p-4 flex justify-between items-center transition-all group"
                   >
                     <div class="text-left flex items-center gap-4">
-                      <div class="w-10 h-10 bg-black border border-gray-800 rounded-full flex items-center justify-center text-xs font-black text-white group-hover:border-yellow-500 transition-colors">
+                      <div class="w-10 h-10 bg-zinc-100 dark:bg-black border border-black/10 dark:border-white/10 rounded-full flex items-center justify-center text-xs font-black text-zinc-950 dark:text-white group-hover:border-amber-500 dark:hover:border-red-500 transition-colors">
                         {{ offer.teamId }}
                       </div>
                       <div>
-                        <p class="text-white font-black uppercase text-lg group-hover:text-yellow-500 transition-colors leading-none mb-1">{{ offer.teamId === player.teamId ? 'Stay at ' + offer.teamId : offer.teamId }}</p>
-                        <p class="text-gray-500 text-[9px] uppercase font-bold tracking-widest">{{ offer.role }}</p>
+                        <p class="mb-1 text-lg font-black uppercase leading-none text-zinc-950 transition-colors group-hover:text-amber-700 dark:text-white dark:group-hover:text-red-400">{{ offer.teamId === player.teamId ? tf('stayAt', { team: offer.teamId }) : offer.teamId }}</p>
+                        <p class="text-gray-500 text-[9px] uppercase font-bold tracking-widest">{{ label('roles', offer.role) }}</p>
                       </div>
                     </div>
                     <div class="text-right">
-                      <p class="text-yellow-500 font-black text-lg leading-none mb-1">${{ offer.salary }}M <span class="text-gray-500 text-[10px] font-normal">/yr</span></p>
-                      <p class="text-gray-400 text-[10px] font-bold uppercase tracking-widest">{{ offer.years }} {{ offer.years === 1 ? 'Year' : 'Years' }}</p>
+                      <p class="text-amber-700 dark:text-red-400 font-black text-lg leading-none mb-1">${{ offer.salary }}M <span class="text-gray-500 text-[10px] font-normal">/{{ t('year') }}</span></p>
+                      <p class="text-zinc-600 dark:text-zinc-400 text-[10px] font-bold uppercase tracking-widest">{{ offer.years }} {{ offer.years === 1 ? t('year') : t('years') }}</p>
                     </div>
                   </button>
                 </div>
@@ -859,95 +1149,112 @@ onBeforeUnmount(() => {
 
               <div v-else class="text-center">
                 <p class="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-4">
-                  Contract: {{ player.contractYearsLeft }} Years Left
+                  {{ t('contract') }}: {{ player.contractYearsLeft }} {{ t('yearsLeft') }}
                 </p>
-                <button @click="simulateSeason" class="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-black py-5 rounded-lg transition-colors uppercase tracking-widest text-lg mb-3">
-                  Simulate Season
-                </button>
-                <button 
-                  @click="simulateRemainingCareer" 
-                  :disabled="player.contractYearsLeft === 0"
-                  class="bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-bold py-3 px-6 rounded shadow-lg transition-all"
-                >
-                  Simulate Career to End
-                </button>
-                <div class="mt-4 border-t border-gray-800 pt-4">
+                <div class="grid gap-3 sm:grid-cols-2">
+                  <button
+                    class="min-h-16 rounded-xl bg-amber-400 px-5 py-4 text-sm font-black uppercase tracking-widest text-black transition-all hover:-translate-y-0.5 hover:bg-amber-300 dark:bg-red-500 dark:text-white dark:hover:bg-red-400"
+                    @click="simulateSeason"
+                  >
+                    {{ t('simulateSeason') }}
+                  </button>
+                  <button
+                    :disabled="player.contractYearsLeft === 0"
+                    class="min-h-16 rounded-xl border border-black/15 bg-zinc-950 px-5 py-4 text-sm font-black uppercase tracking-widest text-white transition-all hover:-translate-y-0.5 hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/15 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+                    @click="simulateRemainingCareer"
+                  >
+                    {{ t('simulateCareer') }}
+                  </button>
+                </div>
+                <div class="mt-4 border-t border-black/10 dark:border-white/10 pt-4">
                   <div class="flex gap-2">
                     <select
+                      v-if="canChooseTradeTarget"
                       v-model="selectedTradeTeam"
-                      :disabled="!canChooseTradeTarget || player.tradeRequestedThisSeason"
-                      class="min-w-0 flex-1 bg-gray-900 border border-gray-800 rounded px-3 text-xs text-white disabled:opacity-40"
+                      :disabled="player.tradeRequestedThisSeason"
+                      class="min-w-0 flex-1 bg-stone-100 dark:bg-zinc-900 border border-black/10 dark:border-white/10 rounded px-3 text-xs text-zinc-950 dark:text-white disabled:opacity-40"
                       aria-label="Preferred trade destination"
                     >
-                      <option value="">{{ canChooseTradeTarget ? 'Preferred team' : 'Destination chosen by team' }}</option>
+                      <option value="">{{ t('preferredTeam') }}</option>
                       <option v-for="team in tradeTargets" :key="team.id" :value="team.id">{{ team.id }}</option>
                     </select>
                     <button
                       :disabled="player.tradeRequestedThisSeason"
-                      class="border border-gray-700 disabled:opacity-40 text-gray-300 font-black px-4 py-3 rounded uppercase tracking-widest text-[10px]"
+                      class="flex-1 border border-zinc-300 dark:border-zinc-700 disabled:opacity-40 text-zinc-700 dark:text-zinc-300 font-black px-4 py-3 rounded uppercase tracking-widest text-[10px]"
                       @click="submitTradeRequest"
                     >
-                      Request Trade
+                      {{ t('requestTrade') }}
                     </button>
                   </div>
-                  <p v-if="lastTransactionMessage" class="text-gray-500 text-[10px] mt-2">{{ lastTransactionMessage }}</p>
+                  <p v-if="lastTransactionMessage" class="text-gray-500 text-[10px] mt-2">{{ localizeDynamicText(lastTransactionMessage) }}</p>
                 </div>
-                <button v-if="player.age >= 32" @click="retireManual" class="w-full mt-4 bg-transparent border border-gray-800 hover:border-red-900 hover:bg-red-900/10 text-gray-600 hover:text-red-500 font-bold py-3 rounded-lg transition-colors uppercase tracking-widest text-xs">
-                  Announce Retirement
+                <button v-if="player.age >= 32" @click="retireManual" class="w-full mt-4 bg-transparent border border-black/10 dark:border-white/10 hover:border-red-900 hover:bg-red-900/10 text-gray-600 hover:text-red-500 font-bold py-3 rounded-lg transition-colors uppercase tracking-widest text-xs">
+                  {{ t('retire') }}
                 </button>
               </div>
             </div>
 
             <!-- Feed de Imprensa -->
-            <div class="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6">
-              <h4 class="text-white font-black uppercase tracking-widest text-sm mb-4 border-b border-gray-800 pb-2">The Press</h4>
+            <div class="bg-white dark:bg-zinc-950 border border-black/10 dark:border-white/10 rounded-xl p-6">
+              <h4 class="text-zinc-950 dark:text-white font-black uppercase tracking-widest text-sm mb-4 border-b border-black/10 dark:border-white/10 pb-2">{{ t('press') }}</h4>
               <ul class="space-y-4">
                 <li v-for="(news, index) in newsFeed" :key="index" class="flex gap-4 text-sm">
-                  <span class="text-yellow-500 font-bold opacity-80">{{ player.age + (lastSeason ? 0 : 0) }} yo</span>
-                  <span class="text-gray-300">{{ news }}</span>
+                  <span class="text-amber-700 dark:text-red-400 font-bold opacity-80">{{ player.age }} {{ t('ageSuffix') }}</span>
+                  <span class="text-zinc-700 dark:text-zinc-300">{{ news }}</span>
                 </li>
               </ul>
             </div>
             
-            <!-- Últimos Prêmios -->
+            <!-- Últimos prêmios -->
             <div v-if="lastSeason && lastSeason.awards.length > 0 && !playoffPresentation.active" class="flex flex-wrap gap-2">
-              <div v-for="award in lastSeason.awards" :key="award" class="bg-yellow-500/10 border border-yellow-500/30 text-yellow-500 font-black text-[10px] uppercase tracking-widest px-3 py-1.5 rounded">
-                {{ award }}
+              <div v-for="award in lastSeason.awards" :key="award" class="bg-amber-400/10 dark:bg-red-500/10 border border-amber-500/30 dark:border-red-500/30 text-amber-700 dark:text-red-400 font-black text-[10px] uppercase tracking-widest px-3 py-1.5 rounded">
+                {{ label('awards', award) }}
               </div>
             </div>
 
           </div>
 
-          <div class="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6 h-full flex flex-col">
-            <h4 class="text-white font-black uppercase tracking-widest text-sm mb-4 border-b border-gray-800 pb-2">League Standings</h4>
-            
-            <!-- Correção visual: Substituição do grid-cols-2 por empilhamento vertical (space-y-4) -->
-            <div class="space-y-4 flex-1">
+          <div class="rounded-2xl border border-black/10 bg-white p-5 dark:border-white/10 dark:bg-zinc-950 sm:p-7 lg:col-span-12">
+            <h4 class="mb-6 border-b border-black/10 pb-4 text-sm font-black uppercase tracking-widest text-zinc-950 dark:border-white/10 dark:text-white">{{ t('standings') }}</h4>
+            <div class="grid gap-8 md:grid-cols-2">
               <div>
-                <p class="text-gray-500 text-[9px] font-bold uppercase tracking-widest mb-3">Eastern</p>
-                <div v-for="(team, idx) in easternTeams" :key="team.id" class="flex justify-between items-center text-[10px] mb-1.5">
-                  <span class="flex gap-2"><span class="text-gray-600 font-bold w-3">{{ (idx as number) + 1 }}</span><span :class="team.id === player.teamId ? 'text-yellow-500 font-black' : 'text-gray-300'">{{ team.id }}</span></span>
-                  <span class="text-gray-500 font-mono">{{ team.wins }}-{{ team.losses }}</span>
+                <p class="mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">{{ t('eastern') }}</p>
+                <div class="grid gap-1">
+                  <div
+                    v-for="(team, idx) in easternTeams"
+                    :key="team.id"
+                    class="grid grid-cols-[2rem_1fr_auto] items-center rounded-lg px-3 py-2 text-xs even:bg-stone-100 dark:even:bg-zinc-900"
+                  >
+                    <span class="font-mono text-gray-500">{{ (idx as number) + 1 }}</span>
+                    <span :class="team.id === player.teamId ? 'font-black text-amber-700 dark:text-red-400' : 'font-bold text-zinc-700 dark:text-zinc-300'">{{ team.id }}</span>
+                    <span class="font-mono text-gray-500">{{ team.wins }}-{{ team.losses }}</span>
+                  </div>
                 </div>
               </div>
-              
-              <div class="pt-2 border-t border-gray-800/50">
-                <p class="text-gray-500 text-[9px] font-bold uppercase tracking-widest mb-3">Western</p>
-                <div v-for="(team, idx) in westernTeams" :key="team.id" class="flex justify-between items-center text-[10px] mb-1.5">
-                  <span class="flex gap-2"><span class="text-gray-600 font-bold w-3">{{ (idx as number) + 1 }}</span><span :class="team.id === player.teamId ? 'text-yellow-500 font-black' : 'text-gray-300'">{{ team.id }}</span></span>
-                  <span class="text-gray-500 font-mono">{{ team.wins }}-{{ team.losses }}</span>
+              <div>
+                <p class="mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">{{ t('western') }}</p>
+                <div class="grid gap-1">
+                  <div
+                    v-for="(team, idx) in westernTeams"
+                    :key="team.id"
+                    class="grid grid-cols-[2rem_1fr_auto] items-center rounded-lg px-3 py-2 text-xs even:bg-stone-100 dark:even:bg-zinc-900"
+                  >
+                    <span class="font-mono text-gray-500">{{ (idx as number) + 1 }}</span>
+                    <span :class="team.id === player.teamId ? 'font-black text-amber-700 dark:text-red-400' : 'font-bold text-zinc-700 dark:text-zinc-300'">{{ team.id }}</span>
+                    <span class="font-mono text-gray-500">{{ team.wins }}-{{ team.losses }}</span>
+                  </div>
                 </div>
               </div>
             </div>
             
             <!-- Active League Awards -->
-            <div v-if="lastSeason && lastSeason.leagueAwards" class="mt-4 border-t border-gray-800 pt-4">
-              <p class="text-gray-500 text-[9px] font-bold uppercase tracking-widest mb-2">Season Leaders</p>
-              <div class="space-y-1.5 text-[10px]">
-                <div class="flex justify-between"><span class="text-gray-400 font-bold">MVP</span> <span class="text-yellow-500 font-black">{{ lastSeason.leagueAwards.MVP }}</span></div>
-                <div class="flex justify-between"><span class="text-gray-400 font-bold">DPOY</span> <span class="text-white font-black">{{ lastSeason.leagueAwards.DPOY }}</span></div>
-                <div class="flex justify-between"><span class="text-gray-400 font-bold">SMOTY</span> <span class="text-white font-black">{{ lastSeason.leagueAwards.SMOTY }}</span></div>
-                <div v-if="lastSeason.playoffs?.wonRing" class="flex justify-between"><span class="text-gray-400 font-bold">FMVP</span> <span class="text-white font-black">{{ lastSeason.leagueAwards.FMVP }}</span></div>
+            <div v-if="lastSeason && lastSeason.leagueAwards" class="mt-6 border-t border-black/10 pt-5 dark:border-white/10">
+              <p class="text-gray-500 text-[9px] font-bold uppercase tracking-widest mb-2">{{ t('seasonLeaders') }}</p>
+              <div class="grid gap-3 text-xs sm:grid-cols-2 lg:grid-cols-4">
+                <div class="flex justify-between"><span class="text-zinc-600 dark:text-zinc-400 font-bold">MVP</span> <span class="text-amber-700 dark:text-red-400 font-black">{{ lastSeason.leagueAwards.MVP }}</span></div>
+                <div class="flex justify-between"><span class="text-zinc-600 dark:text-zinc-400 font-bold">DPOY</span> <span class="text-zinc-950 dark:text-white font-black">{{ lastSeason.leagueAwards.DPOY }}</span></div>
+                <div class="flex justify-between"><span class="text-zinc-600 dark:text-zinc-400 font-bold">SMOTY</span> <span class="text-zinc-950 dark:text-white font-black">{{ lastSeason.leagueAwards.SMOTY }}</span></div>
+                <div v-if="lastSeason.playoffs?.wonRing" class="flex justify-between"><span class="text-zinc-600 dark:text-zinc-400 font-bold">FMVP</span> <span class="text-zinc-950 dark:text-white font-black">{{ lastSeason.leagueAwards.FMVP }}</span></div>
               </div>
             </div>
           </div>
@@ -959,42 +1266,42 @@ onBeforeUnmount(() => {
       <section v-if="currentPhase === 'retired'" class="max-w-5xl mx-auto pb-12 animate-fade-in">
         
         <!-- Cabeçalho do Legado -->
-        <div class="flex items-end gap-6 mb-10 border-b border-gray-800 pb-8">
-          <div class="bg-[#0a0a0a] border border-gray-800 p-6 rounded-xl text-center min-w-30">
-            <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">GOAT Score</p>
-            <p class="text-5xl font-black text-yellow-500">{{ goatEvaluation.score }}</p>
+        <div class="mb-10 grid gap-5 border-b border-black/10 pb-8 dark:border-white/10 sm:grid-cols-[auto_1fr] sm:items-center">
+          <div class="min-w-32 rounded-2xl border border-black/10 bg-white p-6 text-center dark:border-white/10 dark:bg-zinc-950">
+            <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">{{ t('careerScore') }}</p>
+            <p class="text-5xl font-black text-amber-700 dark:text-red-400">{{ goatEvaluation.score }}</p>
           </div>
-          <div>
-            <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-2">Career Ended</p>
-            <h1 class="text-4xl font-black text-white uppercase tracking-tight">{{ goatEvaluation.tier }}</h1>
-            <p class="text-gray-400 text-sm mt-2 font-bold">{{ player.position }} · {{ history.length }} Seasons</p>
-            <p v-if="player.retirementReason" class="text-red-500 text-[10px] font-black uppercase tracking-widest mt-2">{{ player.retirementReason }}</p>
+          <div class="min-w-0">
+            <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-2">{{ t('careerEnded') }}</p>
+            <h1 class="text-4xl font-black text-zinc-950 dark:text-white uppercase tracking-tight">{{ label('tiers', goatEvaluation.tier) }}</h1>
+            <p class="text-zinc-600 dark:text-zinc-400 text-sm mt-2 font-bold">{{ label('positions', player.position) }} · {{ history.length }} {{ history.length === 1 ? t('seasonSingular') : t('seasonPlural') }}</p>
+            <p v-if="player.retirementReason" class="text-red-500 text-[10px] font-black uppercase tracking-widest mt-2">{{ label('injuries', player.retirementReason) }}</p>
           </div>
 
-          <div>
-            <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-3">Career Averages</p>
-            <div class="grid grid-cols-3 md:grid-cols-9 gap-2">
+          <div class="min-w-0 sm:col-span-2">
+            <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-3">{{ t('careerAverages') }}</p>
+            <div class="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-8">
               <div v-for="[label, value] in [
                 ['PPG', careerAverages.ppg.toFixed(1)], ['RPG', careerAverages.rpg.toFixed(1)],
                 ['APG', careerAverages.apg.toFixed(1)], ['SPG', careerAverages.spg.toFixed(1)],
-                ['BPG', careerAverages.bpg.toFixed(1)], ['OVR', careerAverages.ovr.toFixed(1)],
+                ['BPG', careerAverages.bpg.toFixed(1)],
                 ['FG%', formatPercentage(careerAverages.fgPct)],
                 ['3P%', formatPercentage(careerAverages.fg3Pct)],
                 ['FT%', formatPercentage(careerAverages.ftPct)]
-              ]" :key="label" class="bg-[#0a0a0a] border border-gray-800 rounded p-3 text-center">
-                <p class="text-white font-black">{{ value }}</p>
+              ]" :key="label" class="min-w-0 rounded-lg border border-black/10 bg-white p-3 text-center dark:border-white/10 dark:bg-zinc-950">
+                <p class="text-zinc-950 dark:text-white font-black">{{ value }}</p>
                 <p class="text-gray-600 text-[8px] font-black uppercase">{{ label }}</p>
               </div>
             </div>
           </div>
 
-          <div v-if="retiredJerseys.length" class="mt-8">
-            <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-3">Retired Jerseys</p>
-            <div class="flex flex-wrap gap-3">
-              <div v-for="jersey in retiredJerseys" :key="jersey.teamId" class="bg-yellow-500/10 border border-yellow-500/40 rounded-xl p-5 min-w-40 text-center">
-                <p class="text-gray-400 text-[10px] font-black uppercase">{{ jersey.teamId }}</p>
-                <p class="text-4xl text-yellow-500 font-black">#{{ jersey.jerseyNumber }}</p>
-                <p class="text-gray-500 text-[9px] uppercase">{{ jersey.seasons }} seasons · {{ jersey.rings }} rings</p>
+          <div v-if="retiredJerseys.length" class="min-w-0 sm:col-span-2">
+            <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-3">{{ t('retiredJerseys') }}</p>
+            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div v-for="jersey in retiredJerseys" :key="jersey.teamId" class="min-w-0 rounded-xl border border-amber-500 bg-amber-400/10 p-5 text-center dark:border-red-500/40 dark:bg-red-500/10">
+                <p class="text-zinc-600 dark:text-zinc-400 text-[10px] font-black uppercase">{{ jersey.teamId }}</p>
+                <p class="text-4xl text-amber-700 dark:text-red-400 font-black">#{{ jersey.jerseyNumber }}</p>
+                <p class="text-gray-500 text-[9px] uppercase">{{ jersey.seasons }} {{ t('seasons') }} · {{ jersey.rings }} {{ t('rings') }}</p>
               </div>
             </div>
           </div>
@@ -1004,24 +1311,24 @@ onBeforeUnmount(() => {
           
           <!-- Números da Carreira (Totais) -->
           <div>
-            <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-3">Career Numbers</p>
+            <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-3">{{ t('careerTotals') }}</p>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div class="bg-[#0a0a0a] border border-yellow-500/30 p-6 rounded-lg text-center relative overflow-hidden">
-                <div class="absolute inset-0 bg-yellow-500/5"></div>
-                <p class="text-yellow-600 text-[10px] font-bold uppercase tracking-widest mb-1 relative z-10">Points</p>
-                <p class="text-3xl font-black text-yellow-500 relative z-10">{{ careerTotals.totalPoints }}</p>
+              <div class="bg-white dark:bg-zinc-950 border border-amber-500/30 dark:border-red-500/30 p-6 rounded-lg text-center relative overflow-hidden">
+                <div class="absolute inset-0 bg-amber-400/5 dark:bg-red-500/5"></div>
+                <p class="relative z-10 mb-1 text-[10px] font-bold uppercase tracking-widest text-amber-700 dark:text-red-400">{{ t('points') }}</p>
+                <p class="text-3xl font-black text-amber-700 dark:text-red-400 relative z-10">{{ careerTotals.totalPoints }}</p>
               </div>
-              <div class="bg-[#0a0a0a] border border-gray-800 p-6 rounded-lg text-center">
-                <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">Rebounds</p>
-                <p class="text-3xl font-black text-white">{{ careerTotals.totalRebounds }}</p>
+              <div class="bg-white dark:bg-zinc-950 border border-black/10 dark:border-white/10 p-6 rounded-lg text-center">
+                <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">{{ t('rebounds') }}</p>
+                <p class="text-3xl font-black text-zinc-950 dark:text-white">{{ careerTotals.totalRebounds }}</p>
               </div>
-              <div class="bg-[#0a0a0a] border border-gray-800 p-6 rounded-lg text-center">
-                <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">Assists</p>
-                <p class="text-3xl font-black text-white">{{ careerTotals.totalAssists }}</p>
+              <div class="bg-white dark:bg-zinc-950 border border-black/10 dark:border-white/10 p-6 rounded-lg text-center">
+                <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">{{ t('assists') }}</p>
+                <p class="text-3xl font-black text-zinc-950 dark:text-white">{{ careerTotals.totalAssists }}</p>
               </div>
-              <div class="bg-[#0a0a0a] border border-gray-800 p-6 rounded-lg text-center">
-                <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">Games</p>
-                <p class="text-3xl font-black text-white">{{ careerTotals.gamesPlayed }}</p>
+              <div class="bg-white dark:bg-zinc-950 border border-black/10 dark:border-white/10 p-6 rounded-lg text-center">
+                <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">{{ t('games') }}</p>
+                <p class="text-3xl font-black text-zinc-950 dark:text-white">{{ careerTotals.gamesPlayed }}</p>
               </div>
             </div>
           </div>
@@ -1029,77 +1336,77 @@ onBeforeUnmount(() => {
           <!-- Comparações com carreiras reais -->
           <div class="mt-8">
             <div class="flex justify-between items-end mb-3">
-              <p class="text-gray-500 text-xs font-bold uppercase tracking-widest">NBA Career Comparisons</p>
-              <p class="text-yellow-500 text-[10px] font-black uppercase tracking-widest">Closest historical profiles</p>
+              <p class="text-gray-500 text-xs font-bold uppercase tracking-widest">{{ t('comparisons') }}</p>
+              <p class="text-amber-700 dark:text-red-400 text-[10px] font-black uppercase tracking-widest">{{ t('closestProfiles') }}</p>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <article
                 v-for="(comparison, index) in careerComparisons"
                 :key="comparison.player.id"
-                class="bg-[#0a0a0a] border rounded-xl p-5"
-                :class="index === 0 ? 'border-yellow-500/60' : 'border-gray-800'"
+                class="bg-white dark:bg-zinc-950 border rounded-xl p-5"
+                :class="index === 0 ? 'border-amber-500 dark:border-red-500/60' : 'border-black/10 dark:border-white/10'"
               >
                 <div class="flex items-start justify-between gap-4 mb-3">
                   <div>
                     <p class="text-gray-500 text-[9px] font-bold uppercase tracking-widest">
-                      {{ index === 0 ? 'Closest Career' : `Alternative #${index + 1}` }}
+                      {{ index === 0 ? t('closestCareer') : tf('alternative', { number: index + 1 }) }}
                     </p>
-                    <h2 class="text-white text-lg font-black uppercase mt-1">{{ comparison.player.name }}</h2>
+                    <h2 class="text-zinc-950 dark:text-white text-lg font-black uppercase mt-1">{{ comparison.player.name }}</h2>
                     <p class="text-gray-600 text-[10px] font-bold uppercase tracking-widest">
-                      {{ comparison.player.positions.join('/') }} · {{ comparison.player.era }}
+                      {{ comparison.player.positions.map(position => label('positions', position)).join('/') }} · {{ comparison.player.era }}
                     </p>
                     <p class="text-gray-700 text-[9px] font-bold uppercase tracking-widest mt-1">
-                      {{ comparison.basis === 'complete' ? 'Full legacy profile' : 'Statistical profile' }}
+                      {{ comparison.basis === 'complete' ? t('fullLegacy') : t('statisticalProfile') }}
                     </p>
                   </div>
-                  <span class="text-yellow-500 text-2xl font-black">{{ comparison.similarity }}%</span>
+                  <span class="text-amber-700 dark:text-red-400 text-2xl font-black">{{ comparison.similarity }}%</span>
                 </div>
-                <p class="text-gray-400 text-xs leading-relaxed mb-4">{{ comparison.player.summary }}</p>
+                <p class="text-zinc-600 dark:text-zinc-400 text-xs leading-relaxed mb-4">{{ tf('careerSnapshot', { seasons: comparison.player.seasons, points: comparison.player.points.toLocaleString(locale), rings: comparison.player.rings }) }}</p>
                 <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
-                  Similar: <span class="text-gray-300">{{ comparison.sharedTraits.join(' · ') }}</span>
+                  {{ t('similar') }}: <span class="text-zinc-700 dark:text-zinc-300">{{ comparison.sharedTraits.map(trait => label('dimensions', trait)).join(' · ') }}</span>
                 </p>
-                <p class="text-gray-600 text-[10px] mt-2">{{ comparison.mainDifference }}</p>
+                <p class="text-gray-600 text-[10px] mt-2">{{ localizeComparisonDifference(comparison.mainDifference) }}</p>
               </article>
             </div>
           </div>
 
           <!-- Linha do Tempo de Clubes -->
           <div class="mt-8">
-            <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-3">Career Path</p>
-            <div class="bg-[#0a0a0a] border border-gray-800 p-4 rounded-lg flex flex-wrap items-center gap-3">
+            <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-3">{{ t('careerPath') }}</p>
+            <div class="bg-white dark:bg-zinc-950 border border-black/10 dark:border-white/10 p-4 rounded-lg flex flex-wrap items-center gap-3">
               <template v-for="(stop, index) in formattedTimeline" :key="index">
                 <div class="flex items-center gap-2">
-                  <span class="text-white font-black uppercase text-sm">{{ stop.teamId }}</span>
+                  <span class="text-zinc-950 dark:text-white font-black uppercase text-sm">{{ stop.teamId }}</span>
                   <span class="text-gray-500 text-[10px] font-bold uppercase tracking-widest">({{ stop.period }})</span>
                 </div>
-                <span v-if="!stop.isLast" class="text-yellow-500 text-xs font-black">→</span>
+                <span v-if="!stop.isLast" class="text-amber-700 dark:text-red-400 text-xs font-black">→</span>
               </template>
             </div>
           </div>
 
           <!-- Armário de Troféus -->
           <div>
-            <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-3 mt-8">Trophy Cabinet</p>
+            <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-3 mt-8">{{ t('trophyCabinet') }}</p>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
               <!-- Rings -->
-              <div class="bg-[#0a0a0a] border border-gray-800 p-4 rounded-lg flex items-center justify-between">
-                <span class="text-white text-sm font-black uppercase tracking-widest">🏆 Rings</span>
-                <span class="text-yellow-500 font-black">x{{ trophyCabinet['Rings'] || 0 }}</span>
+              <div class="bg-white dark:bg-zinc-950 border border-black/10 dark:border-white/10 p-4 rounded-lg flex items-center justify-between">
+                <span class="text-zinc-950 dark:text-white text-sm font-black uppercase tracking-widest">{{ t('rings') }}</span>
+                <span class="text-amber-700 dark:text-red-400 font-black">x{{ trophyCabinet['Rings'] || 0 }}</span>
               </div>
               <!-- MVP -->
-              <div class="bg-[#0a0a0a] border border-gray-800 p-4 rounded-lg flex items-center justify-between">
-                <span class="text-white text-sm font-black uppercase tracking-widest">⭐ MVP</span>
-                <span class="text-yellow-500 font-black">x{{ trophyCabinet['MVP'] || 0 }}</span>
+              <div class="bg-white dark:bg-zinc-950 border border-black/10 dark:border-white/10 p-4 rounded-lg flex items-center justify-between">
+                <span class="text-zinc-950 dark:text-white text-sm font-black uppercase tracking-widest">⭐ MVP</span>
+                <span class="text-amber-700 dark:text-red-400 font-black">x{{ trophyCabinet['MVP'] || 0 }}</span>
               </div>
               <!-- Finals MVP -->
-              <div class="bg-[#0a0a0a] border border-gray-800 p-4 rounded-lg flex items-center justify-between">
-                <span class="text-white text-sm font-black uppercase tracking-widest">🎖️ FMVP</span>
-                <span class="text-yellow-500 font-black">x{{ trophyCabinet['Finals MVP'] || 0 }}</span>
+              <div class="bg-white dark:bg-zinc-950 border border-black/10 dark:border-white/10 p-4 rounded-lg flex items-center justify-between">
+                <span class="text-zinc-950 dark:text-white text-sm font-black uppercase tracking-widest">FMVP</span>
+                <span class="text-amber-700 dark:text-red-400 font-black">x{{ trophyCabinet['Finals MVP'] || 0 }}</span>
               </div>
               <!-- DPOY -->
-              <div class="bg-[#0a0a0a] border border-gray-800 p-4 rounded-lg flex items-center justify-between">
-                <span class="text-white text-sm font-black uppercase tracking-widest">🛡️ DPOY</span>
-                <span class="text-yellow-500 font-black">x{{ trophyCabinet['DPOY'] || 0 }}</span>
+              <div class="bg-white dark:bg-zinc-950 border border-black/10 dark:border-white/10 p-4 rounded-lg flex items-center justify-between">
+                <span class="text-zinc-950 dark:text-white text-sm font-black uppercase tracking-widest">DPOY</span>
+                <span class="text-amber-700 dark:text-red-400 font-black">x{{ trophyCabinet['DPOY'] || 0 }}</span>
               </div>
             </div>
             
@@ -1108,39 +1415,39 @@ onBeforeUnmount(() => {
               <div 
                 v-for="[award, count] in sortedAwards" 
                 :key="award" 
-                class="bg-gray-900 border border-gray-800 px-3 py-1.5 rounded text-[10px] font-black uppercase tracking-widest text-gray-400"
+                class="bg-stone-100 dark:bg-zinc-900 border border-black/10 dark:border-white/10 px-3 py-1.5 rounded text-[10px] font-black uppercase tracking-widest text-zinc-600 dark:text-zinc-400"
               >
-                {{ award }} <span class="text-white ml-1">x{{ count }}</span>
+                {{ label('awards', award) }} <span class="text-zinc-950 dark:text-white ml-1">x{{ count }}</span>
               </div>
             </div>
           </div>
 
           <!-- Recordes e Comparação Histórica -->
-          <div class="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6 mt-8">
-            <div class="flex justify-between items-end mb-6 border-b border-gray-800 pb-3">
-              <p class="text-gray-500 text-xs font-bold uppercase tracking-widest">Records & Legacy</p>
-              <p class="text-yellow-500 text-[10px] font-black uppercase tracking-widest">All-Time NBA Leaderboard</p>
+          <div class="bg-white dark:bg-zinc-950 border border-black/10 dark:border-white/10 rounded-xl p-6 mt-8">
+            <div class="flex justify-between items-end mb-6 border-b border-black/10 dark:border-white/10 pb-3">
+              <p class="text-gray-500 text-xs font-bold uppercase tracking-widest">{{ t('records') }}</p>
+              <p class="text-amber-700 dark:text-red-400 text-[10px] font-black uppercase tracking-widest">{{ t('allTime') }}</p>
             </div>
 
             <div class="space-y-5">
               <!-- Barra de Pontos -->
               <div class="mt-4">
                 <div class="flex justify-between text-xs font-bold uppercase tracking-widest mb-2">
-                  <span class="text-white">Career Points</span>
-                  <span class="text-gray-500"><span class="text-yellow-500">{{ careerTotals.totalPoints }}</span> / {{ nbaRecords.points }} (LeBron James)</span>
+                  <span class="text-zinc-950 dark:text-white">{{ t('points') }}</span>
+                  <span class="text-gray-500"><span class="text-amber-700 dark:text-red-400">{{ careerTotals.totalPoints }}</span> / {{ nbaRecords.points }} (LeBron James)</span>
                 </div>
-                <div class="w-full bg-gray-900 rounded-full h-1.5">
-                  <div class="bg-yellow-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(careerTotals.totalPoints, nbaRecords.points)}%`"></div>
+                <div class="w-full bg-stone-100 dark:bg-zinc-900 rounded-full h-1.5">
+                  <div class="bg-amber-400 dark:bg-red-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(careerTotals.totalPoints, nbaRecords.points)}%`"></div>
                 </div>
               </div>
 
               <!-- Barra de Assistências -->
               <div class="mt-4">
                 <div class="flex justify-between text-xs font-bold uppercase tracking-widest mb-2">
-                  <span class="text-white">Career Assists</span>
+                  <span class="text-zinc-950 dark:text-white">{{ t('assists') }}</span>
                   <span class="text-gray-500"><span class="text-green-500">{{ careerTotals.totalAssists }}</span> / {{ nbaRecords.assists }} (John Stockton)</span>
                 </div>
-                <div class="w-full bg-gray-900 rounded-full h-1.5">
+                <div class="w-full bg-stone-100 dark:bg-zinc-900 rounded-full h-1.5">
                   <div class="bg-green-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(careerTotals.totalAssists, nbaRecords.assists)}%`"></div>
                 </div>
               </div>
@@ -1148,10 +1455,10 @@ onBeforeUnmount(() => {
               <!-- Barra de Rebotes -->
               <div class="mt-4">
                 <div class="flex justify-between text-xs font-bold uppercase tracking-widest mb-2">
-                  <span class="text-white">Career Rebounds</span>
+                  <span class="text-zinc-950 dark:text-white">{{ t('rebounds') }}</span>
                   <span class="text-gray-500"><span class="text-blue-500">{{ careerTotals.totalRebounds }}</span> / {{ nbaRecords.rebounds }} (Wilt Chamberlain)</span>
                 </div>
-                <div class="w-full bg-gray-900 rounded-full h-1.5">
+                <div class="w-full bg-stone-100 dark:bg-zinc-900 rounded-full h-1.5">
                   <div class="bg-blue-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(careerTotals.totalRebounds, nbaRecords.rebounds)}%`"></div>
                 </div>
               </div>
@@ -1159,62 +1466,62 @@ onBeforeUnmount(() => {
               <!-- Barra de Steals -->
               <div class="mt-4">
                 <div class="flex justify-between text-xs font-bold uppercase tracking-widest mb-2">
-                  <span class="text-white">Career Steals</span>
+                  <span class="text-zinc-950 dark:text-white">{{ t('steals') }}</span>
                   <span class="text-gray-500"><span class="text-purple-500">{{ careerTotals.totalSteals || 0 }}</span> / {{ nbaRecords.steals }} (John Stockton)</span>
                 </div>
-                <div class="w-full bg-gray-900 rounded-full h-1.5"><div class="bg-purple-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(careerTotals.totalSteals || 0, nbaRecords.steals)}%`"></div></div>
+                <div class="w-full bg-stone-100 dark:bg-zinc-900 rounded-full h-1.5"><div class="bg-purple-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(careerTotals.totalSteals || 0, nbaRecords.steals)}%`"></div></div>
               </div>
 
               <!-- Barra de Blocks -->
               <div class="mt-4">
                 <div class="flex justify-between text-xs font-bold uppercase tracking-widest mb-2">
-                  <span class="text-white">Career Blocks</span>
+                  <span class="text-zinc-950 dark:text-white">{{ t('blocks') }}</span>
                   <span class="text-gray-500"><span class="text-red-500">{{ careerTotals.totalBlocks || 0 }}</span> / {{ nbaRecords.blocks }} (Hakeem Olajuwon)</span>
                 </div>
-                <div class="w-full bg-gray-900 rounded-full h-1.5"><div class="bg-red-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(careerTotals.totalBlocks || 0, nbaRecords.blocks)}%`"></div></div>
+                <div class="w-full bg-stone-100 dark:bg-zinc-900 rounded-full h-1.5"><div class="bg-red-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(careerTotals.totalBlocks || 0, nbaRecords.blocks)}%`"></div></div>
               </div>
 
               <!-- Barra de MVPs -->
               <div class="mt-4">
                 <div class="flex justify-between text-xs font-bold uppercase tracking-widest mb-2">
-                  <span class="text-white">MVP Awards</span>
-                  <span class="text-gray-500"><span class="text-yellow-500">{{ trophyCabinet['MVP'] || 0 }}</span> / {{ nbaRecords.mvps }} (Kareem Abdul-Jabbar)</span>
+                  <span class="text-zinc-950 dark:text-white">{{ t('mvpAwards') }}</span>
+                  <span class="text-gray-500"><span class="text-amber-700 dark:text-red-400">{{ trophyCabinet['MVP'] || 0 }}</span> / {{ nbaRecords.mvps }} (Kareem Abdul-Jabbar)</span>
                 </div>
-                <div class="w-full bg-gray-900 rounded-full h-1.5"><div class="bg-yellow-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(trophyCabinet['MVP'] || 0, nbaRecords.mvps)}%`"></div></div>
+                <div class="w-full bg-stone-100 dark:bg-zinc-900 rounded-full h-1.5"><div class="bg-amber-400 dark:bg-red-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(trophyCabinet['MVP'] || 0, nbaRecords.mvps)}%`"></div></div>
               </div>
 
               <!-- Barra de Títulos -->
               <div class="mt-4">
                 <div class="flex justify-between text-xs font-bold uppercase tracking-widest mb-2">
-                  <span class="text-white">Championships</span>
+                  <span class="text-zinc-950 dark:text-white">{{ t('championships') }}</span>
                   <span class="text-gray-500"><span class="text-purple-500">{{ trophyCabinet['Rings'] || 0 }}</span> / {{ nbaRecords.rings }} (Bill Russell)</span>
                 </div>
-                <div class="w-full bg-gray-900 rounded-full h-1.5">
+                <div class="w-full bg-stone-100 dark:bg-zinc-900 rounded-full h-1.5">
                   <div class="bg-purple-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(trophyCabinet['Rings'] || 0, nbaRecords.rings)}%`"></div>
                 </div>
               </div>
 
               <div class="mt-4">
                 <div class="flex justify-between text-xs font-bold uppercase tracking-widest mb-2">
-                  <span class="text-white">DPOY Awards</span>
+                  <span class="text-zinc-950 dark:text-white">{{ t('dpoyAwards') }}</span>
                   <span class="text-gray-500"><span class="text-blue-500">{{ trophyCabinet['DPOY'] || 0 }}</span> / 4 (Mutombo/Wallace/Gobert)</span>
                 </div>
-                <div class="w-full bg-gray-900 rounded-full h-1.5"><div class="bg-blue-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(trophyCabinet['DPOY'] || 0, 4)}%`"></div></div>
+                <div class="w-full bg-stone-100 dark:bg-zinc-900 rounded-full h-1.5"><div class="bg-blue-500 h-1.5 rounded-full" :style="`width: ${getRecordPercentage(trophyCabinet['DPOY'] || 0, 4)}%`"></div></div>
               </div>
             </div>
           </div>
 
           <!-- Tabela de Histórico (Year-by-Year) -->
           <div class="mt-8 mb-12">
-            <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-3">Year-by-Year Stats</p>
-            <div class="bg-[#0a0a0a] border border-gray-800 rounded-xl overflow-x-auto">
+            <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-3">{{ t('yearByYear') }}</p>
+            <div class="bg-white dark:bg-zinc-950 border border-black/10 dark:border-white/10 rounded-xl overflow-x-auto">
               <table class="w-full text-left border-collapse table-fixed whitespace-nowrap">
-                <caption class="sr-only">Season-by-season career statistics</caption>
+                <caption class="sr-only">{{ t('tableCaption') }}</caption>
                 <thead>
-                  <tr class="bg-gray-900/50 border-b border-gray-800 text-[9px] text-gray-500 uppercase tracking-widest font-black">
-                    <th class="py-2 px-2 w-8 text-center">Yr</th>
-                    <th class="py-2 px-2 w-10 text-center">Tm</th>
-                    <th class="py-2 px-2 w-8 text-center">Ag</th>
+                  <tr class="bg-stone-100 dark:bg-zinc-900/50 border-b border-black/10 dark:border-white/10 text-[9px] text-gray-500 uppercase tracking-widest font-black">
+                    <th class="py-2 px-2 w-8 text-center">{{ t('yearShort') }}</th>
+                    <th class="py-2 px-2 w-10 text-center">{{ t('teamShort') }}</th>
+                    <th class="py-2 px-2 w-8 text-center">{{ t('ageShort') }}</th>
                     <th class="py-2 px-2 w-8 text-center">OV</th>
                     <th class="py-2 px-2 w-8 text-center">G</th>
                     <th class="py-2 px-2 w-10 text-center">PTS</th>
@@ -1227,19 +1534,19 @@ onBeforeUnmount(() => {
                     <th class="py-2 px-2 w-10 text-center">3P%</th>
                     <th class="py-2 px-2 w-10 text-center">FT%</th>
                     <th class="py-2 px-2 w-10 text-center">+/-</th>
-                    <th class="py-2 px-2 text-left">AWARDS & NOTES</th>
+                    <th class="py-2 px-2 text-left">{{ t('awardsNotes') }}</th>
                   </tr>
                 </thead>
-                <tbody class="text-[10px] font-bold text-gray-300 font-mono">
+                <tbody class="text-[10px] font-bold text-zinc-700 dark:text-zinc-300 font-mono">
                   <tr v-for="season in history" :key="season.seasonNumber" 
-                      :class="season.seasonNumber === bestSeasonNumber ? 'bg-yellow-500/10 border-l-2 border-yellow-500' : 'border-b border-gray-800/50 hover:bg-gray-900/20'"
+                      :class="season.seasonNumber === bestSeasonNumber ? 'bg-amber-400/10 dark:bg-red-500/10 border-l-2 border-amber-500 dark:border-red-500' : 'border-b border-black/10 hover:bg-stone-100 dark:border-white/5 dark:hover:bg-zinc-900/40'"
                       class="transition-colors h-8">
                     <td class="py-1 px-2 text-center text-gray-500">{{ season.seasonNumber }}</td>
-                    <td class="py-1 px-2 text-center text-white font-black font-sans">{{ season.teamId }}</td>
+                    <td class="py-1 px-2 text-center text-zinc-950 dark:text-white font-black font-sans">{{ season.teamId }}</td>
                     <td class="py-1 px-2 text-center">{{ season.age }}</td>
-                    <td class="py-1 px-2 text-center text-yellow-500">{{ season.ovr }}</td>
+                    <td class="py-1 px-2 text-center text-amber-700 dark:text-red-400">{{ season.ovr }}</td>
                     <td class="py-1 px-2 text-center">{{ season.gamesPlayed ?? 82 }}</td>
-                    <td class="py-1 px-2 text-center text-white">{{ season.ppg.toFixed(1) }}</td>
+                    <td class="py-1 px-2 text-center text-zinc-950 dark:text-white">{{ season.ppg.toFixed(1) }}</td>
                     <td class="py-1 px-2 text-center">{{ season.rpg.toFixed(1) }}</td>
                     <td class="py-1 px-2 text-center">{{ season.apg.toFixed(1) }}</td>
                     <td class="py-1 px-2 text-center">{{ season.spg.toFixed(1) }}</td>
@@ -1249,8 +1556,8 @@ onBeforeUnmount(() => {
                     <td class="py-1 px-2 text-center">{{ formatPercentage(season.fg3Pct) }}</td>
                     <td class="py-1 px-2 text-center">{{ formatPercentage(season.ftPct) }}</td>
                     <td class="py-1 px-2 text-center">{{ season.plusMinus.toFixed(1) }}</td>
-                    <td class="py-1 px-2 truncate text-yellow-600 font-sans tracking-widest text-[8px] uppercase">
-                      {{ season.playoffs?.wonRing ? '🏆 RING ' : '' }} {{ season.injury?.name || '' }} {{ season.awards.join(' ') }}
+                    <td class="truncate px-2 py-1 font-sans text-[8px] uppercase tracking-widest text-amber-700 dark:text-red-400">
+                      {{ season.playoffs?.wonRing ? `${t('rings')} | ` : '' }}  {{ season.injury ? label('injuries', season.injury.name) + ` | ` : '' }} {{ season.awards.map(award => label('awards', award)).join(' | ') }}
                     </td>
                   </tr>
                 </tbody>
@@ -1260,19 +1567,19 @@ onBeforeUnmount(() => {
 
           <!-- Atributos Originais e Botão -->
           <div class="pt-4 text-center">
-            <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-6 mb-8 inline-block max-w-3xl w-full text-left">
+            <div class="bg-stone-100 dark:bg-zinc-900/50 border border-black/10 dark:border-white/10 rounded-xl p-6 mb-8 inline-block max-w-3xl w-full text-left">
               <div class="flex justify-between items-center mb-4">
-                <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Original DNA</p>
-                <p class="text-green-500 text-sm font-black uppercase tracking-widest">Career Earnings: ${{ careerTotals.totalEarnings || 0 }}M</p>
+                <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest">{{ t('originalDna') }}</p>
+                <p class="text-green-500 text-sm font-black uppercase tracking-widest">{{ t('earnings') }}: ${{ careerTotals.totalEarnings || 0 }}M</p>
               </div>
               <div class="flex flex-wrap gap-2">
-                <div v-for="(data, attr) in player.originalDNA" :key="attr" class="border border-gray-800 bg-[#111] p-3 rounded-lg flex flex-col items-center justify-center text-center shadow-inner relative overflow-hidden">
+                <div v-for="(data, attr) in player.originalDNA" :key="attr" class="relative flex flex-col items-center justify-center overflow-hidden rounded-lg border border-black/10 bg-white p-3 text-center dark:border-white/10 dark:bg-[#111]">
     
-                <span class="text-yellow-500 text-[10px] font-black uppercase tracking-widest mb-1">{{ attr }}</span>
+                <span class="text-amber-700 dark:text-red-400 text-[10px] font-black uppercase tracking-widest mb-1">{{ label('attributes', attr) }}</span>
                 
-                <span class= "text-gray-400 text-sm font-bold truncate w-full z-10">{{ data.player }}</span>
+                <span class= "text-zinc-600 dark:text-zinc-400 text-sm font-bold truncate w-full z-10">{{ data.player }}</span>
                 
-                <span class=" text-white text-xs font-mono mt-1 font-bold z-10">
+                <span class=" text-zinc-950 dark:text-white text-xs font-mono mt-1 font-bold z-10">
                   {{ data.value ? data.value : '?' }}
                 </span>
                 
@@ -1281,8 +1588,8 @@ onBeforeUnmount(() => {
             </div>
             
             <br/>
-            <button @click="resetGame" class="bg-[#0a0a0a] border border-gray-800 hover:border-yellow-500 text-white font-black py-4 px-12 rounded-full transition-colors uppercase tracking-widest text-sm mb-12">
-              New Career
+            <button @click="resetGame" class="bg-white dark:bg-zinc-950 border border-black/10 dark:border-white/10 hover:border-amber-500 dark:hover:border-red-500 text-zinc-950 dark:text-white font-black py-4 px-12 rounded-full transition-colors uppercase tracking-widest text-sm mb-12">
+              {{ t('newCareer') }}
             </button>
           </div>
         </div>
@@ -1301,30 +1608,30 @@ onBeforeUnmount(() => {
     aria-describedby="milestone-description"
     @keydown.esc="dismissMilestone"
   >
-    <div class="bg-[#0a0a0a] border border-gray-800 rounded-xl p-10 max-w-md w-full text-center shadow-2xl animate-fade-in relative overflow-hidden">
-      <div class="absolute inset-0 bg-yellow-500/5 blur-3xl z-0 pointer-events-none"></div>
+    <div class="bg-white dark:bg-zinc-950 border border-black/10 dark:border-white/10 rounded-xl p-10 max-w-md w-full text-center shadow-2xl animate-fade-in relative overflow-hidden">
+      <div class="absolute inset-0 bg-amber-400/5 dark:bg-red-500/5 blur-3xl z-0 pointer-events-none"></div>
 
       <div class="relative z-10">
-        <div class="flex justify-between items-center mb-8 border-b border-gray-800 pb-3">
-          <p class="text-yellow-500 text-[10px] font-black uppercase tracking-widest">Breaking News</p>
-          <p class="text-gray-600 text-[10px] font-bold uppercase tracking-widest">Season {{ history.length }}</p>
+        <div class="flex justify-between items-center mb-8 border-b border-black/10 dark:border-white/10 pb-3">
+          <p class="text-amber-700 dark:text-red-400 text-[10px] font-black uppercase tracking-widest">{{ t('breakingNews') }}</p>
+          <p class="text-gray-600 text-[10px] font-bold uppercase tracking-widest">{{ t('season') }} {{ history.length }}</p>
         </div>
 
         <div class="text-6xl mb-6" aria-hidden="true">{{ pendingMilestones[0].icon }}</div>
-        <h2 id="milestone-title" class="text-2xl font-black text-white uppercase mb-3 leading-tight">
-          {{ pendingMilestones[0].title }}
+        <h2 id="milestone-title" class="text-2xl font-black text-zinc-950 dark:text-white uppercase mb-3 leading-tight">
+          {{ localizeDynamicText(pendingMilestones[0].title) }}
         </h2>
-        <p id="milestone-description" class="text-gray-400 text-sm font-bold uppercase tracking-widest mb-10">
-          {{ pendingMilestones[0].subtitle }}
+        <p id="milestone-description" class="text-zinc-600 dark:text-zinc-400 text-sm font-bold uppercase tracking-widest mb-10">
+          {{ localizeDynamicText(pendingMilestones[0].subtitle) }}
         </p>
 
         <button
           ref="milestoneButton"
           type="button"
-          class="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-black py-4 px-12 rounded-lg transition-colors uppercase tracking-widest text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          class="w-full bg-amber-400 dark:bg-red-500 hover:bg-amber-300 dark:hover:bg-red-400 text-black dark:text-white font-black py-4 px-12 rounded-lg transition-colors uppercase tracking-widest text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
           @click="dismissMilestone"
         >
-          Continue
+          {{ t('continue') }}
         </button>
       </div>
     </div>

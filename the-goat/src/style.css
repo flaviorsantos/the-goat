@@ -1,7 +1,14 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Aptos", "Segoe UI Variable", "Segoe UI", sans-serif;
+  --font-mono: "Cascadia Mono", "SFMono-Regular", monospace;
+}
+
 body {
-  @apply bg-black text-white min-h-screen font-sans;
+  @apply min-h-screen bg-[#f4f1ea] font-sans text-zinc-950 dark:bg-[#0b0c0e] dark:text-zinc-100;
   margin: 0;
   -webkit-font-smoothing: antialiased;
 }

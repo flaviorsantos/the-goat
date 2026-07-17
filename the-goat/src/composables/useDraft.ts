@@ -1,82 +1,82 @@
 import { ref } from 'vue';
 import { nbaPlayers } from '../data/players';
 import { nbaTeams } from '../data/teams';
+import type { PlayerAttributes, RealPlayer } from '../types';
+
+type AttributeKey = keyof PlayerAttributes;
+
+type AttributeSource = {
+  attribute: AttributeKey;
+  player: string;
+  value: number;
+};
+
+const ATTRIBUTE_KEYS: AttributeKey[] = [
+  'Shooting',
+  'Dribbling',
+  'Defense',
+  'IQ',
+  'Athleticism',
+  'Passing',
+  'Rebounding',
+  'Speed',
+  'Finishing',
+];
+
+const emptyAttributes = (): PlayerAttributes => ({
+  Shooting: 0,
+  Dribbling: 0,
+  Defense: 0,
+  IQ: 0,
+  Athleticism: 0,
+  Passing: 0,
+  Rebounding: 0,
+  Speed: 0,
+  Finishing: 0,
+});
 
 export function useDraft() {
-  const currentDrawnPlayer = ref<any>(null);
-  const attributeSources = ref<Record<string, { attribute: string; player: string; value: string }>>({});
-  
-  const myAttributes = ref({
-    Shooting: 0,
-    Dribbling: 0,
-    Defense: 0,
-    IQ: 0,
-    Athleticism: 0,
-    Passing: 0,
-    Rebounding: 0,
-    Speed: 0,
-    Finishing: 0
-  });
-  
-  const availableSlots = ref(Object.keys(myAttributes.value).length);
+  const currentDrawnPlayer = ref<RealPlayer | null>(null);
+  const attributeSources = ref<Record<string, AttributeSource>>({});
+  const myAttributes = ref<PlayerAttributes>(emptyAttributes());
   const hasReroll = ref(true);
   const isDraftComplete = ref(false);
 
   const drawRandomPlayer = () => {
-    const randomIndex = Math.floor(Math.random() * nbaPlayers.length);
-    currentDrawnPlayer.value = nbaPlayers[randomIndex];
+    const candidates = nbaPlayers.length > 1 && currentDrawnPlayer.value
+      ? nbaPlayers.filter(player => player.id !== currentDrawnPlayer.value?.id)
+      : nbaPlayers;
+    const randomIndex = Math.floor(Math.random() * candidates.length);
+    currentDrawnPlayer.value = candidates[randomIndex] ?? null;
+    return currentDrawnPlayer.value;
   };
 
   const useReroll = () => {
-    if (hasReroll.value) {
-      drawRandomPlayer();
-      hasReroll.value = false;
-    }
-  };
-/*
-  const selectAttribute = (key: keyof typeof myAttributes.value) => {
-    if (currentDrawnPlayer.value && myAttributes.value[key] === 0) {
-      myAttributes.value[key] = currentDrawnPlayer.value.attributes[key];
-      attributeSources.value[key] = {
-        attribute: key,
-        player: currentDrawnPlayer.value.name
-      };
-      
-      availableSlots.value--;
-      
-      if (availableSlots.value > 0) {
-        drawRandomPlayer();
-      } else {
-        isDraftComplete.value = true;
-      }
-    }
-  };*/
-
-  const selectAttribute = (key: keyof typeof myAttributes.value) => {
-    if (currentDrawnPlayer.value && myAttributes.value[key] === 0) {
-      myAttributes.value[key] = currentDrawnPlayer.value.attributes[key];
-      
-      attributeSources.value[key] = {
-        attribute: key,
-        player: currentDrawnPlayer.value.name,
-        value: currentDrawnPlayer.value.attributes[key] 
-      };
-      
-      drawRandomPlayer();
-      
-      if (Object.values(myAttributes.value).every(val => val > 0)) {
-        isDraftComplete.value = true;
-      }
-    }
+    if (!hasReroll.value || isDraftComplete.value) return false;
+    drawRandomPlayer();
+    hasReroll.value = false;
+    return true;
   };
 
-  const calculateStartingOVR = (attributes: Record<string, number>) => {
-    const sum = (attributes.Shooting * 0.15) + (attributes.Dribbling * 0.1) +
-                (attributes.Defense * 0.15) + (attributes.IQ * 0.1) +
-                (attributes.Athleticism * 0.15) + (attributes.Passing * 0.1) +
-                (attributes.Rebounding * 0.1) + (attributes.Speed * 0.1) +
-                (attributes.Finishing * 0.05);
-    return Math.floor(sum);
+  const selectAttribute = (key: AttributeKey) => {
+    const drawnPlayer = currentDrawnPlayer.value;
+    if (!drawnPlayer || isDraftComplete.value || myAttributes.value[key] > 0) {
+      return false;
+    }
+
+    const value = drawnPlayer.attributes[key];
+    myAttributes.value[key] = value;
+    attributeSources.value[key] = {
+      attribute: key,
+      player: drawnPlayer.name,
+      value,
+    };
+
+    isDraftComplete.value = ATTRIBUTE_KEYS.every(
+      attribute => myAttributes.value[attribute] > 0,
+    );
+    if (!isDraftComplete.value) drawRandomPlayer();
+    return true;
   };
 
   const getRandomTeam = () => {
@@ -84,12 +84,12 @@ export function useDraft() {
     return nbaTeams[randomIndex].id;
   };
 
-  const generateRookieAttributes = (peakAttributes: Record<string, number>) => {
-    const rookie: Record<string, number> = {};
-    for (const key in peakAttributes) {
-      const reduction = Math.floor(Math.random() * 11) + 8; // Redução entre 8 e 18 pontos do potencial máximo
+  const generateRookieAttributes = (peakAttributes: PlayerAttributes) => {
+    const rookie = emptyAttributes();
+    ATTRIBUTE_KEYS.forEach(key => {
+      const reduction = Math.floor(Math.random() * 11) + 8;
       rookie[key] = Math.max(40, peakAttributes[key] - reduction);
-    }
+    });
     return rookie;
   };
 
@@ -102,11 +102,8 @@ export function useDraft() {
   };
 
   const resetDraft = () => {
-    for (const key in myAttributes.value) {
-      myAttributes.value[key as keyof typeof myAttributes.value] = 0;
-    }
+    myAttributes.value = emptyAttributes();
     attributeSources.value = {};
-    availableSlots.value = Object.keys(myAttributes.value).length;
     hasReroll.value = true;
     isDraftComplete.value = false;
     currentDrawnPlayer.value = null;
@@ -116,16 +113,14 @@ export function useDraft() {
     currentDrawnPlayer,
     myAttributes,
     attributeSources,
-    availableSlots,
     hasReroll,
     isDraftComplete,
     drawRandomPlayer,
     useReroll,
     selectAttribute,
-    calculateStartingOVR,
     getRandomTeam,
     generateRookieAttributes,
     calculateDraftPick,
-    resetDraft
+    resetDraft,
   };
 }

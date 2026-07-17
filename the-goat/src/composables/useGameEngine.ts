@@ -2,9 +2,13 @@ import { ref } from 'vue';
 import { nbaTeams } from '../data/teams';
 import { calculateOverall, calculateSeasonStats } from '../utils/statsCalculator';
 import { simulatePlayoffs } from '../utils/playoffsSimulation';
-import { calculateAwards } from '../utils/awardsCalculator';
+import { calculateAwards, calculateFinalsMvp } from '../utils/awardsCalculator';
 import { calculateGoatScore } from '../utils/careerEvaluator';
 import { simulateInjury } from '../utils/injurySimulation';
+import {
+  calculateAutomaticTradeChance,
+  calculateTradeRequestApproval,
+} from '../utils/tradeCalculator';
 import type {
   CareerTimelineEntry,
   Difficulty,
@@ -190,6 +194,7 @@ export function useGameEngine(
   const lastTransactionMessage = ref('');
   const playoffPresentation = ref<PlayoffPresentation>(createPlayoffPresentation());
   let suppressNotifications = false;
+  let pendingAutomaticTradeCheck = false;
 
   const queueMilestone = (
     milestone: { title: string; subtitle: string; icon: string },
@@ -226,9 +231,11 @@ export function useGameEngine(
     leagueTeams.value = createLeagueTeams();
     freeAgencyOffers.value = [];
     pendingMilestones.value = [];
+    pendingAutomaticTradeCheck = false;
     achievedMilestones.value = new Set();
     lastTransactionMessage.value = '';
     playoffPresentation.value = createPlayoffPresentation();
+    pendingAutomaticTradeCheck = false;
   };
 
   const applyOffseasonProgression = () => {
@@ -296,23 +303,28 @@ export function useGameEngine(
     );
   };
 
-  const getRandomTeam = () => {
-    const randomTeam = leagueTeams.value[Math.floor(Math.random() * leagueTeams.value.length)];
-    return randomTeam.id;
-  };
-
   const generateOffers = () => {
     const offers: ContractOffer[] = [];
     const numOffers = Math.floor(Math.random() * 3) + 2;
     const usedTeams = new Set<string>();
+    const teamWins = history.value.at(-1)?.teamWins ?? 41;
+    const extensionChance = Math.min(
+      0.98,
+      Math.max(
+        0.12,
+        0.15 + player.value.morale * 0.0055 + Math.max(0, teamWins - 35) * 0.015,
+      ),
+    );
+    const extensionOffered = Math.random() < extensionChance;
     
     for (let i = 0; i < numOffers; i++) {
-      const isExtension = i === 0 && Math.random() > 0.3;
-      let team = isExtension ? player.value.teamId : getRandomTeam();
-
-      while (usedTeams.has(team)) {
-        team = getRandomTeam();
-      }
+      const isExtension = i === 0 && extensionOffered;
+      const candidates = leagueTeams.value.filter(team =>
+        !usedTeams.has(team.id) &&
+        (isExtension ? team.id === player.value.teamId : team.id !== player.value.teamId),
+      );
+      const team = candidates[Math.floor(Math.random() * candidates.length)]?.id;
+      if (!team) continue;
       usedTeams.add(team);
       
       let maxYears = 4;
@@ -354,51 +366,85 @@ export function useGameEngine(
     freeAgencyOffers.value = [];
   };
 
+  const completeTrade = (
+    destinationId: string,
+    initiatedByTeam: boolean,
+  ) => {
+    const lastStop = player.value.careerTimeline.at(-1);
+    if (lastStop) lastStop.endYear = history.value.length;
+    player.value.careerTimeline.push({
+      teamId: destinationId,
+      startYear: history.value.length + 1,
+      endYear: null,
+    });
+    player.value.teamId = destinationId;
+    player.value.morale = initiatedByTeam ? 48 : 58;
+    lastTransactionMessage.value = `Traded to ${destinationId}.`;
+    queueMilestone({
+      title: `Traded to ${destinationId}`,
+      subtitle: initiatedByTeam
+        ? 'The club moved you after morale collapsed.'
+        : 'Your trade request was accepted.',
+      icon: '🔄',
+    });
+  };
+
+  const tradeContext = () => {
+    const latestSeason = history.value.at(-1);
+    return {
+      morale: player.value.morale,
+      playerOvr: player.value.ovr,
+      ppg: latestSeason?.ppg ?? 0,
+      teamWins: latestSeason?.teamWins ?? 41,
+      contractYears: player.value.contractYearsLeft,
+    };
+  };
+
+  const randomTradeDestination = () => {
+    const candidates = leagueTeams.value.filter(team => team.id !== player.value.teamId);
+    return candidates[Math.floor(Math.random() * candidates.length)].id;
+  };
+
   const requestTrade = (preferredTeamId?: string) => {
     if (
       player.value.isRetired ||
       player.value.contractYearsLeft === 0 ||
+      playoffPresentation.value.active ||
       player.value.tradeRequestedThisSeason
     ) return false;
 
     player.value.tradeRequestedThisSeason = true;
-    const approvalChance = Math.min(
-      0.92,
-      Math.max(
-        0.3,
-        0.38 +
-          (player.value.ovr - 75) * 0.015 +
-          (100 - player.value.morale) * 0.003,
-      ),
-    );
-
-    if (Math.random() > approvalChance) {
-      player.value.morale = Math.max(0, player.value.morale - 12);
+    if (Math.random() > calculateTradeRequestApproval(tradeContext())) {
+      player.value.morale = Math.max(0, player.value.morale - 10);
       lastTransactionMessage.value = 'Trade request denied.';
+      queueMilestone({
+        title: 'Trade Request Denied',
+        subtitle: 'Your production, team record or contract convinced the club to retain you.',
+        icon: '🚫',
+      });
       return false;
     }
 
     const canChooseDestination = player.value.morale >= 70;
-    const candidates = leagueTeams.value.filter(team => team.id !== player.value.teamId);
-    const requestedTeam = candidates.find(team => team.id === preferredTeamId);
-    const destination = canChooseDestination && requestedTeam
-      ? requestedTeam
-      : candidates[Math.floor(Math.random() * candidates.length)];
-
-    const lastStop = player.value.careerTimeline.at(-1);
-    if (lastStop) lastStop.endYear = history.value.length;
-    player.value.careerTimeline.push({
-      teamId: destination.id,
-      startYear: history.value.length + 1,
-      endYear: null,
-    });
-    player.value.teamId = destination.id;
-    player.value.morale = canChooseDestination && requestedTeam ? 65 : 52;
-    lastTransactionMessage.value = `Traded to ${destination.id}.`;
+    const validPreferredTeam = leagueTeams.value.some(team =>
+      team.id === preferredTeamId && team.id !== player.value.teamId,
+    );
+    const destinationId = canChooseDestination && validPreferredTeam
+      ? preferredTeamId as string
+      : randomTradeDestination();
+    completeTrade(destinationId, false);
     return true;
   };
 
-  const checkMilestones = (awards: string[], wonRing: boolean, ppg: number) => {
+  const evaluateAutomaticTrade = () => {
+    if (player.value.isRetired || player.value.contractYearsLeft === 0) return false;
+    const chance = calculateAutomaticTradeChance(tradeContext());
+    if (chance === 0 || Math.random() >= chance) return false;
+    completeTrade(randomTradeDestination(), true);
+    return true;
+  };
+
+  const checkCareerMilestones = (ppg: number) => {
     const pts = careerTotals.value.totalPoints;
     
     if (pts >= 10000 && !achievedMilestones.value.has('pts_10k')) {
@@ -419,13 +465,28 @@ export function useGameEngine(
       achievedMilestones.value.add('ppg_35');
     }
 
-    if (awards.includes('MVP') && !achievedMilestones.value.has('first_mvp')) {
-      queueMilestone({ title: 'First MVP Award', subtitle: 'The best player in the world.', icon: '⭐' });
-      achievedMilestones.value.add('first_mvp');
+  };
+
+  const queueSeasonAwards = (season?: SeasonStats) => {
+    if (!season) return;
+
+    if (season.awards.includes('MVP')) {
+      queueMilestone({ title: 'MVP Award', subtitle: 'The best player in the world.', icon: '⭐' });
     }
-    if (wonRing && !achievedMilestones.value.has('first_ring')) {
-      queueMilestone({ title: 'NBA Champion', subtitle: 'Your first ring. History made.', icon: '🏆' });
-      achievedMilestones.value.add('first_ring');
+    if (season.awards.includes('DPOY')) {
+      queueMilestone({ title: 'Defensive Player of the Year', subtitle: 'The league\'s best defender.', icon: '🛡️' });
+    }
+    if (season.awards.includes('SMOTY')) {
+      queueMilestone({ title: 'Sixth Man of the Year', subtitle: 'The league\'s best player off the bench.', icon: '🪑' });
+    }
+    if (season.awards.includes('ROTY')) {
+      queueMilestone({ title: 'Rookie of the Year', subtitle: 'The best rookie in the league.', icon: '🌟' });
+    }
+    if (season.playoffs?.wonRing) {
+      queueMilestone({ title: 'NBA Champion', subtitle: 'Another ring added to your legacy.', icon: '🏆' });
+    }
+    if (season.awards.includes('Finals MVP')) {
+      queueMilestone({ title: 'Finals MVP', subtitle: 'The best player on the biggest stage.', icon: '🏅' });
     }
   };
 
@@ -534,6 +595,7 @@ export function useGameEngine(
       teamBaseOvr,
       teamWins,
       seasonStats,
+      player.value.teamId,
     );
     const ageAvailabilityPenalty = Math.max(0, player.value.age - 30) * 0.7;
     const routineAbsences = Math.floor((Math.random() + Math.random()) * 5);
@@ -563,19 +625,13 @@ export function useGameEngine(
 
     const npcStars = ['L. Doncic', 'N. Jokic', 'S. Gilgeous-Alexander', 'A. Edwards', 'V. Wembanyama', 'G. Antetokounmpo'];
     const getNPC = () => npcStars[Math.floor(Math.random() * npcStars.length)];
-    const playoffAverages = seasonPlayoffs.overallAverages;
-    const finalsMvpScore = playoffAverages
-      ? playoffAverages.points +
-        playoffAverages.rebounds * 0.7 +
-        playoffAverages.assists +
-        playoffAverages.steals * 2 +
-        playoffAverages.blocks * 2
-      : 0;
-    const wonFinalsMvp =
-      seasonPlayoffs.wonRing &&
-      !injury?.careerEnding &&
-      playoffAverages !== null &&
-      finalsMvpScore >= 25 + Math.random() * 13;
+    const finalsAverages = seasonPlayoffs.series.find(
+      series => series.round === 'NBA Finals',
+    )?.averages ?? null;
+    const wonFinalsMvp = !injury?.careerEnding && calculateFinalsMvp(
+      finalsAverages,
+      seasonPlayoffs.wonRing,
+    );
 
     if (wonFinalsMvp) {
       seasonAwards.push('Finals MVP');
@@ -629,7 +685,7 @@ export function useGameEngine(
     if (seasonAwards.includes('MVP')) careerTotals.value.mvps += 1;
     if (seasonPlayoffs.wonRing) careerTotals.value.rings += 1;
 
-    checkMilestones(seasonAwards, seasonPlayoffs.wonRing, seasonStats.ppg);
+    checkCareerMilestones(seasonStats.ppg);
 
     if (injury) {
       queueMilestone({
@@ -641,12 +697,13 @@ export function useGameEngine(
       });
     }
 
-    if (
+    const presentsPlayoffsInteractively =
       seasonPlayoffs.madePlayoffs &&
       !injury?.careerEnding &&
       !suppressNotifications &&
-      interactivePlayoffs
-    ) {
+      interactivePlayoffs;
+
+    if (presentsPlayoffsInteractively) {
       playoffPresentation.value = {
         active: true,
         seriesIndex: 0,
@@ -654,6 +711,8 @@ export function useGameEngine(
         mode: null,
         complete: seasonPlayoffs.series.length === 0,
       };
+    } else {
+      queueSeasonAwards(history.value.at(-1));
     }
 
     applyOffseasonProgression();
@@ -680,6 +739,10 @@ export function useGameEngine(
 
     if (shouldRetire) {
       forceRetirement();
+    } else if (playoffPresentation.value.active) {
+      pendingAutomaticTradeCheck = true;
+    } else {
+      evaluateAutomaticTrade();
     }
   };
 
@@ -720,6 +783,11 @@ export function useGameEngine(
   const finishPlayoffPresentation = () => {
     if (!playoffPresentation.value.complete) return false;
     playoffPresentation.value.active = false;
+    queueSeasonAwards(history.value.at(-1));
+    if (pendingAutomaticTradeCheck) {
+      pendingAutomaticTradeCheck = false;
+      evaluateAutomaticTrade();
+    }
     return true;
   };
 
@@ -727,6 +795,7 @@ export function useGameEngine(
     suppressNotifications = true;
     pendingMilestones.value = [];
     playoffPresentation.value = createPlayoffPresentation();
+    pendingAutomaticTradeCheck = false;
     try {
       while (!player.value.isRetired) {
         if (player.value.contractYearsLeft === 0) {
@@ -746,6 +815,7 @@ export function useGameEngine(
     } finally {
       pendingMilestones.value = [];
       playoffPresentation.value = createPlayoffPresentation();
+      pendingAutomaticTradeCheck = false;
       suppressNotifications = false;
     }
   };
