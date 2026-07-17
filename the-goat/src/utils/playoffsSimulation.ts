@@ -1,9 +1,10 @@
+import { nbaTeams } from '../data/teams';
 import type {
   PlayoffGameStats,
   PlayoffRunStats,
   PlayoffSeriesStats,
+  Team,
 } from '../types';
-import { nbaTeams } from '../data/teams';
 
 type RegularSeasonLine = {
   ppg: number;
@@ -16,12 +17,18 @@ type RegularSeasonLine = {
   ftPct?: number;
 };
 
+type PlayoffTeam = Team & { wins: number; losses: number };
+
+const EAST_IDS = new Set([
+  'BOS', 'NYK', 'PHI', 'MIL', 'CLE', 'IND', 'MIA', 'ORL',
+  'CHI', 'ATL', 'BKN', 'TOR', 'CHA', 'WAS', 'DET',
+]);
+
 const averageGames = (games: PlayoffGameStats[]): PlayoffGameStats => {
   const average = (
     key: 'points' | 'rebounds' | 'assists' | 'steals' | 'blocks' |
       'fgPct' | 'fg3Pct' | 'ftPct',
-  ) =>
-    games.reduce((sum, game) => sum + game[key], 0) / games.length;
+  ) => games.reduce((sum, game) => sum + game[key], 0) / games.length;
 
   return {
     gameNumber: games.length,
@@ -41,15 +48,6 @@ const averageGames = (games: PlayoffGameStats[]): PlayoffGameStats => {
   };
 };
 
-const emptyRun = (eliminatedIn: string): PlayoffRunStats => ({
-  madePlayoffs: false,
-  eliminatedIn,
-  wonRing: false,
-  series: [],
-  finalsLog: [],
-  overallAverages: null,
-});
-
 export function simulatePlayoffs(
   playerOvr: number,
   teamBaseOvr: number,
@@ -59,131 +57,134 @@ export function simulatePlayoffs(
     fgPct: 0.45, fg3Pct: 0.35, ftPct: 0.75,
   },
   playerTeamId = 'LAL',
+  leagueStandings?: PlayoffTeam[],
 ): PlayoffRunStats {
-  if (regularSeasonWins < 40) return emptyRun('Missed Playoffs');
+  const standings = leagueStandings?.length === 30
+    ? leagueStandings
+    : nbaTeams.map(team => ({
+        ...team,
+        wins: team.id === playerTeamId
+          ? regularSeasonWins
+          : Math.round(30 + (team.baseOvr - 70) * 2.2),
+        losses: 0,
+      })).map(team => ({ ...team, losses: 82 - team.wins }));
+  const qualifiers = (east: boolean) => standings
+    .filter(team => EAST_IDS.has(team.id) === east)
+    .sort((left, right) => right.wins - left.wins || right.baseOvr - left.baseOvr)
+    .slice(0, 8);
+  const east = qualifiers(true);
+  const west = qualifiers(false);
+  const madePlayoffs = [...east, ...west].some(team => team.id === playerTeamId);
+  const playerSeries: PlayoffSeriesStats[] = [];
+  let eliminatedIn: string | null = madePlayoffs ? null : 'Missed Playoffs';
 
-  const teamPower = teamBaseOvr * 0.6 + playerOvr * 0.4;
-  const seedAdvantage = Math.max(0, (regularSeasonWins - 45) * 0.25);
-  const eastIds = new Set([
-    'BOS', 'NYK', 'PHI', 'MIL', 'CLE', 'IND', 'MIA', 'ORL',
-    'CHI', 'ATL', 'BKN', 'TOR', 'CHA', 'WAS', 'DET',
-  ]);
-  const playerInEast = eastIds.has(playerTeamId);
-  const sameConference = nbaTeams.filter(team =>
-    team.id !== playerTeamId && eastIds.has(team.id) === playerInEast,
-  );
-  const otherConference = nbaTeams.filter(team =>
-    eastIds.has(team.id) !== playerInEast,
-  );
-  const used = new Set<string>();
-  const chooseOpponent = (pool: typeof nbaTeams, target: number) => {
-    const chosen = pool
-      .filter(team => !used.has(team.id))
-      .map(team => ({
-        team,
-        distance: Math.abs(team.baseOvr - target) + Math.random() * 1.5,
-      }))
-      .sort((left, right) => left.distance - right.distance)[0].team;
-    used.add(chosen.id);
-    return chosen;
-  };
-  const targets = [
-    Math.max(72, teamBaseOvr - 2) - seedAdvantage,
-    teamBaseOvr + 1,
-    teamBaseOvr + 3,
-  ];
-  const opponents = targets.map((target, index) => {
-    const opponent = chooseOpponent(sameConference, target);
-    return {
-      round: ['1st Round', 'Conf. Semis', 'Conf. Finals'][index],
-      teamId: opponent.id,
-      ovr: opponent.baseOvr + index * 0.5,
-    };
-  });
-  const finalsOpponent = chooseOpponent(otherConference, teamBaseOvr + 4);
-  opponents.push({
-    round: 'NBA Finals',
-    teamId: finalsOpponent.id,
-    ovr: finalsOpponent.baseOvr + 1.5,
-  });
-  const series: PlayoffSeriesStats[] = [];
+  const teamPower = (team: PlayoffTeam) => team.id === playerTeamId
+    ? teamBaseOvr * 0.45 + playerOvr * 0.55
+    : team.baseOvr + (team.star1Ovr - 88) * 0.08 + (team.star2Ovr - 84) * 0.04;
+  const clampPercentage = (value: number, minimum: number, maximum: number) =>
+    Math.max(minimum, Math.min(maximum, value));
 
-  for (const matchup of opponents) {
-    let wins = 0;
-    let losses = 0;
+  const playSeries = (first: PlayoffTeam, second: PlayoffTeam, round: string) => {
+    const firstHasHomeCourt = first.wins >= second.wins;
+    let firstWins = 0;
+    let secondWins = 0;
+    const involvesPlayer = first.id === playerTeamId || second.id === playerTeamId;
     const games: PlayoffGameStats[] = [];
-    const hasHomeCourt = teamPower > matchup.ovr;
 
-    while (wins < 4 && losses < 4) {
-      const gameNumber = games.length + 1;
-      const homeSchedule = hasHomeCourt ? [1, 2, 5, 7] : [3, 4, 6];
-      const home = homeSchedule.includes(gameNumber);
-      const playerForm = (Math.random() + Math.random() - 1) * 5;
-      const won =
-        teamPower + (home ? 2.7 : -2.2) + playerForm + Math.random() * 18 >
-        matchup.ovr + Math.random() * 18;
-      if (won) wins++;
-      else losses++;
+    while (firstWins < 4 && secondWins < 4) {
+      const gameNumber = firstWins + secondWins + 1;
+      const homeSchedule = firstHasHomeCourt ? [1, 2, 5, 7] : [3, 4, 6];
+      const firstHome = homeSchedule.includes(gameNumber);
+      const firstWon =
+        teamPower(first) + (firstHome ? 2.5 : -2) + Math.random() * 16 >
+        teamPower(second) + Math.random() * 16;
+      if (firstWon) firstWins++;
+      else secondWins++;
 
-      const variance = () => 0.82 + Math.random() * 0.36;
-      const percentageVariance = () => (Math.random() - 0.5) * 0.08;
-      const clampPercentage = (value: number, minimum: number, maximum: number) =>
-        Math.max(minimum, Math.min(maximum, value));
-      games.push({
-        gameNumber,
-        round: matchup.round,
-        won,
-        home,
-        opponentTeamId: matchup.teamId,
-        opponentOvr: Number(matchup.ovr.toFixed(1)),
-        points: Math.max(0, Math.round(stats.ppg * variance() + playerForm * 0.7)),
-        rebounds: Math.max(0, Math.round(stats.rpg * variance())),
-        assists: Math.max(0, Math.round(stats.apg * variance())),
-        steals: Math.max(0, Math.round(stats.spg * variance())),
-        blocks: Math.max(0, Math.round(stats.bpg * variance())),
-        fgPct: Number(clampPercentage(
-          (stats.fgPct ?? 0.45) + percentageVariance(), 0.25, 0.75,
-        ).toFixed(3)),
-        fg3Pct: Number(clampPercentage(
-          (stats.fg3Pct ?? 0.35) + percentageVariance(), 0.15, 0.65,
-        ).toFixed(3)),
-        ftPct: Number(clampPercentage(
-          (stats.ftPct ?? 0.75) + percentageVariance(), 0.4, 1,
-        ).toFixed(3)),
+      if (involvesPlayer) {
+        const playerIsFirst = first.id === playerTeamId;
+        const playerWon = playerIsFirst ? firstWon : !firstWon;
+        const playerHome = playerIsFirst ? firstHome : !firstHome;
+        const opponent = playerIsFirst ? second : first;
+        const playerForm = (Math.random() + Math.random() - 1) * 5;
+        const variance = () => 0.82 + Math.random() * 0.36;
+        const percentageVariance = () => (Math.random() - 0.5) * 0.08;
+        games.push({
+          gameNumber,
+          round,
+          won: playerWon,
+          home: playerHome,
+          opponentTeamId: opponent.id,
+          opponentOvr: Number(teamPower(opponent).toFixed(1)),
+          points: Math.max(0, Math.round(stats.ppg * variance() + playerForm * 0.7)),
+          rebounds: Math.max(0, Math.round(stats.rpg * variance())),
+          assists: Math.max(0, Math.round(stats.apg * variance())),
+          steals: Math.max(0, Math.round(stats.spg * variance())),
+          blocks: Math.max(0, Math.round(stats.bpg * variance())),
+          fgPct: Number(clampPercentage(
+            (stats.fgPct ?? 0.45) + percentageVariance(), 0.25, 0.75,
+          ).toFixed(3)),
+          fg3Pct: Number(clampPercentage(
+            (stats.fg3Pct ?? 0.35) + percentageVariance(), 0.15, 0.65,
+          ).toFixed(3)),
+          ftPct: Number(clampPercentage(
+            (stats.ftPct ?? 0.75) + percentageVariance(), 0.4, 1,
+          ).toFixed(3)),
+        });
+      }
+    }
+
+    const winner = firstWins === 4 ? first : second;
+    if (involvesPlayer) {
+      const playerIsFirst = first.id === playerTeamId;
+      const wins = playerIsFirst ? firstWins : secondWins;
+      const losses = playerIsFirst ? secondWins : firstWins;
+      const opponent = playerIsFirst ? second : first;
+      playerSeries.push({
+        round,
+        opponentTeamId: opponent.id,
+        opponentOvr: Number(teamPower(opponent).toFixed(1)),
+        gamesPlayed: games.length,
+        wins,
+        losses,
+        averages: averageGames(games),
+        games,
       });
+      if (losses === 4) eliminatedIn = round;
     }
+    return winner;
+  };
 
-    series.push({
-      round: matchup.round,
-      opponentTeamId: matchup.teamId,
-      opponentOvr: Number(matchup.ovr.toFixed(1)),
-      gamesPlayed: games.length,
-      wins,
-      losses,
-      averages: averageGames(games),
-      games,
-    });
+  const simulateConference = (teams: PlayoffTeam[]) => {
+    const firstRound = [
+      playSeries(teams[0], teams[7], '1st Round'),
+      playSeries(teams[3], teams[4], '1st Round'),
+      playSeries(teams[2], teams[5], '1st Round'),
+      playSeries(teams[1], teams[6], '1st Round'),
+    ];
+    const semifinals = [
+      playSeries(firstRound[0], firstRound[1], 'Conf. Semis'),
+      playSeries(firstRound[2], firstRound[3], 'Conf. Semis'),
+    ];
+    return playSeries(semifinals[0], semifinals[1], 'Conf. Finals');
+  };
 
-    if (losses === 4) {
-      const allGames = series.flatMap(item => item.games);
-      return {
-        madePlayoffs: true,
-        eliminatedIn: matchup.round,
-        wonRing: false,
-        series,
-        finalsLog: series.find(item => item.round === 'NBA Finals')?.games ?? [],
-        overallAverages: { ...averageGames(allGames), gamesPlayed: allGames.length },
-      };
-    }
-  }
+  const eastChampion = simulateConference(east);
+  const westChampion = simulateConference(west);
+  const champion = playSeries(eastChampion, westChampion, 'NBA Finals');
+  const wonRing = champion.id === playerTeamId;
+  const allGames = playerSeries.flatMap(series => series.games);
+  const finals = playerSeries.find(series => series.round === 'NBA Finals');
 
-  const allGames = series.flatMap(item => item.games);
   return {
-    madePlayoffs: true,
-    eliminatedIn: null,
-    wonRing: true,
-    series,
-    finalsLog: series.at(-1)?.games ?? [],
-    overallAverages: { ...averageGames(allGames), gamesPlayed: allGames.length },
+    madePlayoffs,
+    eliminatedIn: wonRing ? null : eliminatedIn,
+    wonRing,
+    championTeamId: champion.id,
+    series: playerSeries,
+    finalsLog: finals?.games ?? [],
+    overallAverages: allGames.length > 0
+      ? { ...averageGames(allGames), gamesPlayed: allGames.length }
+      : null,
   };
 }

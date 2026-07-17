@@ -1,53 +1,66 @@
-import type { Team, PlayerProfile, TeamStanding } from '../types';
+import type { Team, TeamStanding } from '../types';
 
-export function simulateLeagueStandings(player: PlayerProfile, leagueTeams: Team[]): TeamStanding[] {
+type LeaguePlayer = {
+  teamId: string;
+  ovr: number;
+  morale?: number;
+};
+
+export function simulateLeagueStandings(
+  player: LeaguePlayer,
+  leagueTeams: Team[],
+): TeamStanding[] {
   const teamPowers = leagueTeams.map(team => {
-    const currentMomentum = team.momentum || 0;
-    let power = team.baseOvr + team.star1Ovr + team.star2Ovr + currentMomentum;
-
-    if (team.id === player.teamId) {
-      const rosterStars = [team.star1Ovr, team.star2Ovr, player.ovr].sort((a, b) => b - a);
-      
-      let carryBonus = 0;
-      if (player.ovr >= 90) {
-        carryBonus = Math.pow(player.ovr - 85, 1.5) * 2;
-      }
-
-      power = team.baseOvr + rosterStars[0] + (rosterStars[1] * 0.8) + (rosterStars[2] * 0.4) + currentMomentum + carryBonus;
-    }
-
-    const rngMod = (Math.random() * 0.25) + 0.875; 
-    
-    return {
-      ...team,
-      effectivePower: power * rngMod,
-      wins: 0,
-      losses: 0
-    };
+    const playerBoost = team.id === player.teamId
+      ? (player.ovr - 75) * 0.28 + ((player.morale ?? 50) - 50) * 0.04
+      : 0;
+    const effectivePower =
+      team.baseOvr +
+      (team.star1Ovr - 88) * 0.08 +
+      (team.star2Ovr - 84) * 0.04 +
+      (team.momentum ?? 0) * 0.12 +
+      playerBoost;
+    return { ...team, effectivePower, wins: 0, losses: 0 };
   });
-
-  const totalLeaguePower = teamPowers.reduce((acc, team) => acc + team.effectivePower, 0);
-  const totalMatches = 1230;
+  const averagePower = teamPowers.reduce(
+    (sum, team) => sum + team.effectivePower,
+    0,
+  ) / teamPowers.length;
 
   teamPowers.forEach(team => {
-    let rawWins = Math.round((team.effectivePower / totalLeaguePower) * totalMatches);
-    rawWins = Math.min(Math.max(rawWins, 10), 73); 
-    
-    team.wins = rawWins;
-    team.losses = 82 - rawWins;
-
-    const originalTeam = leagueTeams.find(t => t.id === team.id);
-    if (originalTeam) {
-      if (rawWins <= 25) {
-        originalTeam.momentum = (originalTeam.momentum || 0) + (Math.floor(Math.random() * 6) + 3);
-      } else if (rawWins >= 58) {
-        originalTeam.momentum = (originalTeam.momentum || 0) - (Math.floor(Math.random() * 5) + 2);
-      } else {
-        originalTeam.momentum = (originalTeam.momentum || 0) + (Math.floor(Math.random() * 5) - 2);
-      }
-      originalTeam.momentum = Math.min(Math.max(originalTeam.momentum, -15), 15);
-    }
+    const variance = (Math.random() + Math.random() - 1) * 7;
+    team.wins = Math.round(Math.max(
+      10,
+      Math.min(72, 41 + (team.effectivePower - averagePower) * 2.35 + variance),
+    ));
   });
 
-  return teamPowers.sort((a, b) => b.wins - a.wins);
+  let difference = 1_230 - teamPowers.reduce((sum, team) => sum + team.wins, 0);
+  let cursor = 0;
+  while (difference !== 0) {
+    const team = teamPowers[cursor % teamPowers.length];
+    const adjustment = difference > 0 ? 1 : -1;
+    if (
+      (adjustment > 0 && team.wins < 72) ||
+      (adjustment < 0 && team.wins > 10)
+    ) {
+      team.wins += adjustment;
+      difference -= adjustment;
+    }
+    cursor++;
+  }
+
+  teamPowers.forEach(team => {
+    team.losses = 82 - team.wins;
+    const source = leagueTeams.find(item => item.id === team.id);
+    if (!source) return;
+    const momentumChange = team.wins <= 25
+      ? Math.floor(Math.random() * 4) + 2
+      : team.wins >= 58
+        ? -(Math.floor(Math.random() * 3) + 1)
+        : Math.floor(Math.random() * 3) - 1;
+    source.momentum = Math.max(-15, Math.min(15, (source.momentum ?? 0) + momentumChange));
+  });
+
+  return teamPowers.sort((left, right) => right.wins - left.wins);
 }

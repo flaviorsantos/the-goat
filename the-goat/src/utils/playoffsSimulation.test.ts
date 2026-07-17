@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { nbaTeams } from '../data/teams';
 import { simulatePlayoffs } from './playoffsSimulation';
 
 describe('playoff simulation', () => {
@@ -18,5 +19,29 @@ describe('playoff simulation', () => {
     expect(run.series.flatMap(series => series.games).every(
       game => Number.isInteger(game.steals) && Number.isInteger(game.blocks),
     )).toBe(true);
+  });
+
+  it('uses only conference qualifiers and always produces a champion', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
+    const standings = nbaTeams.map((team, index) => ({
+      ...team,
+      wins: index % 15 < 8 ? 60 - (index % 15) : 25 - (index % 15),
+      losses: 0,
+    })).map(team => ({ ...team, losses: 82 - team.wins }));
+    const qualifiedIds = new Set(
+      standings.filter((_, index) => index % 15 < 8).map(team => team.id),
+    );
+    const run = simulatePlayoffs(
+      92,
+      80,
+      standings.find(team => team.id === 'LAL')?.wins ?? 50,
+      { ppg: 25, rpg: 7, apg: 6, spg: 1.4, bpg: 0.8 },
+      'LAL',
+      standings,
+    );
+
+    expect(run.championTeamId).not.toBe('');
+    expect(qualifiedIds.has(run.championTeamId)).toBe(true);
+    expect(run.series.every(series => qualifiedIds.has(series.opponentTeamId))).toBe(true);
   });
 });

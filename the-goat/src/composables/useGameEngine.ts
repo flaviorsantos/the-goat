@@ -5,6 +5,8 @@ import { simulatePlayoffs } from '../utils/playoffsSimulation';
 import { calculateAwards, calculateFinalsMvp } from '../utils/awardsCalculator';
 import { calculateGoatScore } from '../utils/careerEvaluator';
 import { simulateInjury } from '../utils/injurySimulation';
+import { simulateLeagueStandings } from '../utils/leagueSimulation';
+import { simulateLeagueAwards } from '../utils/leagueAwardsSimulation';
 import {
   calculateAutomaticTradeChance,
   calculateTradeRequestApproval,
@@ -557,20 +559,13 @@ export function useGameEngine(
   const simulateSeason = () => {
     if (player.value.isRetired || playoffPresentation.value.active) return;
 
-    leagueTeams.value.forEach(team => {
-      const moraleBoost = team.id === player.value.teamId
-        ? Math.max(-2, Math.min(2.5, (player.value.morale - 50) / 20))
-        : 0;
-      const playerImpact = team.id === player.value.teamId
-        ? (player.value.ovr - 75) * 0.7
-        : 0;
-      const expectedWins =
-        41 +
-        (team.baseOvr + moraleBoost - 78) * 2.2 +
-        playerImpact;
-      const wins = Math.round(expectedWins + (Math.random() + Math.random() - 1) * 7);
-      team.wins = Math.max(14, Math.min(70, wins));
-      team.losses = 82 - team.wins;
+    const standings = simulateLeagueStandings(player.value, leagueTeams.value);
+    standings.forEach(standing => {
+      const team = leagueTeams.value.find(item => item.id === standing.id);
+      if (!team) return;
+      team.wins = standing.wins;
+      team.losses = standing.losses;
+      team.momentum = standing.momentum;
     });
 
     const playerTeam = leagueTeams.value.find(team => team.id === player.value.teamId);
@@ -596,6 +591,7 @@ export function useGameEngine(
       teamWins,
       seasonStats,
       player.value.teamId,
+      leagueTeams.value,
     );
     const ageAvailabilityPenalty = Math.max(0, player.value.age - 30) * 0.7;
     const routineAbsences = Math.floor((Math.random() + Math.random()) * 5);
@@ -623,8 +619,6 @@ export function useGameEngine(
       player.value.position
     );
 
-    const npcStars = ['L. Doncic', 'N. Jokic', 'S. Gilgeous-Alexander', 'A. Edwards', 'V. Wembanyama', 'G. Antetokounmpo'];
-    const getNPC = () => npcStars[Math.floor(Math.random() * npcStars.length)];
     const finalsAverages = seasonPlayoffs.series.find(
       series => series.round === 'NBA Finals',
     )?.averages ?? null;
@@ -637,12 +631,13 @@ export function useGameEngine(
       seasonAwards.push('Finals MVP');
     }
 
-    const leagueAwards = {
-      MVP: seasonAwards.includes('MVP') ? player.value.name : getNPC(),
-      DPOY: seasonAwards.includes('DPOY') ? player.value.name : getNPC(),
-      SMOTY: seasonAwards.includes('SMOTY') ? player.value.name : getNPC(),
-      FMVP: wonFinalsMvp ? player.value.name : getNPC(),
-    };
+    const leagueAwards = simulateLeagueAwards({
+      playerName: player.value.name,
+      playerAwards: seasonAwards,
+      playerWonFinalsMvp: wonFinalsMvp,
+      championTeamId: seasonPlayoffs.championTeamId,
+      standings: leagueTeams.value,
+    });
 
     const seasonSalary = player.value.currentSalary || 0;
     const moraleChange =

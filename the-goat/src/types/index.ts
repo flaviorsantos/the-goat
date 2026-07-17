@@ -109,6 +109,7 @@ export interface InjuryEvent {
 export interface PlayoffRunStats {
   madePlayoffs: boolean;
   wonRing: boolean;
+  championTeamId: string;
   eliminatedIn: string | null;
   series: PlayoffSeriesStats[];
   finalsLog: PlayoffGameStats[]; // Jogo a jogo apenas nas finais

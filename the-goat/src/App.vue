@@ -35,7 +35,7 @@ const messages = {
     trophyCabinet: 'Sala de troféus', records: 'Recordes e legado', yearByYear: 'Temporada por temporada', originalDna: 'DNA original',
     earnings: 'Ganhos na carreira', newCareer: 'Nova carreira', breakingNews: 'Última hora', season: 'Temporada', seasons: 'Temporadas',
     themeLight: 'Ativar modo claro', themeDark: 'Ativar modo escuro', language: 'Idioma', careerAverages: 'Médias da carreira',
-    retiredJerseys: 'Camisas aposentadas', closestProfiles: 'Perfis históricos mais próximos', rings: 'Títulos', allTime: 'Ranking histórico da NBA',
+    retiredJerseys: 'Camisas aposentadas', closestProfiles: 'Perfis históricos mais próximos', rings: 'Títulos', ring: 'Título', allTime: 'Ranking histórico da NBA',
     steals: 'Roubos', blocks: 'Tocos', mvpAwards: 'Prêmios de MVP', championships: 'Campeonatos', dpoyAwards: 'Prêmios de DPOY',
     awardsNotes: 'Prêmios e notas', rookieReady: 'O novato está pronto. O mundo está de olho.', playoffBegins: '{team} inicia sua campanha nos playoffs.',
     championNews: '{player} leva {team} ao título da NBA!', missesPlayoffs: 'Desastre! {team} fica fora dos playoffs.',
@@ -69,7 +69,7 @@ const messages = {
     records: 'Records & legacy', yearByYear: 'Year-by-year stats', originalDna: 'Original DNA', earnings: 'Career earnings',
     newCareer: 'New career', breakingNews: 'Breaking news', season: 'Season', seasons: 'Seasons', themeLight: 'Switch to light mode',
     themeDark: 'Switch to dark mode', language: 'Language', careerAverages: 'Career averages', retiredJerseys: 'Retired jerseys',
-    closestProfiles: 'Closest historical profiles', rings: 'Rings', allTime: 'All-time NBA leaderboard', steals: 'Steals', blocks: 'Blocks',
+    closestProfiles: 'Closest historical profiles', rings: 'Rings', ring: 'Ring', allTime: 'All-time NBA leaderboard', steals: 'Steals', blocks: 'Blocks',
     mvpAwards: 'MVP awards', championships: 'Championships', dpoyAwards: 'DPOY awards', awardsNotes: 'Awards & notes',
     rookieReady: 'The rookie is ready. The world is watching.', playoffBegins: '{team} begins its playoff run.',
     championNews: '{player} leads {team} to the NBA championship!', missesPlayoffs: 'Disaster! {team} misses the playoffs.',
@@ -103,7 +103,7 @@ const messages = {
     yearByYear: 'Temporada por temporada', originalDna: 'ADN original', earnings: 'Ganancias de carrera', newCareer: 'Nueva carrera',
     breakingNews: 'Última hora', season: 'Temporada', seasons: 'Temporadas', themeLight: 'Activar modo claro', themeDark: 'Activar modo oscuro', language: 'Idioma',
     careerAverages: 'Promedios de carrera', retiredJerseys: 'Camisetas retiradas', closestProfiles: 'Perfiles históricos más cercanos',
-    rings: 'Títulos', allTime: 'Ranking histórico de la NBA', steals: 'Robos', blocks: 'Tapones', mvpAwards: 'Premios MVP',
+    rings: 'Títulos', ring: 'Título', allTime: 'Ranking histórico de la NBA', steals: 'Robos', blocks: 'Tapones', mvpAwards: 'Premios MVP',
     championships: 'Campeonatos', dpoyAwards: 'Premios DPOY', awardsNotes: 'Premios y notas',
     rookieReady: 'El novato está listo. El mundo está mirando.', playoffBegins: '{team} comienza su camino en los playoffs.',
     championNews: '¡{player} lleva a {team} al título de la NBA!', missesPlayoffs: '¡Desastre! {team} queda fuera de los playoffs.',
@@ -123,7 +123,10 @@ const locale = ref<Locale>('en');
 const theme = ref<Theme>('dark');
 const t = (key: MessageKey) => messages[locale.value][key];
 const tf = (key: MessageKey, values: Record<string, string | number>) =>
-  Object.entries(values).reduce((text, [name, value]) => text.replace(`{${name}}`, String(value)), t(key));
+  Object.entries(values).reduce<string>(
+    (text, [name, value]) => text.replace(`{${name}}`, String(value)),
+    t(key),
+  );
 
 type DataGroup = 'attributes' | 'positions' | 'roles' | 'rounds' | 'locations' | 'results' | 'tiers' | 'injuries' | 'awards' | 'dimensions' | 'countries';
 const dataLabels: Record<Locale, Record<DataGroup, Record<string, string>>> = {
@@ -328,17 +331,25 @@ const tradeTargets = computed(() =>
 const newsFeed = computed(() => {
   if (!lastSeason.value) return [t('rookieReady')];
   if (playoffPresentation.value.active) {
-    return [tf('playoffBegins', { team: player.value.teamId })];
+    return [tf('playoffBegins', { team: lastSeason.value.teamId })];
   }
   const news = [];
   
   // Segurança com "?." caso playoffs não tenha sido gerado
+  const seasonTeamId = lastSeason.value.teamId;
+  const championTeamId = lastSeason.value.playoffs?.championTeamId;
   if (lastSeason.value.playoffs?.wonRing) {
-    news.push(tf('championNews', { player: player.value.name, team: player.value.teamId }));
+    news.push(tf('championNews', { player: player.value.name, team: seasonTeamId }));
   } else if (!lastSeason.value.playoffs?.madePlayoffs) {
-    news.push(tf('missesPlayoffs', { team: player.value.teamId }));
+    news.push(tf('missesPlayoffs', { team: seasonTeamId }));
   } else {
-    news.push(tf('eliminatedNews', { team: player.value.teamId, round: label('rounds', lastSeason.value.playoffs?.eliminatedIn ?? '') }));
+    news.push(tf('eliminatedNews', { team: seasonTeamId, round: label('rounds', lastSeason.value.playoffs?.eliminatedIn ?? '') }));
+  }
+  if (championTeamId && championTeamId !== seasonTeamId) {
+    news.push(tf('championNews', {
+      player: lastSeason.value.leagueAwards.FMVP,
+      team: championTeamId,
+    }));
   }
 
   if (lastSeason.value.ppg > 30) news.push(tf('historicScoring', { player: player.value.name, ppg: lastSeason.value.ppg }));
@@ -945,7 +956,7 @@ onBeforeUnmount(() => {
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           <!-- COLUNA ESQUERDA: Card do Jogador -->
-          <div class="space-y-6 lg:sticky lg:top-6 lg:col-span-3 lg:self-start">
+          <div class="space-y-6 lg:top-6 lg:col-span-3 lg:self-start">
             <div class="bg-white dark:bg-zinc-950 border border-black/10 dark:border-white/10 rounded-xl p-6 relative overflow-hidden">
               <div class="absolute top-0 right-0 p-4 opacity-10">
                 <span class="text-6xl font-black">{{ player.jerseyNumber }}</span>
@@ -1254,7 +1265,7 @@ onBeforeUnmount(() => {
                 <div class="flex justify-between"><span class="text-zinc-600 dark:text-zinc-400 font-bold">MVP</span> <span class="text-amber-700 dark:text-red-400 font-black">{{ lastSeason.leagueAwards.MVP }}</span></div>
                 <div class="flex justify-between"><span class="text-zinc-600 dark:text-zinc-400 font-bold">DPOY</span> <span class="text-zinc-950 dark:text-white font-black">{{ lastSeason.leagueAwards.DPOY }}</span></div>
                 <div class="flex justify-between"><span class="text-zinc-600 dark:text-zinc-400 font-bold">SMOTY</span> <span class="text-zinc-950 dark:text-white font-black">{{ lastSeason.leagueAwards.SMOTY }}</span></div>
-                <div v-if="lastSeason.playoffs?.wonRing" class="flex justify-between"><span class="text-zinc-600 dark:text-zinc-400 font-bold">FMVP</span> <span class="text-zinc-950 dark:text-white font-black">{{ lastSeason.leagueAwards.FMVP }}</span></div>
+                <div v-if="lastSeason.playoffs?.championTeamId && !playoffPresentation.active" class="flex justify-between"><span class="text-zinc-600 dark:text-zinc-400 font-bold">FMVP</span> <span class="text-zinc-950 dark:text-white font-black">{{ lastSeason.leagueAwards.FMVP }}</span></div>
               </div>
             </div>
           </div>
@@ -1557,7 +1568,7 @@ onBeforeUnmount(() => {
                     <td class="py-1 px-2 text-center">{{ formatPercentage(season.ftPct) }}</td>
                     <td class="py-1 px-2 text-center">{{ season.plusMinus.toFixed(1) }}</td>
                     <td class="truncate px-2 py-1 font-sans text-[8px] uppercase tracking-widest text-amber-700 dark:text-red-400">
-                      {{ season.playoffs?.wonRing ? `${t('rings')} | ` : '' }}  {{ season.injury ? label('injuries', season.injury.name) + ` | ` : '' }} {{ season.awards.map(award => label('awards', award)).join(' | ') }}
+                      {{ season.playoffs?.wonRing ? `${t('ring')} | ` : '' }}  {{ season.injury ? label('injuries', season.injury.name) + ` | ` : '' }} {{ season.awards.map(award => label('awards', award)).join(' | ') }}
                     </td>
                   </tr>
                 </tbody>

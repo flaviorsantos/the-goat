@@ -169,6 +169,10 @@ describe('team morale and trades', () => {
     )).toBe(true);
 
     const sixthMan = engineAtMorale(90);
+    sixthMan.player.value.teamId = 'OKC';
+    sixthMan.player.value.careerTimeline = [
+      { teamId: 'OKC', startYear: 1, endYear: null },
+    ];
     sixthMan.player.value.ovr = 80;
     sixthMan.player.value.attributes = Object.fromEntries(
       Object.keys(attributes).map(attribute => [attribute, 99]),
