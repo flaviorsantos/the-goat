@@ -153,9 +153,7 @@ export async function runStressTest(
       const peakAttributes = fixedAttributeValue === undefined
         ? createDraftedPotential()
         : createFixedAttributes(fixedAttributeValue);
-      const rookieAttributes = fixedAttributeValue === undefined
-        ? createRookieAttributes(peakAttributes)
-        : createFixedAttributes(fixedAttributeValue);
+      const rookieAttributes = createRookieAttributes(peakAttributes);
       const initialOvr = calculateOverall(rookieAttributes, position);
       const potentialOvr = calculateOverall(peakAttributes, position);
       engine.player.value.potentialAttributes = peakAttributes;

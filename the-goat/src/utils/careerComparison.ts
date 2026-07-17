@@ -21,6 +21,7 @@ export type CareerComparisonInput = {
 export type CareerComparison = {
   player: RealCareer;
   similarity: number;
+  basis: 'complete' | 'statistical';
   sharedTraits: string[];
   mainDifference: string;
 };
@@ -202,7 +203,19 @@ export const compareCareer = (
   return realCareers
     .map(player => {
       const real = vectorForRealCareer(player);
-      const differences = dimensions
+      const comparableDimensions = dimensions.filter(dimension => {
+        if (dimension === 'accolades' && player.accoladesKnown === false) {
+          return false;
+        }
+        if (
+          dimension === 'championships' &&
+          player.championshipsKnown === false
+        ) {
+          return false;
+        }
+        return true;
+      });
+      const differences = comparableDimensions
         .map(dimension => ({
           dimension,
           difference: Math.abs(simulated[dimension] - real[dimension]),
@@ -210,13 +223,17 @@ export const compareCareer = (
         }))
         .sort((left, right) => left.difference - right.difference);
 
-      const squaredDistance = dimensions.reduce(
+      const comparableWeight = comparableDimensions.reduce(
+        (sum, dimension) => sum + weights[dimension],
+        0,
+      );
+      const squaredDistance = comparableDimensions.reduce(
         (sum, dimension) =>
           sum +
           weights[dimension] *
           Math.pow(simulated[dimension] - real[dimension], 2),
         0,
-      );
+      ) / comparableWeight;
       const distance =
         Math.sqrt(squaredDistance) +
         positionPenalty(input.position, player);
@@ -225,6 +242,11 @@ export const compareCareer = (
       return {
         player,
         similarity: Math.round(clamp(1 - distance / 0.72, 0.25, 0.98) * 100),
+        basis:
+          player.accoladesKnown === false ||
+          player.championshipsKnown === false
+            ? 'statistical'
+            : 'complete',
         sharedTraits: differences
           .slice(0, 2)
           .map(({ dimension }) => DIMENSION_LABELS[dimension]),

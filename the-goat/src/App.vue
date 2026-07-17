@@ -37,7 +37,7 @@ const executeStressTest = async () => {
   if (!import.meta.env.DEV) return;
 
   const { runStressTest } = await import('./utils/stressTest');
-  const attributeValues = [85, 90, 95, 99];
+  const attributeValues = [97];
 
   for (const fixedAttributeValue of attributeValues) {
     await runStressTest({
@@ -895,6 +895,9 @@ onBeforeUnmount(() => {
                     <h2 class="text-white text-lg font-black uppercase mt-1">{{ comparison.player.name }}</h2>
                     <p class="text-gray-600 text-[10px] font-bold uppercase tracking-widest">
                       {{ comparison.player.positions.join('/') }} · {{ comparison.player.era }}
+                    </p>
+                    <p class="text-gray-700 text-[9px] font-bold uppercase tracking-widest mt-1">
+                      {{ comparison.basis === 'complete' ? 'Full legacy profile' : 'Statistical profile' }}
                     </p>
                   </div>
                   <span class="text-yellow-500 text-2xl font-black">{{ comparison.similarity }}%</span>

@@ -1,4 +1,5 @@
 import type { Position } from '../types';
+import { additionalRealCareers } from './additionalRealCareers';
 
 export type RealCareer = {
   id: string;
@@ -21,6 +22,8 @@ export type RealCareer = {
   allNbaThird: number;
   allDefenseFirst: number;
   allDefenseSecond: number;
+  accoladesKnown?: boolean;
+  championshipsKnown?: boolean;
   summary: string;
 };
 
@@ -235,4 +238,5 @@ export const realCareers: RealCareer[] = [
     allDefenseFirst: 0, allDefenseSecond: 0,
     summary: 'Long-tenured bench scorer and creator with limited major accolades.',
   },
+  ...additionalRealCareers,
 ];
