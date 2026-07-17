@@ -46,8 +46,8 @@ export function calculateGoatScore(
   );
 
   let finalScore = rawScore;
-  if (rawScore > 88) {
-    finalScore = 88 + (rawScore - 88) * 0.2;
+  if (rawScore > 90) {
+    finalScore = 90 + (rawScore - 90) * 0.45;
   }
   finalScore = Math.floor(clamp(finalScore, 40, 99));
 

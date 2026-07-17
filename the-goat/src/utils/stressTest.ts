@@ -132,7 +132,10 @@ export async function runStressTest(
   } = typeof options === 'number'
     ? { iterationsPerPosition: options, fixedAttributeValue: undefined }
     : options;
-  const engine = useGameEngine({ persistRetiredCareers: false });
+  const engine = useGameEngine({
+    persistRetiredCareers: false,
+    interactivePlayoffs: false,
+  });
   const summaries: StressSummary[] = [];
   const scenario = fixedAttributeValue === undefined
     ? 'draft otimizado'

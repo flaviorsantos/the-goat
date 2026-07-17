@@ -1,6 +1,7 @@
 export type Position = 'PG' | 'SG' | 'SF' | 'PF' | 'C';
 export type Difficulty = 'amateur' | 'pro';
 export type GameMode = 'fast' | 'full';
+export type InjurySeverity = 'minor' | 'moderate' | 'severe' | 'career-ending';
 
 export type AttributeKey = 'Shooting' | 'Dribbling' | 'Defense' | 'IQ' | 'Athleticism' | 'Passing' | 'Rebounding' | 'Speed' | 'Finishing';
 
@@ -71,6 +72,11 @@ export interface PlayerProfile {
 }
 
 export interface PlayoffGameStats {
+  gameNumber: number;
+  round: string;
+  won: boolean;
+  home: boolean;
+  opponentOvr: number;
   points: number;
   rebounds: number;
   assists: number;
@@ -80,10 +86,19 @@ export interface PlayoffGameStats {
 
 export interface PlayoffSeriesStats {
   round: string;
+  opponentOvr: number;
   gamesPlayed: number;
   wins: number;
   losses: number;
   averages: PlayoffGameStats;
+  games: PlayoffGameStats[];
+}
+
+export interface InjuryEvent {
+  name: string;
+  severity: InjurySeverity;
+  gamesMissed: number;
+  careerEnding: boolean;
 }
 
 export interface PlayoffRunStats {
@@ -117,6 +132,8 @@ export interface SeasonStats {
   awards: string[];
   leagueAwards: Record<string, string>; 
   wonRing: boolean;
+  morale: number;
+  injury: InjuryEvent | null;
   playoffs: PlayoffRunStats;
 }
 export interface CareerTotals {

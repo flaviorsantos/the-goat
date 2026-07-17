@@ -89,35 +89,51 @@ export const calculateSeasonStats = (
 
   const ageMinutesPenalty = age >= 37 ? (age - 36) * 0.8 : 0;
   const mpg = clamp(
-    12 + (ovr - 60) * 0.78 - ageMinutesPenalty + randomVariation(1.4),
+    12 +
+      (ovr - 60) * 0.78 +
+      (iq - 70) * 0.045 -
+      ageMinutesPenalty +
+      randomVariation(1.4),
     10,
     37.5,
   );
   const minuteScale = mpg / 36;
 
   const offensiveSkill =
-    shooting * 0.38 +
-    finishing * 0.34 +
+    shooting * 0.30 +
+    finishing * 0.25 +
     dribbling * 0.18 +
-    athleticism * 0.10;
+    athleticism * 0.12 +
+    speed * 0.08 +
+    iq * 0.07;
 
   const pointsPer36 =
-    (5 + (offensiveSkill - 50) * 0.42 + (ovr - 70) * 0.18) *
+    (5 + (offensiveSkill - 50) * 0.42 + (ovr - 70) * 0.15) *
     modifiers.points;
   const assistsPer36 =
-    (1 + (passing - 50) * 0.12 + (iq - 50) * 0.04) *
+    (1 +
+      (passing - 50) * 0.115 +
+      (iq - 50) * 0.05 +
+      (dribbling - 50) * 0.025 +
+      (speed - 50) * 0.01) *
     modifiers.assists;
   const reboundsPer36 =
-    (1.5 + (rebounding - 50) * 0.16 + (athleticism - 50) * 0.04) *
+    (1.5 +
+      (rebounding - 50) * 0.15 +
+      (athleticism - 50) * 0.05 +
+      (iq - 50) * 0.01) *
     modifiers.rebounds;
   const stealsPer36 =
     (0.35 +
-      (defense - 50) * 0.025 +
-      (speed - 50) * 0.012 +
-      (iq - 50) * 0.008) *
+      (defense - 50) * 0.022 +
+      (speed - 50) * 0.014 +
+      (iq - 50) * 0.012) *
     modifiers.steals;
   const blocksPer36 =
-    (0.15 + (defense - 50) * 0.018 + (athleticism - 50) * 0.012) *
+    (0.15 +
+      (defense - 50) * 0.017 +
+      (athleticism - 50) * 0.014 +
+      (iq - 50) * 0.004) *
     modifiers.blocks;
 
   const ppg = clamp(pointsPer36 * minuteScale + randomVariation(2.2), 2, 38);
@@ -126,7 +142,12 @@ export const calculateSeasonStats = (
   const spg = clamp(stealsPer36 * minuteScale + randomVariation(0.18), 0.1, 3);
   const bpg = clamp(blocksPer36 * minuteScale + randomVariation(0.2), 0.1, 4);
   const tov = clamp(
-    0.65 + ppg * 0.06 + apg * 0.13 - (iq - 50) * 0.009 + randomVariation(0.35),
+    0.65 +
+      ppg * 0.06 +
+      apg * 0.13 -
+      (iq - 50) * 0.01 -
+      (dribbling - 50) * 0.006 +
+      randomVariation(0.35),
     0.5,
     5,
   );
@@ -139,7 +160,9 @@ export const calculateSeasonStats = (
   const fgPct = clamp(
     0.36 +
       shooting * 0.0007 +
-      finishing * 0.00125 +
+      finishing * 0.0011 +
+      iq * 0.0002 +
+      athleticism * 0.00015 +
       sizeEfficiencyBonus +
       randomVariation(0.012),
     0.36,
@@ -155,8 +178,24 @@ export const calculateSeasonStats = (
     0.52,
     0.94,
   );
+  const teamImpact = (teamOvr - 78) * 0.3;
+  const offensiveImpact =
+    (ppg - 12) * 0.13 +
+    (apg - 3) * 0.18 +
+    (fgPct - 0.46) * 14 +
+    (fg3Pct - 0.35) * 3 -
+    (tov - 1.8) * 0.28;
+  const defensiveImpact =
+    (spg - 0.8) * 0.7 +
+    (bpg - 0.6) * 0.55 +
+    (defense - 70) * 0.035 +
+    (iq - 70) * 0.015;
+  const reboundingImpact = (rpg - 5) * 0.06;
+  const roleScale = clamp(mpg / 30, 0.45, 1.15);
   const plusMinus = clamp(
-    (teamOvr - 78) * 0.34 + (ovr - 75) * 0.24 + randomVariation(2),
+    teamImpact +
+      (offensiveImpact + defensiveImpact + reboundingImpact) * roleScale +
+      randomVariation(0.85),
     -10,
     12,
   );

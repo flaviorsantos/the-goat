@@ -5,13 +5,18 @@ import { useDraft } from './composables/useDraft';
 import { calculateGoatScore } from './utils/careerEvaluator';
 import { compareCareer } from './utils/careerComparison';
 import { calculateOverall } from './utils/statsCalculator';
+import { calculateRetiredJerseys } from './utils/legacyCalculator';
+import { findBestSeasonNumber } from './utils/seasonEvaluator';
 import type { Difficulty, PlayerAttributes, Position } from './types';
 
 // Motor do Jogo
 const { 
-  player, history, careerTotals, leagueTeams, freeAgencyOffers, pendingMilestones, 
+  player, history, careerTotals, leagueTeams, freeAgencyOffers, pendingMilestones,
+  lastTransactionMessage, playoffPresentation,
   initCareer, simulateSeason, generateOffers, acceptOffer, forceRetirement,
-  loadPastCareer, simulateRemainingCareer
+  requestTrade, loadPastCareer, simulateRemainingCareer,
+  simulateNextPlayoffSeries, simulateNextPlayoffGame,
+  finishPlayoffPresentation
 } = useGameEngine();
 
 // Motor de Draft
@@ -68,6 +73,7 @@ const selectedDifficulty = ref<Difficulty>('amateur');
 const draftPickResult = ref(60);
 const pastCareers = ref<PastCareer[]>([]);
 const milestoneButton = ref<HTMLButtonElement | null>(null);
+const selectedTradeTeam = ref('');
 
 const viewPastCareer = (career: PastCareer) => {
   loadPastCareer(career);
@@ -78,12 +84,28 @@ const viewPastCareer = (career: PastCareer) => {
 
 // Declarado antes do newsFeed para evitar erros de inicialização
 const lastSeason = computed(() => history.value.length === 0 ? null : history.value[history.value.length - 1]);
+const currentPlayoffSeries = computed(() =>
+  lastSeason.value?.playoffs?.series[playoffPresentation.value.seriesIndex] ?? null,
+);
+const completedPlayoffSeries = computed(() =>
+  lastSeason.value?.playoffs?.series.slice(0, playoffPresentation.value.seriesIndex) ?? [],
+);
+const revealedCurrentPlayoffGames = computed(() =>
+  currentPlayoffSeries.value?.games.slice(0, playoffPresentation.value.currentGame) ?? [],
+);
 
 // Correção: player.value utilizado em todos os acessos
 const isFreeAgent = computed(() => player.value.contractYearsLeft === 0 && !player.value.isRetired);
+const canChooseTradeTarget = computed(() => player.value.morale >= 70);
+const tradeTargets = computed(() =>
+  leagueTeams.value.filter(team => team.id !== player.value.teamId),
+);
 
 const newsFeed = computed(() => {
   if (!lastSeason.value) return ['The rookie is ready. The world is watching.'];
+  if (playoffPresentation.value.active) {
+    return [`${player.value.teamId} begins its playoff run.`];
+  }
   const news = [];
   
   // Segurança com "?." caso playoffs não tenha sido gerado
@@ -97,6 +119,12 @@ const newsFeed = computed(() => {
 
   if (lastSeason.value.ppg > 30) news.push(`${player.value.name} has a historic scoring season averaging ${lastSeason.value.ppg} PPG.`);
   if (lastSeason.value.awards?.includes('MVP')) news.push(`${player.value.name} named the Most Valuable Player!`);
+  if (lastSeason.value.injury) {
+    news.push(
+      `${lastSeason.value.injury.name}: ${lastSeason.value.injury.gamesMissed} games missed.`,
+    );
+  }
+  if (lastTransactionMessage.value) news.push(lastTransactionMessage.value);
   
   return news;
 });
@@ -174,6 +202,34 @@ const careerComparisons = computed(() => compareCareer({
   awards: trophyCabinet.value,
 }));
 
+const careerAverages = computed(() => {
+  const games = Math.max(1, careerTotals.value.gamesPlayed);
+  const weighted = (key: 'ovr' | 'fgPct' | 'fg3Pct' | 'ftPct') =>
+    history.value.reduce(
+      (sum, season) => sum + season[key] * (season.gamesPlayed ?? 82),
+      0,
+    ) / games;
+
+  return {
+    ppg: careerTotals.value.totalPoints / games,
+    rpg: careerTotals.value.totalRebounds / games,
+    apg: careerTotals.value.totalAssists / games,
+    spg: careerTotals.value.totalSteals / games,
+    bpg: careerTotals.value.totalBlocks / games,
+    ovr: weighted('ovr'),
+    fgPct: weighted('fgPct'),
+    fg3Pct: weighted('fg3Pct'),
+    ftPct: weighted('ftPct'),
+  };
+});
+
+const retiredJerseys = computed(() =>
+  calculateRetiredJerseys(
+    history.value,
+    Number(player.value.jerseyNumber),
+  ),
+);
+
 const getRecordPercentage = (current: number, record: number) => {
   return Math.min(100, (current / record) * 100).toFixed(1);
 };
@@ -236,16 +292,7 @@ const startDraftSteal = () => {
   drawRandomPlayer();
 };
 
-const bestSeasonNumber = computed(() => {
-  if (history.value.length === 0) return -1;
-  let best = history.value[0];
-  let maxScore = 0;
-  history.value.forEach(s => {
-    const score = s.ppg + s.apg + s.rpg + (s.playoffs?.wonRing ? 10 : 0) + (s.awards?.includes('MVP') ? 15 : 0);
-    if (score > maxScore) { maxScore = score; best = s; }
-  });
-  return best.seasonNumber;
-});
+const bestSeasonNumber = computed(() => findBestSeasonNumber(history.value));
 
 const processDraftDay = () => {
   const peakAttributes: PlayerAttributes = { ...myAttributes.value };
@@ -298,6 +345,15 @@ const resetGame = () => {
 };
 
 const dismissMilestone = () => pendingMilestones.value.shift();
+
+const submitTradeRequest = () => {
+  requestTrade(
+    canChooseTradeTarget.value && selectedTradeTeam.value
+      ? selectedTradeTeam.value
+      : undefined,
+  );
+  selectedTradeTeam.value = '';
+};
 
 const retireManual = () => {
   if (confirm("Are you sure you want to end your career? This action cannot be undone.")) {
@@ -654,6 +710,16 @@ onBeforeUnmount(() => {
                 </div>
               </div>
 
+              <div class="mb-5">
+                <div class="flex justify-between text-[10px] font-black uppercase tracking-widest mb-2">
+                  <span class="text-gray-500">Team Morale</span>
+                  <span class="text-yellow-500">{{ player.morale }}</span>
+                </div>
+                <div class="h-1.5 rounded-full bg-gray-900 overflow-hidden">
+                  <div class="h-full bg-yellow-500 transition-all" :style="`width: ${player.morale}%`"></div>
+                </div>
+              </div>
+
               <!-- Médias da Última Temporada -->
               <div>
                 <p class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-3">
@@ -710,7 +776,43 @@ onBeforeUnmount(() => {
             
             <!-- Janela de Ação (Contrato ou Simulação) -->
             <div class="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6">
-              <div v-if="player.isRetired">
+              <div v-if="playoffPresentation.active">
+                <p class="text-yellow-500 text-[10px] font-black uppercase tracking-widest mb-2">Playoffs</p>
+                <div v-if="!playoffPresentation.complete && currentPlayoffSeries">
+                  <h3 class="text-2xl font-black text-white uppercase mb-4">{{ currentPlayoffSeries.round }}</h3>
+                  <div v-if="revealedCurrentPlayoffGames.length" class="space-y-1 mb-4">
+                    <div v-for="game in revealedCurrentPlayoffGames" :key="game.gameNumber" class="flex justify-between text-xs bg-gray-900 rounded px-3 py-2">
+                      <span class="text-gray-400">Game {{ game.gameNumber }}</span>
+                      <span :class="game.won ? 'text-green-500' : 'text-red-500'" class="font-black">{{ game.won ? 'W' : 'L' }} · {{ game.points }} PTS</span>
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-2 gap-2">
+                    <button
+                      :disabled="playoffPresentation.mode === 'games' && playoffPresentation.currentGame > 0"
+                      class="bg-yellow-500 disabled:opacity-30 text-black font-black py-4 rounded uppercase tracking-widest text-xs"
+                      @click="simulateNextPlayoffSeries"
+                    >
+                      Simulate Series
+                    </button>
+                    <button class="border border-yellow-500 text-yellow-500 font-black py-4 rounded uppercase tracking-widest text-xs" @click="simulateNextPlayoffGame">
+                      Simulate Game
+                    </button>
+                  </div>
+                  <p v-if="playoffPresentation.mode === 'games'" class="text-gray-600 text-[9px] uppercase mt-2">Game mode locked until series ends</p>
+                </div>
+                <div v-else>
+                  <h3 class="text-2xl font-black text-white uppercase mb-4">Playoffs Complete</h3>
+                  <button class="w-full bg-yellow-500 text-black font-black py-4 rounded uppercase tracking-widest" @click="finishPlayoffPresentation">Continue</button>
+                </div>
+                <div v-if="completedPlayoffSeries.length" class="mt-4 pt-4 border-t border-gray-800 space-y-1">
+                  <div v-for="series in completedPlayoffSeries" :key="series.round" class="flex justify-between text-xs">
+                    <span class="text-gray-500">{{ series.round }}</span>
+                    <span class="text-white font-black">{{ series.wins }}-{{ series.losses }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div v-else-if="player.isRetired">
                 <h3 class="text-2xl font-black text-white uppercase text-center mb-4">Career Ended</h3>
                 <button @click="viewLegacy" class="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-black py-4 rounded-lg transition-colors uppercase tracking-widest">View Legacy</button>
               </div>
@@ -759,8 +861,8 @@ onBeforeUnmount(() => {
                 <p class="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-4">
                   Contract: {{ player.contractYearsLeft }} Years Left
                 </p>
-                <button @click="simulateSeason" class="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-black py-5 rounded-lg transition-colors uppercase tracking-widest text-lg">
-                  {{ player.gameMode === 'fast' ? 'Simulate Season' : 'Advance Week' }}
+                <button @click="simulateSeason" class="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-black py-5 rounded-lg transition-colors uppercase tracking-widest text-lg mb-3">
+                  Simulate Season
                 </button>
                 <button 
                   @click="simulateRemainingCareer" 
@@ -769,6 +871,27 @@ onBeforeUnmount(() => {
                 >
                   Simulate Career to End
                 </button>
+                <div class="mt-4 border-t border-gray-800 pt-4">
+                  <div class="flex gap-2">
+                    <select
+                      v-model="selectedTradeTeam"
+                      :disabled="!canChooseTradeTarget || player.tradeRequestedThisSeason"
+                      class="min-w-0 flex-1 bg-gray-900 border border-gray-800 rounded px-3 text-xs text-white disabled:opacity-40"
+                      aria-label="Preferred trade destination"
+                    >
+                      <option value="">{{ canChooseTradeTarget ? 'Preferred team' : 'Destination chosen by team' }}</option>
+                      <option v-for="team in tradeTargets" :key="team.id" :value="team.id">{{ team.id }}</option>
+                    </select>
+                    <button
+                      :disabled="player.tradeRequestedThisSeason"
+                      class="border border-gray-700 disabled:opacity-40 text-gray-300 font-black px-4 py-3 rounded uppercase tracking-widest text-[10px]"
+                      @click="submitTradeRequest"
+                    >
+                      Request Trade
+                    </button>
+                  </div>
+                  <p v-if="lastTransactionMessage" class="text-gray-500 text-[10px] mt-2">{{ lastTransactionMessage }}</p>
+                </div>
                 <button v-if="player.age >= 32" @click="retireManual" class="w-full mt-4 bg-transparent border border-gray-800 hover:border-red-900 hover:bg-red-900/10 text-gray-600 hover:text-red-500 font-bold py-3 rounded-lg transition-colors uppercase tracking-widest text-xs">
                   Announce Retirement
                 </button>
@@ -787,7 +910,7 @@ onBeforeUnmount(() => {
             </div>
             
             <!-- Últimos Prêmios -->
-            <div v-if="lastSeason && lastSeason.awards.length > 0" class="flex flex-wrap gap-2">
+            <div v-if="lastSeason && lastSeason.awards.length > 0 && !playoffPresentation.active" class="flex flex-wrap gap-2">
               <div v-for="award in lastSeason.awards" :key="award" class="bg-yellow-500/10 border border-yellow-500/30 text-yellow-500 font-black text-[10px] uppercase tracking-widest px-3 py-1.5 rounded">
                 {{ award }}
               </div>
@@ -845,6 +968,35 @@ onBeforeUnmount(() => {
             <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-2">Career Ended</p>
             <h1 class="text-4xl font-black text-white uppercase tracking-tight">{{ goatEvaluation.tier }}</h1>
             <p class="text-gray-400 text-sm mt-2 font-bold">{{ player.position }} · {{ history.length }} Seasons</p>
+            <p v-if="player.retirementReason" class="text-red-500 text-[10px] font-black uppercase tracking-widest mt-2">{{ player.retirementReason }}</p>
+          </div>
+
+          <div>
+            <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-3">Career Averages</p>
+            <div class="grid grid-cols-3 md:grid-cols-9 gap-2">
+              <div v-for="[label, value] in [
+                ['PPG', careerAverages.ppg.toFixed(1)], ['RPG', careerAverages.rpg.toFixed(1)],
+                ['APG', careerAverages.apg.toFixed(1)], ['SPG', careerAverages.spg.toFixed(1)],
+                ['BPG', careerAverages.bpg.toFixed(1)], ['OVR', careerAverages.ovr.toFixed(1)],
+                ['FG%', formatPercentage(careerAverages.fgPct)],
+                ['3P%', formatPercentage(careerAverages.fg3Pct)],
+                ['FT%', formatPercentage(careerAverages.ftPct)]
+              ]" :key="label" class="bg-[#0a0a0a] border border-gray-800 rounded p-3 text-center">
+                <p class="text-white font-black">{{ value }}</p>
+                <p class="text-gray-600 text-[8px] font-black uppercase">{{ label }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="retiredJerseys.length" class="mt-8">
+            <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-3">Retired Jerseys</p>
+            <div class="flex flex-wrap gap-3">
+              <div v-for="jersey in retiredJerseys" :key="jersey.teamId" class="bg-yellow-500/10 border border-yellow-500/40 rounded-xl p-5 min-w-40 text-center">
+                <p class="text-gray-400 text-[10px] font-black uppercase">{{ jersey.teamId }}</p>
+                <p class="text-4xl text-yellow-500 font-black">#{{ jersey.jerseyNumber }}</p>
+                <p class="text-gray-500 text-[9px] uppercase">{{ jersey.seasons }} seasons · {{ jersey.rings }} rings</p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1098,7 +1250,7 @@ onBeforeUnmount(() => {
                     <td class="py-1 px-2 text-center">{{ formatPercentage(season.ftPct) }}</td>
                     <td class="py-1 px-2 text-center">{{ season.plusMinus.toFixed(1) }}</td>
                     <td class="py-1 px-2 truncate text-yellow-600 font-sans tracking-widest text-[8px] uppercase">
-                      {{ season.playoffs?.wonRing ? '🏆 RING ' : '' }} {{ season.awards.join(' ') }}
+                      {{ season.playoffs?.wonRing ? '🏆 RING ' : '' }} {{ season.injury?.name || '' }} {{ season.awards.join(' ') }}
                     </td>
                   </tr>
                 </tbody>

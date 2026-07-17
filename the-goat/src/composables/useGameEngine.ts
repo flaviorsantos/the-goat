@@ -4,6 +4,7 @@ import { calculateOverall, calculateSeasonStats } from '../utils/statsCalculator
 import { simulatePlayoffs } from '../utils/playoffsSimulation';
 import { calculateAwards } from '../utils/awardsCalculator';
 import { calculateGoatScore } from '../utils/careerEvaluator';
+import { simulateInjury } from '../utils/injurySimulation';
 import type {
   CareerTimelineEntry,
   Difficulty,
@@ -38,6 +39,9 @@ type GamePlayer = {
   careerTimeline: CareerTimelineEntry[];
   currentSalary: number;
   originalDNA: PlayerDna;
+  morale: number;
+  tradeRequestedThisSeason: boolean;
+  retirementReason: string | null;
 };
 
 type LeagueTeam = Team & {
@@ -68,6 +72,22 @@ type SavedCareer = {
   goatTier: string;
   rings: number;
 };
+
+type PlayoffPresentation = {
+  active: boolean;
+  seriesIndex: number;
+  currentGame: number;
+  mode: 'series' | 'games' | null;
+  complete: boolean;
+};
+
+const createPlayoffPresentation = (): PlayoffPresentation => ({
+  active: false,
+  seriesIndex: 0,
+  currentGame: 0,
+  mode: null,
+  complete: false,
+});
 
 const clone = <T>(value: T): T =>
   JSON.parse(JSON.stringify(value)) as T;
@@ -113,6 +133,9 @@ const initialPlayer: GamePlayer = {
   gameMode: 'fast',
   careerTimeline: [],
   originalDNA: {},
+  morale: 60,
+  tradeRequestedThisSeason: false,
+  retirementReason: null,
   attributes: {
     Shooting: 30,
     Defense: 30,
@@ -146,7 +169,13 @@ export interface ContractOffer {
 }
 
 export function useGameEngine(
-  { persistRetiredCareers = true }: { persistRetiredCareers?: boolean } = {},
+  {
+    persistRetiredCareers = true,
+    interactivePlayoffs = true,
+  }: {
+    persistRetiredCareers?: boolean;
+    interactivePlayoffs?: boolean;
+  } = {},
 ) {
   const player = ref<GamePlayer>(clone(initialPlayer));
 
@@ -158,6 +187,15 @@ export function useGameEngine(
   
   const pendingMilestones = ref<{ title: string; subtitle: string; icon: string }[]>([]);
   const achievedMilestones = ref<Set<string>>(new Set());
+  const lastTransactionMessage = ref('');
+  const playoffPresentation = ref<PlayoffPresentation>(createPlayoffPresentation());
+  let suppressNotifications = false;
+
+  const queueMilestone = (
+    milestone: { title: string; subtitle: string; icon: string },
+  ) => {
+    if (!suppressNotifications) pendingMilestones.value.push(milestone);
+  };
 
   const initCareer = (
     name: string,
@@ -177,6 +215,9 @@ export function useGameEngine(
     player.value.careerTimeline = [];
     player.value.difficulty = draftMode;
     player.value.gameMode = 'fast';
+    player.value.morale = 60;
+    player.value.tradeRequestedThisSeason = false;
+    player.value.retirementReason = null;
 
     player.value.originalDNA = clone(dna);
     
@@ -186,6 +227,8 @@ export function useGameEngine(
     freeAgencyOffers.value = [];
     pendingMilestones.value = [];
     achievedMilestones.value = new Set();
+    lastTransactionMessage.value = '';
+    playoffPresentation.value = createPlayoffPresentation();
   };
 
   const applyOffseasonProgression = () => {
@@ -291,7 +334,8 @@ export function useGameEngine(
   };
 
   const acceptOffer = (offer: ContractOffer) => {
-    if (player.value.teamId !== offer.teamId) {
+    const changedTeam = player.value.teamId !== offer.teamId;
+    if (changedTeam) {
       if (player.value.careerTimeline.length > 0) {
         player.value.careerTimeline[player.value.careerTimeline.length - 1].endYear = history.value.length;
       }
@@ -305,36 +349,82 @@ export function useGameEngine(
     player.value.teamId = offer.teamId;
     player.value.contractYearsLeft = offer.years;
     player.value.currentSalary = offer.salary;
+    player.value.morale = changedTeam ? 62 : Math.min(100, player.value.morale + 8);
+    player.value.tradeRequestedThisSeason = false;
     freeAgencyOffers.value = [];
+  };
+
+  const requestTrade = (preferredTeamId?: string) => {
+    if (
+      player.value.isRetired ||
+      player.value.contractYearsLeft === 0 ||
+      player.value.tradeRequestedThisSeason
+    ) return false;
+
+    player.value.tradeRequestedThisSeason = true;
+    const approvalChance = Math.min(
+      0.92,
+      Math.max(
+        0.3,
+        0.38 +
+          (player.value.ovr - 75) * 0.015 +
+          (100 - player.value.morale) * 0.003,
+      ),
+    );
+
+    if (Math.random() > approvalChance) {
+      player.value.morale = Math.max(0, player.value.morale - 12);
+      lastTransactionMessage.value = 'Trade request denied.';
+      return false;
+    }
+
+    const canChooseDestination = player.value.morale >= 70;
+    const candidates = leagueTeams.value.filter(team => team.id !== player.value.teamId);
+    const requestedTeam = candidates.find(team => team.id === preferredTeamId);
+    const destination = canChooseDestination && requestedTeam
+      ? requestedTeam
+      : candidates[Math.floor(Math.random() * candidates.length)];
+
+    const lastStop = player.value.careerTimeline.at(-1);
+    if (lastStop) lastStop.endYear = history.value.length;
+    player.value.careerTimeline.push({
+      teamId: destination.id,
+      startYear: history.value.length + 1,
+      endYear: null,
+    });
+    player.value.teamId = destination.id;
+    player.value.morale = canChooseDestination && requestedTeam ? 65 : 52;
+    lastTransactionMessage.value = `Traded to ${destination.id}.`;
+    return true;
   };
 
   const checkMilestones = (awards: string[], wonRing: boolean, ppg: number) => {
     const pts = careerTotals.value.totalPoints;
     
     if (pts >= 10000 && !achievedMilestones.value.has('pts_10k')) {
-      pendingMilestones.value.push({ title: '10,000 Career Points', subtitle: 'A star is born.', icon: '🏀' });
+      queueMilestone({ title: '10,000 Career Points', subtitle: 'A star is born.', icon: '🏀' });
       achievedMilestones.value.add('pts_10k');
     }
     if (pts >= 20000 && !achievedMilestones.value.has('pts_20k')) {
-      pendingMilestones.value.push({ title: '20,000 Career Points', subtitle: 'Entering the Hall of Fame discussion.', icon: '🔥' });
+      queueMilestone({ title: '20,000 Career Points', subtitle: 'Entering the Hall of Fame discussion.', icon: '🔥' });
       achievedMilestones.value.add('pts_20k');
     }
     if (pts >= 30000 && !achievedMilestones.value.has('pts_30k')) {
-      pendingMilestones.value.push({ title: '30,000 Career Points', subtitle: 'Absolute Legend.', icon: '👑' });
+      queueMilestone({ title: '30,000 Career Points', subtitle: 'Absolute Legend.', icon: '👑' });
       achievedMilestones.value.add('pts_30k');
     }
 
     if (ppg >= 35 && !achievedMilestones.value.has('ppg_35')) {
-      pendingMilestones.value.push({ title: 'Scoring Machine', subtitle: `Averaged ${ppg} PPG this season.`, icon: '📈' });
+      queueMilestone({ title: 'Scoring Machine', subtitle: `Averaged ${ppg} PPG this season.`, icon: '📈' });
       achievedMilestones.value.add('ppg_35');
     }
 
     if (awards.includes('MVP') && !achievedMilestones.value.has('first_mvp')) {
-      pendingMilestones.value.push({ title: 'First MVP Award', subtitle: 'The best player in the world.', icon: '⭐' });
+      queueMilestone({ title: 'First MVP Award', subtitle: 'The best player in the world.', icon: '⭐' });
       achievedMilestones.value.add('first_mvp');
     }
     if (wonRing && !achievedMilestones.value.has('first_ring')) {
-      pendingMilestones.value.push({ title: 'NBA Champion', subtitle: 'Your first ring. History made.', icon: '🏆' });
+      queueMilestone({ title: 'NBA Champion', subtitle: 'Your first ring. History made.', icon: '🏆' });
       achievedMilestones.value.add('first_ring');
     }
   };
@@ -367,9 +457,14 @@ export function useGameEngine(
 
   const loadPastCareer = (savedData: SavedCareer) => {
     Object.assign(player.value, savedData.player);
+    player.value.morale ??= 60;
+    player.value.tradeRequestedThisSeason ??= false;
+    player.value.retirementReason ??= null;
     history.value = clone(savedData.history).map(season => ({
       ...season,
       gamesPlayed: season.gamesPlayed ?? 82,
+      morale: season.morale ?? 60,
+      injury: season.injury ?? null,
     }));
     const migratedGames = history.value.reduce(
       (sum, season) => sum + season.gamesPlayed,
@@ -382,6 +477,7 @@ export function useGameEngine(
     };
     freeAgencyOffers.value = [];
     pendingMilestones.value = [];
+    playoffPresentation.value = createPlayoffPresentation();
   };
 
   const forceRetirement = () => {
@@ -398,15 +494,18 @@ export function useGameEngine(
   };
 
   const simulateSeason = () => {
-    if (player.value.isRetired) return;
+    if (player.value.isRetired || playoffPresentation.value.active) return;
 
     leagueTeams.value.forEach(team => {
+      const moraleBoost = team.id === player.value.teamId
+        ? Math.max(-2, Math.min(2.5, (player.value.morale - 50) / 20))
+        : 0;
       const playerImpact = team.id === player.value.teamId
         ? (player.value.ovr - 75) * 0.7
         : 0;
       const expectedWins =
         41 +
-        (team.baseOvr - 78) * 2.2 +
+        (team.baseOvr + moraleBoost - 78) * 2.2 +
         playerImpact;
       const wins = Math.round(expectedWins + (Math.random() + Math.random() - 1) * 7);
       team.wins = Math.max(14, Math.min(70, wins));
@@ -415,7 +514,8 @@ export function useGameEngine(
 
     const playerTeam = leagueTeams.value.find(team => team.id === player.value.teamId);
     const teamWins = playerTeam ? playerTeam.wins : 41;
-    const teamBaseOvr = playerTeam ? playerTeam.baseOvr : 75;
+    const moraleBoost = Math.max(-2, Math.min(2.5, (player.value.morale - 50) / 20));
+    const teamBaseOvr = playerTeam ? playerTeam.baseOvr + moraleBoost : 75;
 
     const seasonStats = calculateSeasonStats(
       player.value.attributes, 
@@ -425,25 +525,28 @@ export function useGameEngine(
       player.value.age
     );
 
+    const injury = simulateInjury(player.value.attributes, player.value.age);
+    const playoffPlayerOvr = injury && injury.gamesMissed >= 31
+      ? Math.max(30, player.value.ovr - 8)
+      : player.value.ovr;
     const seasonPlayoffs = simulatePlayoffs(
-      player.value.ovr,
+      playoffPlayerOvr,
       teamBaseOvr,
       teamWins,
+      seasonStats,
     );
     const ageAvailabilityPenalty = Math.max(0, player.value.age - 30) * 0.7;
     const routineAbsences = Math.floor((Math.random() + Math.random()) * 5);
-    const majorInjuryAbsences = Math.random() < 0.05
-      ? Math.floor(Math.random() * 21) + 15
-      : 0;
+    const injuryAbsences = injury?.gamesMissed ?? 0;
     const gamesPlayed = Math.max(
-      35,
+      injury?.careerEnding ? 0 : 35,
       Math.min(
         82,
         Math.round(
           78 -
           ageAvailabilityPenalty -
           routineAbsences -
-          majorInjuryAbsences,
+          injuryAbsences,
         ),
       ),
     );
@@ -460,14 +563,18 @@ export function useGameEngine(
 
     const npcStars = ['L. Doncic', 'N. Jokic', 'S. Gilgeous-Alexander', 'A. Edwards', 'V. Wembanyama', 'G. Antetokounmpo'];
     const getNPC = () => npcStars[Math.floor(Math.random() * npcStars.length)];
-    const finalsMvpScore =
-      seasonStats.ppg +
-      seasonStats.rpg * 0.7 +
-      seasonStats.apg +
-      seasonStats.spg * 2 +
-      seasonStats.bpg * 2;
+    const playoffAverages = seasonPlayoffs.overallAverages;
+    const finalsMvpScore = playoffAverages
+      ? playoffAverages.points +
+        playoffAverages.rebounds * 0.7 +
+        playoffAverages.assists +
+        playoffAverages.steals * 2 +
+        playoffAverages.blocks * 2
+      : 0;
     const wonFinalsMvp =
       seasonPlayoffs.wonRing &&
+      !injury?.careerEnding &&
+      playoffAverages !== null &&
       finalsMvpScore >= 25 + Math.random() * 13;
 
     if (wonFinalsMvp) {
@@ -482,6 +589,15 @@ export function useGameEngine(
     };
 
     const seasonSalary = player.value.currentSalary || 0;
+    const moraleChange =
+      (teamWins - 41) * 0.18 +
+      (seasonPlayoffs.wonRing ? 10 : 0) +
+      (seasonAwards.includes('MVP') ? 5 : 0) -
+      (!seasonPlayoffs.madePlayoffs ? 4 : 0) -
+      (injury?.severity === 'severe' ? 4 : injury ? 1 : 0);
+    player.value.morale = Math.round(
+      Math.max(0, Math.min(100, player.value.morale + moraleChange)),
+    );
 
     history.value.push({
       seasonNumber: history.value.length + 1,
@@ -492,12 +608,9 @@ export function useGameEngine(
       teamWins,
       teamLosses: 82 - teamWins,
       ...seasonStats,
-      playoffs: {
-        ...seasonPlayoffs,
-        series: [],
-        finalsLog: [],
-        overallAverages: null,
-      },
+      morale: player.value.morale,
+      injury,
+      playoffs: seasonPlayoffs,
       wonRing: seasonPlayoffs.wonRing,
       awards: seasonAwards,
       leagueAwards
@@ -518,13 +631,42 @@ export function useGameEngine(
 
     checkMilestones(seasonAwards, seasonPlayoffs.wonRing, seasonStats.ppg);
 
+    if (injury) {
+      queueMilestone({
+        title: injury.careerEnding ? 'Career-Ending Injury' : injury.name,
+        subtitle: injury.careerEnding
+          ? 'The injury forces an immediate retirement.'
+          : `${injury.gamesMissed} games missed.`,
+        icon: '🏥',
+      });
+    }
+
+    if (
+      seasonPlayoffs.madePlayoffs &&
+      !injury?.careerEnding &&
+      !suppressNotifications &&
+      interactivePlayoffs
+    ) {
+      playoffPresentation.value = {
+        active: true,
+        seriesIndex: 0,
+        currentGame: 0,
+        mode: null,
+        complete: seasonPlayoffs.series.length === 0,
+      };
+    }
+
     applyOffseasonProgression();
+    player.value.tradeRequestedThisSeason = false;
 
     let shouldRetire = false;
     const currentAge = player.value.age;
     const currentOvr = player.value.ovr;
 
-    if (currentAge >= 41) {
+    if (injury?.careerEnding) {
+      player.value.retirementReason = injury.name;
+      shouldRetire = true;
+    } else if (currentAge >= 41) {
       shouldRetire = true; 
     } else if (currentAge >= 39) {
       shouldRetire = currentOvr < 84 || Math.random() > 0.35;
@@ -541,27 +683,79 @@ export function useGameEngine(
     }
   };
 
+  const simulateNextPlayoffSeries = () => {
+    const progress = playoffPresentation.value;
+    const run = history.value.at(-1)?.playoffs;
+    if (
+      !progress.active ||
+      progress.complete ||
+      !run ||
+      (progress.mode === 'games' && progress.currentGame > 0)
+    ) return false;
+
+    progress.seriesIndex++;
+    progress.currentGame = 0;
+    progress.mode = null;
+    progress.complete = progress.seriesIndex >= run.series.length;
+    return true;
+  };
+
+  const simulateNextPlayoffGame = () => {
+    const progress = playoffPresentation.value;
+    const run = history.value.at(-1)?.playoffs;
+    const series = run?.series[progress.seriesIndex];
+    if (!progress.active || progress.complete || !series) return false;
+
+    progress.mode = 'games';
+    progress.currentGame++;
+    if (progress.currentGame >= series.games.length) {
+      progress.seriesIndex++;
+      progress.currentGame = 0;
+      progress.mode = null;
+      progress.complete = progress.seriesIndex >= (run?.series.length ?? 0);
+    }
+    return true;
+  };
+
+  const finishPlayoffPresentation = () => {
+    if (!playoffPresentation.value.complete) return false;
+    playoffPresentation.value.active = false;
+    return true;
+  };
+
   const simulateRemainingCareer = () => {
-    while (!player.value.isRetired) {
-      if (player.value.contractYearsLeft === 0) {
-        generateOffers();
-        if (freeAgencyOffers.value.length > 0) {
-          const bestOffer = freeAgencyOffers.value.reduce((prev, current) => {
-            return (prev.salary * prev.years > current.salary * current.years) ? prev : current;
-          });
-          acceptOffer(bestOffer);
-        } else {
-           forceRetirement();
-           break;
+    suppressNotifications = true;
+    pendingMilestones.value = [];
+    playoffPresentation.value = createPlayoffPresentation();
+    try {
+      while (!player.value.isRetired) {
+        if (player.value.contractYearsLeft === 0) {
+          generateOffers();
+          if (freeAgencyOffers.value.length > 0) {
+            const bestOffer = freeAgencyOffers.value.reduce((prev, current) => {
+              return (prev.salary * prev.years > current.salary * current.years) ? prev : current;
+            });
+            acceptOffer(bestOffer);
+          } else {
+            forceRetirement();
+            break;
+          }
         }
+        simulateSeason();
       }
-      simulateSeason();
+    } finally {
+      pendingMilestones.value = [];
+      playoffPresentation.value = createPlayoffPresentation();
+      suppressNotifications = false;
     }
   };
 
   return { 
     player, history, careerTotals, leagueTeams, freeAgencyOffers, pendingMilestones,
+    lastTransactionMessage, playoffPresentation,
     initCareer, simulateSeason, generateOffers, acceptOffer, forceRetirement,
-    loadPastCareer, simulateRemainingCareer 
+    requestTrade, loadPastCareer, simulateRemainingCareer,
+    simulateNextPlayoffSeries, simulateNextPlayoffGame,
+    finishPlayoffPresentation,
   };
 }
