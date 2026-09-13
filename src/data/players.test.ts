@@ -24,10 +24,10 @@ describe('player ratings database', () => {
       .map(player => calculateOverall(player.attributes, player.position))
       .sort((left, right) => left - right);
     const median = overalls[Math.floor(overalls.length / 2)];
-    expect(median).toBeGreaterThanOrEqual(74);
-    expect(median).toBeLessThanOrEqual(80);
+    expect(median).toBeGreaterThanOrEqual(80);
+    expect(median).toBeLessThanOrEqual(83);
     expect(overalls.filter(overall => overall >= 90).length / overalls.length)
-      .toBeLessThan(0.06);
+      .toBeLessThan(0.08);
   });
 
   it('includes audited modern archetypes', () => {

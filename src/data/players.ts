@@ -22,34 +22,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 76, Dribbling: 75, Defense: 88, IQ: 85, Athleticism: 94, Passing: 82, Rebounding: 85, Speed: 80, Finishing: 86}
   },
 {
-    id: 3,
-    name: 'Aaron Holiday',
-    position: 'PG',
-    age: 29,
-    isRetired: false,
-    career: '2018-present',
-    attributes: {Shooting: 79, Dribbling: 78, Defense: 76, IQ: 77, Athleticism: 75, Passing: 76, Rebounding: 62, Speed: 84, Finishing: 58}
-  },
-{
-    id: 4,
-    name: 'Aaron Nesmith',
-    position: 'SF',
-    age: 26,
-    isRetired: false,
-    career: '2020-present',
-    attributes: {Shooting: 83, Dribbling: 72, Defense: 84, IQ: 78, Athleticism: 82, Passing: 70, Rebounding: 74, Speed: 80, Finishing: 68}
-  },
-{
-    id: 5,
-    name: 'Aaron Wiggins',
-    position: 'SG',
-    age: 27,
-    isRetired: false,
-    career: '2021-present',
-    attributes: {Shooting: 81, Dribbling: 75, Defense: 78, IQ: 79, Athleticism: 78, Passing: 72, Rebounding: 68, Speed: 82, Finishing: 72}
-  },
-
-{
     id: 7,
     name: 'Adrian Dantley',
     position: 'SF',
@@ -68,15 +40,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 82, Dribbling: 78, Defense: 74, IQ: 80, Athleticism: 82, Passing: 72, Rebounding: 80, Speed: 78, Finishing: 72}
   },
 {
-    id: 11,
-    name: 'Al Horford',
-    position: 'C',
-    age: 39,
-    isRetired: false,
-    career: '2007-present',
-    attributes: {Shooting: 83, Dribbling: 68, Defense: 85, IQ: 95, Athleticism: 65, Passing: 84, Rebounding: 78, Speed: 62, Finishing: 64}
-  },
-{
     id: 12,
     name: 'Al Jefferson',
     position: 'C',
@@ -84,34 +47,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: true,
     career: '2004-2018',
     attributes: {Shooting: 85, Dribbling: 65, Defense: 72, IQ: 84, Athleticism: 70, Passing: 70, Rebounding: 90, Speed: 58, Finishing: 85}
-  },
-{
-    id: 13,
-    name: 'Al-Farouq Aminu',
-    position: 'SF',
-    age: 35,
-    isRetired: true,
-    career: '2010-2021',
-    attributes: {Shooting: 72, Dribbling: 68, Defense: 85, IQ: 78, Athleticism: 82, Passing: 68, Rebounding: 84, Speed: 78, Finishing: 58}
-  },
-
-{
-    id: 15,
-    name: 'Alan Henderson',
-    position: 'PF',
-    age: 53,
-    isRetired: true,
-    career: '1995-2007',
-    attributes: {Shooting: 65, Dribbling: 60, Defense: 75, IQ: 78, Athleticism: 78, Passing: 62, Rebounding: 84, Speed: 72, Finishing: 72}
-  },
-{
-    id: 16,
-    name: 'Alec Burks',
-    position: 'SG',
-    age: 34,
-    isRetired: false,
-    career: '2011-present',
-    attributes: {Shooting: 82, Dribbling: 80, Defense: 70, IQ: 78, Athleticism: 75, Passing: 74, Rebounding: 68, Speed: 78, Finishing: 64}
   },
 {
     id: 19,
@@ -140,7 +75,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2013-present',
     attributes: {Shooting: 65, Dribbling: 55, Defense: 76, IQ: 72, Athleticism: 74, Passing: 62, Rebounding: 80, Speed: 60, Finishing: 68}
   },
-
 {
     id: 23,
     name: 'Alperen Şengün',
@@ -160,15 +94,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 84, Dribbling: 72, Defense: 82, IQ: 90, Athleticism: 78, Passing: 86, Rebounding: 88, Speed: 74, Finishing: 78}
   },
 {
-    id: 25,
-    name: 'Amir Coffey',
-    position: 'SF',
-    age: 28,
-    isRetired: false,
-    career: '2019-present',
-    attributes: {Shooting: 80, Dribbling: 74, Defense: 76, IQ: 78, Athleticism: 77, Passing: 72, Rebounding: 66, Speed: 78, Finishing: 68}
-  },
-{
     id: 26,
     name: 'Amir Johnson',
     position: 'PF',
@@ -186,7 +111,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2012-present',
     attributes: {Shooting: 55, Dribbling: 62, Defense: 78, IQ: 70, Athleticism: 82, Passing: 65, Rebounding: 98, Speed: 68, Finishing: 70}
   },
-
 {
     id: 29,
     name: 'Andrea Bargnani',
@@ -231,15 +155,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: false,
     career: '2014-present',
     attributes: {Shooting: 82, Dribbling: 80, Defense: 86, IQ: 80, Athleticism: 88, Passing: 72, Rebounding: 76, Speed: 85, Finishing: 76}
-  },
-{
-    id: 34,
-    name: 'Andris Biedriņš',
-    position: 'C',
-    age: 39,
-    isRetired: true,
-    career: '2004-2014',
-    attributes: {Shooting: 45, Dribbling: 50, Defense: 78, IQ: 74, Athleticism: 78, Passing: 60, Rebounding: 88, Speed: 68, Finishing: 78}
   },
 {
     id: 35,
@@ -296,15 +211,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 88, Dribbling: 92, Defense: 88, IQ: 88, Athleticism: 98, Passing: 84, Rebounding: 78, Speed: 95, Finishing: 86}
   },
 {
-    id: 43,
-    name: 'Arron Afflalo',
-    position: 'SG',
-    age: 40,
-    isRetired: true,
-    career: '2007-2018',
-    attributes: {Shooting: 84, Dribbling: 74, Defense: 82, IQ: 80, Athleticism: 78, Passing: 72, Rebounding: 70, Speed: 76, Finishing: 68}
-  },
-{
     id: 44,
     name: 'Ausar Thompson',
     position: 'SF',
@@ -358,7 +264,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '1989-2000',
     attributes: {Shooting: 88, Dribbling: 84, Defense: 78, IQ: 88, Athleticism: 75, Passing: 82, Rebounding: 60, Speed: 85, Finishing: 60}
   },
-
 {
     id: 53,
     name: 'Bailey Howell',
@@ -404,7 +309,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2022-present',
     attributes: {Shooting: 82, Dribbling: 80, Defense: 74, IQ: 78, Athleticism: 88, Passing: 74, Rebounding: 72, Speed: 88, Finishing: 74}
   },
-
 {
     id: 59,
     name: 'Billy Cunningham',
@@ -413,15 +317,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: true,
     career: '1965-1976',
     attributes: {Shooting: 86, Dribbling: 80, Defense: 85, IQ: 94, Athleticism: 90, Passing: 82, Rebounding: 94, Speed: 85, Finishing: 88}
-  },
-{
-    id: 60,
-    name: 'Bismack Biyombo',
-    position: 'C',
-    age: 33,
-    isRetired: false,
-    career: '2011-present',
-    attributes: {Shooting: 45, Dribbling: 45, Defense: 82, IQ: 76, Athleticism: 78, Passing: 58, Rebounding: 84, Speed: 65, Finishing: 66}
   },
 {
     id: 61,
@@ -442,15 +337,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 82, Dribbling: 85, Defense: 76, IQ: 88, Athleticism: 96, Passing: 86, Rebounding: 88, Speed: 84, Finishing: 88}
   },
 {
-    id: 63,
-    name: 'Blake Wesley',
-    position: 'PG',
-    age: 22,
-    isRetired: false,
-    career: '2022-present',
-    attributes: {Shooting: 70, Dribbling: 78, Defense: 75, IQ: 72, Athleticism: 85, Passing: 74, Rebounding: 62, Speed: 92, Finishing: 58}
-  },
-{
     id: 64,
     name: 'Blue Edwards',
     position: 'SG',
@@ -459,7 +345,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '1989-1999',
     attributes: {Shooting: 80, Dribbling: 76, Defense: 78, IQ: 78, Athleticism: 88, Passing: 70, Rebounding: 72, Speed: 84, Finishing: 74}
   },
-
 {
     id: 66,
     name: 'Bob Dandridge',
@@ -469,16 +354,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '1969-1982',
     attributes: {Shooting: 88, Dribbling: 82, Defense: 88, IQ: 92, Athleticism: 84, Passing: 78, Rebounding: 82, Speed: 84, Finishing: 78}
   },
-{
-    id: 67,
-    name: 'Bob Harrison',
-    position: 'PG',
-    age: 98,
-    isRetired: true,
-    career: '1949-1958',
-    attributes: {Shooting: 72, Dribbling: 78, Defense: 80, IQ: 84, Athleticism: 75, Passing: 78, Rebounding: 64, Speed: 82, Finishing: 55}
-  },
-
 {
     id: 69,
     name: 'Bobby Jackson',
@@ -516,16 +391,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 90, Dribbling: 84, Defense: 72, IQ: 88, Athleticism: 74, Passing: 82, Rebounding: 68, Speed: 78, Finishing: 66}
   },
 {
-    id: 73,
-    name: 'Bojan Bogdanović',
-    position: 'SF',
-    age: 36,
-    isRetired: false,
-    career: '2014-present',
-    attributes: {Shooting: 91, Dribbling: 78, Defense: 65, IQ: 85, Athleticism: 70, Passing: 74, Rebounding: 70, Speed: 72, Finishing: 72}
-  },
-
-{
     id: 75,
     name: 'Bones Hyland',
     position: 'PG',
@@ -562,16 +427,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 82, Dribbling: 82, Defense: 78, IQ: 88, Athleticism: 76, Passing: 84, Rebounding: 80, Speed: 80, Finishing: 68}
   },
 {
-    id: 79,
-    name: 'Brandon Bass',
-    position: 'PF',
-    age: 40,
-    isRetired: true,
-    career: '2005-2017',
-    attributes: {Shooting: 82, Dribbling: 65, Defense: 76, IQ: 78, Athleticism: 82, Passing: 65, Rebounding: 78, Speed: 70, Finishing: 74}
-  },
-
-{
     id: 81,
     name: 'Brandon Ingram',
     position: 'SF',
@@ -588,15 +443,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: true,
     career: '2009-2018',
     attributes: {Shooting: 82, Dribbling: 92, Defense: 70, IQ: 80, Athleticism: 88, Passing: 85, Rebounding: 62, Speed: 92, Finishing: 58}
-  },
-{
-    id: 83,
-    name: 'Brendan Haywood',
-    position: 'C',
-    age: 46,
-    isRetired: true,
-    career: '2001-2015',
-    attributes: {Shooting: 55, Dribbling: 50, Defense: 82, IQ: 76, Athleticism: 78, Passing: 60, Rebounding: 85, Speed: 60, Finishing: 72}
   },
 {
     id: 84,
@@ -616,7 +462,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '1994-2006',
     attributes: {Shooting: 75, Dribbling: 65, Defense: 82, IQ: 84, Athleticism: 82, Passing: 68, Rebounding: 90, Speed: 72, Finishing: 75}
   },
-
 {
     id: 89,
     name: 'Brook Lopez',
@@ -625,15 +470,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: false,
     career: '2008-present',
     attributes: {Shooting: 84, Dribbling: 65, Defense: 92, IQ: 90, Athleticism: 70, Passing: 72, Rebounding: 78, Speed: 62, Finishing: 66}
-  },
-{
-    id: 90,
-    name: 'Bruce Bowen',
-    position: 'SF',
-    age: 54,
-    isRetired: true,
-    career: '1996-2009',
-    attributes: {Shooting: 82, Dribbling: 68, Defense: 96, IQ: 94, Athleticism: 78, Passing: 70, Rebounding: 70, Speed: 82, Finishing: 45}
   },
 {
     id: 91,
@@ -645,42 +481,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 78, Dribbling: 80, Defense: 85, IQ: 88, Athleticism: 84, Passing: 80, Rebounding: 76, Speed: 82, Finishing: 78}
   },
 {
-    id: 92,
-    name: 'Bruno Caboclo',
-    position: 'PF',
-    age: 30,
-    isRetired: true,
-    career: '2014-2021',
-    attributes: {Shooting: 76, Dribbling: 68, Defense: 78, IQ: 70, Athleticism: 82, Passing: 65, Rebounding: 78, Speed: 76, Finishing: 62}
-  },
-{
-    id: 93,
-    name: 'Bruno Fernando',
-    position: 'C',
-    age: 27,
-    isRetired: false,
-    career: '2019-present',
-    attributes: {Shooting: 65, Dribbling: 60, Defense: 75, IQ: 72, Athleticism: 84, Passing: 65, Rebounding: 82, Speed: 70, Finishing: 70}
-  },
-{
-    id: 94,
-    name: 'Buddy Hield',
-    position: 'SG',
-    age: 32,
-    isRetired: false,
-    career: '2016-present',
-    attributes: {Shooting: 95, Dribbling: 78, Defense: 70, IQ: 80, Athleticism: 75, Passing: 72, Rebounding: 70, Speed: 80, Finishing: 48}
-  },
-{
-    id: 95,
-    name: 'Butch Carter',
-    position: 'SG',
-    age: 67,
-    isRetired: true,
-    career: '1980-1986',
-    attributes: {Shooting: 80, Dribbling: 74, Defense: 72, IQ: 82, Athleticism: 75, Passing: 74, Rebounding: 64, Speed: 78, Finishing: 66}
-  },
-{
     id: 96,
     name: 'Cade Cunningham',
     position: 'PG',
@@ -688,15 +488,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: false,
     career: '2021-present',
     attributes: {Shooting: 84, Dribbling: 90, Defense: 82, IQ: 92, Athleticism: 82, Passing: 90, Rebounding: 78, Speed: 85, Finishing: 68}
-  },
-{
-    id: 97,
-    name: 'Calbert Cheaney',
-    position: 'SG',
-    age: 54,
-    isRetired: true,
-    career: '1993-2006',
-    attributes: {Shooting: 82, Dribbling: 76, Defense: 78, IQ: 80, Athleticism: 80, Passing: 72, Rebounding: 70, Speed: 80, Finishing: 66}
   },
 {
     id: 98,
@@ -715,24 +506,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: false,
     career: '2019-present',
     attributes: {Shooting: 80, Dribbling: 78, Defense: 84, IQ: 82, Athleticism: 84, Passing: 72, Rebounding: 74, Speed: 82, Finishing: 72}
-  },
-{
-    id: 100,
-    name: 'Cam Johnson',
-    position: 'PF',
-    age: 29,
-    isRetired: false,
-    career: '2019-present',
-    attributes: {Shooting: 88, Dribbling: 74, Defense: 76, IQ: 82, Athleticism: 78, Passing: 72, Rebounding: 72, Speed: 76, Finishing: 58}
-  },
-{
-    id: 101,
-    name: 'Cam Reddish',
-    position: 'SF',
-    age: 26,
-    isRetired: false,
-    career: '2019-present',
-    attributes: {Shooting: 76, Dribbling: 78, Defense: 82, IQ: 72, Athleticism: 85, Passing: 68, Rebounding: 68, Speed: 84, Finishing: 62}
   },
 {
     id: 102,
@@ -762,15 +535,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 86, Dribbling: 72, Defense: 78, IQ: 88, Athleticism: 84, Passing: 78, Rebounding: 92, Speed: 74, Finishing: 84}
   },
 {
-    id: 107,
-    name: 'Carlos Delfino',
-    position: 'SF',
-    age: 43,
-    isRetired: true,
-    career: '2004-2014',
-    attributes: {Shooting: 84, Dribbling: 78, Defense: 76, IQ: 82, Athleticism: 78, Passing: 75, Rebounding: 70, Speed: 76, Finishing: 63}
-  },
-{
     id: 108,
     name: 'Carmelo Anthony',
     position: 'SF',
@@ -788,7 +552,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2002-2016',
     attributes: {Shooting: 86, Dribbling: 82, Defense: 84, IQ: 88, Athleticism: 85, Passing: 78, Rebounding: 82, Speed: 82, Finishing: 76}
   },
-
 {
     id: 111,
     name: 'Carsen Edwards',
@@ -797,15 +560,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: true,
     career: '2019-2022',
     attributes: {Shooting: 78, Dribbling: 78, Defense: 65, IQ: 70, Athleticism: 82, Passing: 68, Rebounding: 58, Speed: 85, Finishing: 52}
-  },
-{
-    id: 112,
-    name: 'Cedi Osman',
-    position: 'SF',
-    age: 30,
-    isRetired: true,
-    career: '2017-present',
-    attributes: {Shooting: 80, Dribbling: 76, Defense: 72, IQ: 78, Athleticism: 78, Passing: 74, Rebounding: 70, Speed: 78, Finishing: 68}
   },
 {
     id: 113,
@@ -834,7 +588,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2021-present',
     attributes: {Shooting: 62, Dribbling: 55, Defense: 82, IQ: 74, Athleticism: 82, Passing: 64, Rebounding: 84, Speed: 70, Finishing: 72}
   },
-
 {
     id: 117,
     name: 'Charles Johnson',
@@ -863,15 +616,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 84, Dribbling: 78, Defense: 94, IQ: 90, Athleticism: 88, Passing: 76, Rebounding: 86, Speed: 80, Finishing: 83}
   },
 {
-    id: 122,
-    name: 'Chimezie Metu',
-    position: 'PF',
-    age: 28,
-    isRetired: true,
-    career: '2018-present',
-    attributes: {Shooting: 75, Dribbling: 68, Defense: 74, IQ: 72, Athleticism: 82, Passing: 66, Rebounding: 76, Speed: 76, Finishing: 71}
-  },
-{
     id: 123,
     name: 'Chris Andersen',
     position: 'C',
@@ -880,7 +624,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2001-2017',
     attributes: {Shooting: 65, Dribbling: 58, Defense: 85, IQ: 78, Athleticism: 90, Passing: 60, Rebounding: 86, Speed: 74, Finishing: 78}
   },
-
 {
     id: 125,
     name: 'Chris Bosh',
@@ -898,25 +641,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: true,
     career: '1994-2003',
     attributes: {Shooting: 80, Dribbling: 84, Defense: 82, IQ: 85, Athleticism: 78, Passing: 84, Rebounding: 65, Speed: 84, Finishing: 60}
-  },
-{
-    id: 127,
-    name: 'Chris Chiozza',
-    position: 'PG',
-    age: 30,
-    isRetired: true,
-    career: '2018-2022',
-    attributes: {Shooting: 74, Dribbling: 82, Defense: 68, IQ: 76, Athleticism: 74, Passing: 80, Rebounding: 58, Speed: 88, Finishing: 52}
-  },
-
-{
-    id: 129,
-    name: 'Chris Duarte',
-    position: 'SG',
-    age: 28,
-    isRetired: false,
-    career: '2021-present',
-    attributes: {Shooting: 79, Dribbling: 75, Defense: 76, IQ: 77, Athleticism: 78, Passing: 72, Rebounding: 68, Speed: 78, Finishing: 64}
   },
 {
     id: 133,
@@ -945,25 +669,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2022-present',
     attributes: {Shooting: 78, Dribbling: 76, Defense: 82, IQ: 84, Athleticism: 86, Passing: 75, Rebounding: 74, Speed: 84, Finishing: 75}
   },
-
-{
-    id: 137,
-    name: 'Christian Wood',
-    position: 'C',
-    age: 30,
-    isRetired: false,
-    career: '2015-present',
-    attributes: {Shooting: 82, Dribbling: 74, Defense: 68, IQ: 72, Athleticism: 82, Passing: 68, Rebounding: 84, Speed: 74, Finishing: 80}
-  },
-{
-    id: 138,
-    name: 'Chuck Cooper',
-    position: 'SF',
-    age: 99,
-    isRetired: true,
-    career: '1950-1956',
-    attributes: {Shooting: 72, Dribbling: 70, Defense: 82, IQ: 88, Athleticism: 78, Passing: 74, Rebounding: 84, Speed: 72, Finishing: 65}
-  },
 {
     id: 139,
     name: 'Chuck Hayes',
@@ -973,7 +678,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2005-2016',
     attributes: {Shooting: 55, Dribbling: 62, Defense: 88, IQ: 92, Athleticism: 70, Passing: 78, Rebounding: 86, Speed: 62, Finishing: 54}
   },
-
 {
     id: 141,
     name: 'CJ McCollum',
@@ -983,17 +687,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2013-present',
     attributes: {Shooting: 90, Dribbling: 88, Defense: 68, IQ: 88, Athleticism: 78, Passing: 84, Rebounding: 70, Speed: 82, Finishing: 73}
   },
-
-{
-    id: 143,
-    name: 'Clemon Johnson',
-    position: 'C',
-    age: 69,
-    isRetired: true,
-    career: '1978-1988',
-    attributes: {Shooting: 62, Dribbling: 52, Defense: 78, IQ: 78, Athleticism: 76, Passing: 64, Rebounding: 82, Speed: 65, Finishing: 68}
-  },
-
 {
     id: 145,
     name: 'Clint Capela',
@@ -1003,7 +696,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2014-present',
     attributes: {Shooting: 50, Dribbling: 52, Defense: 85, IQ: 80, Athleticism: 82, Passing: 62, Rebounding: 94, Speed: 70, Finishing: 78}
   },
-
 {
     id: 147,
     name: 'Coby White',
@@ -1013,7 +705,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2019-present',
     attributes: {Shooting: 88, Dribbling: 86, Defense: 75, IQ: 84, Athleticism: 84, Passing: 82, Rebounding: 72, Speed: 90, Finishing: 71}
   },
-
 {
     id: 149,
     name: 'Cole Anthony',
@@ -1042,26 +733,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 82, Dribbling: 89, Defense: 84, IQ: 92, Athleticism: 96, Passing: 85, Rebounding: 93, Speed: 84, Finishing: 89}
   },
 {
-    id: 152,
-    name: 'Corey Brewer',
-    position: 'SF',
-    age: 39,
-    isRetired: true,
-    career: '2007-2020',
-    attributes: {Shooting: 72, Dribbling: 74, Defense: 82, IQ: 76, Athleticism: 88, Passing: 70, Rebounding: 72, Speed: 91, Finishing: 74}
-  },
-
-{
-    id: 154,
-    name: 'Cory Alexander',
-    position: 'PG',
-    age: 52,
-    isRetired: true,
-    career: '1995-2005',
-    attributes: {Shooting: 74, Dribbling: 80, Defense: 75, IQ: 77, Athleticism: 82, Passing: 78, Rebounding: 60, Speed: 85, Finishing: 61}
-  },
-
-{
     id: 156,
     name: 'Cory Joseph',
     position: 'PG',
@@ -1070,7 +741,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2011-present',
     attributes: {Shooting: 78, Dribbling: 79, Defense: 77, IQ: 84, Athleticism: 70, Passing: 80, Rebounding: 62, Speed: 75, Finishing: 67}
   },
-
 {
     id: 158,
     name: 'Cristiano Felício',
@@ -1098,17 +768,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2015-present',
     attributes: {Shooting: 88, Dribbling: 89, Defense: 64, IQ: 86, Athleticism: 74, Passing: 88, Rebounding: 65, Speed: 80, Finishing: 63}
   },
-
-{
-    id: 162,
-    name: 'Dahntay Jones',
-    position: 'SF',
-    age: 44,
-    isRetired: true,
-    career: '2003-2017',
-    attributes: {Shooting: 70, Dribbling: 70, Defense: 82, IQ: 75, Athleticism: 85, Passing: 68, Rebounding: 70, Speed: 80, Finishing: 72}
-  },
-
 {
     id: 164,
     name: 'Dale Davis',
@@ -1128,33 +787,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 95, Dribbling: 78, Defense: 74, IQ: 85, Athleticism: 80, Passing: 75, Rebounding: 76, Speed: 80, Finishing: 68}
   },
 {
-    id: 166,
-    name: 'Dalen Terry',
-    position: 'SG',
-    age: 22,
-    isRetired: false,
-    career: '2022-present',
-    attributes: {Shooting: 70, Dribbling: 75, Defense: 79, IQ: 76, Athleticism: 84, Passing: 78, Rebounding: 68, Speed: 85, Finishing: 63}
-  },
-{
-    id: 169,
-    name: 'Dan Dickau',
-    position: 'PG',
-    age: 46,
-    isRetired: true,
-    career: '2002-2008',
-    attributes: {Shooting: 82, Dribbling: 79, Defense: 60, IQ: 80, Athleticism: 68, Passing: 80, Rebounding: 55, Speed: 76, Finishing: 54}
-  },
-{
-    id: 172,
-    name: 'Daniel Gibson',
-    position: 'PG',
-    age: 39,
-    isRetired: true,
-    career: '2006-2013',
-    attributes: {Shooting: 87, Dribbling: 78, Defense: 68, IQ: 77, Athleticism: 75, Passing: 76, Rebounding: 60, Speed: 82, Finishing: 52}
-  },
-{
     id: 173,
     name: 'Daniel Theis',
     position: 'C',
@@ -1164,15 +796,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 75, Dribbling: 68, Defense: 82, IQ: 84, Athleticism: 78, Passing: 74, Rebounding: 78, Speed: 70, Finishing: 72}
   },
 {
-    id: 174,
-    name: 'Danilo Gallinari',
-    position: 'PF',
-    age: 37,
-    isRetired: true,
-    career: '2008-present',
-    attributes: {Shooting: 88, Dribbling: 78, Defense: 68, IQ: 87, Athleticism: 70, Passing: 79, Rebounding: 76, Speed: 65, Finishing: 70}
-  },
-{
     id: 175,
     name: 'Danny Granger',
     position: 'SF',
@@ -1180,34 +803,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: true,
     career: '2005-2015',
     attributes: {Shooting: 89, Dribbling: 82, Defense: 84, IQ: 86, Athleticism: 84, Passing: 76, Rebounding: 80, Speed: 80, Finishing: 75}
-  },
-
-{
-    id: 177,
-    name: 'Danuel House Jr.',
-    position: 'SF',
-    age: 32,
-    isRetired: true,
-    career: '2016-present',
-    attributes: {Shooting: 78, Dribbling: 72, Defense: 76, IQ: 74, Athleticism: 84, Passing: 68, Rebounding: 70, Speed: 82, Finishing: 67}
-  },
-{
-    id: 180,
-    name: 'Dario Šarić',
-    position: 'PF',
-    age: 31,
-    isRetired: false,
-    career: '2016-present',
-    attributes: {Shooting: 79, Dribbling: 76, Defense: 68, IQ: 88, Athleticism: 68, Passing: 84, Rebounding: 80, Speed: 65, Finishing: 69}
-  },
-{
-    id: 181,
-    name: 'Darius Bazley',
-    position: 'PF',
-    age: 25,
-    isRetired: false,
-    career: '2019-present',
-    attributes: {Shooting: 72, Dribbling: 76, Defense: 79, IQ: 72, Athleticism: 86, Passing: 70, Rebounding: 78, Speed: 80, Finishing: 63}
   },
 {
     id: 182,
@@ -1245,7 +840,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '1970-1983',
     attributes: {Shooting: 82, Dribbling: 74, Defense: 94, IQ: 97, Athleticism: 88, Passing: 85, Rebounding: 97, Speed: 82, Finishing: 85}
   },
-
 {
     id: 190,
     name: 'David Greenwood',
@@ -1255,7 +849,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '1979-1991',
     attributes: {Shooting: 75, Dribbling: 68, Defense: 82, IQ: 84, Athleticism: 80, Passing: 72, Rebounding: 89, Speed: 72, Finishing: 73}
   },
-
 {
     id: 192,
     name: 'Dāvis Bertāns',
@@ -1275,15 +868,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 84, Dribbling: 92, Defense: 82, IQ: 88, Athleticism: 93, Passing: 86, Rebounding: 68, Speed: 98, Finishing: 83}
   },
 {
-    id: 194,
-    name: 'De\'Andre Hunter',
-    position: 'SF',
-    age: 27,
-    isRetired: false,
-    career: '2019-present',
-    attributes: {Shooting: 82, Dribbling: 76, Defense: 82, IQ: 80, Athleticism: 80, Passing: 72, Rebounding: 74, Speed: 78, Finishing: 69}
-  },
-{
     id: 195,
     name: 'De\'Anthony Melton',
     position: 'SG',
@@ -1291,15 +875,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: false,
     career: '2018-present',
     attributes: {Shooting: 82, Dribbling: 79, Defense: 88, IQ: 85, Athleticism: 82, Passing: 78, Rebounding: 72, Speed: 84, Finishing: 65}
-  },
-{
-    id: 196,
-    name: 'Dean Wade',
-    position: 'PF',
-    age: 28,
-    isRetired: false,
-    career: '2019-present',
-    attributes: {Shooting: 80, Dribbling: 70, Defense: 82, IQ: 82, Athleticism: 76, Passing: 72, Rebounding: 74, Speed: 75, Finishing: 58}
   },
 {
     id: 197,
@@ -1329,15 +904,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 84, Dribbling: 88, Defense: 86, IQ: 89, Athleticism: 84, Passing: 90, Rebounding: 80, Speed: 88, Finishing: 71}
   },
 {
-    id: 200,
-    name: 'Dell Curry',
-    position: 'SG',
-    age: 61,
-    isRetired: true,
-    career: '1986-2002',
-    attributes: {Shooting: 95, Dribbling: 76, Defense: 70, IQ: 84, Athleticism: 74, Passing: 75, Rebounding: 65, Speed: 76, Finishing: 50}
-  },
-{
     id: 201,
     name: 'DeMar DeRozan',
     position: 'SF',
@@ -1345,15 +911,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: false,
     career: '2009-present',
     attributes: {Shooting: 88, Dribbling: 89, Defense: 74, IQ: 92, Athleticism: 82, Passing: 86, Rebounding: 76, Speed: 79, Finishing: 84}
-  },
-{
-    id: 202,
-    name: 'DeMarre Carroll',
-    position: 'SF',
-    age: 39,
-    isRetired: true,
-    career: '2009-2020',
-    attributes: {Shooting: 78, Dribbling: 72, Defense: 82, IQ: 80, Athleticism: 79, Passing: 70, Rebounding: 78, Speed: 75, Finishing: 64}
   },
 {
     id: 205,
@@ -1382,7 +939,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2017-present',
     attributes: {Shooting: 74, Dribbling: 84, Defense: 85, IQ: 80, Athleticism: 94, Passing: 82, Rebounding: 68, Speed: 92, Finishing: 68}
   },
-
 {
     id: 209,
     name: 'Derek Fisher',
@@ -1392,7 +948,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '1996-2014',
     attributes: {Shooting: 82, Dribbling: 78, Defense: 85, IQ: 94, Athleticism: 74, Passing: 80, Rebounding: 62, Speed: 78, Finishing: 58}
   },
-
 {
     id: 211,
     name: 'Derrick Favors',
@@ -1447,7 +1002,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2015-present',
     attributes: {Shooting: 94, Dribbling: 89, Defense: 78, IQ: 92, Athleticism: 82, Passing: 88, Rebounding: 74, Speed: 84, Finishing: 82}
   },
-
 {
     id: 218,
     name: 'Devin Harris',
@@ -1465,15 +1019,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: false,
     career: '2020-present',
     attributes: {Shooting: 86, Dribbling: 82, Defense: 82, IQ: 84, Athleticism: 80, Passing: 78, Rebounding: 72, Speed: 82, Finishing: 70}
-  },
-{
-    id: 220,
-    name: 'Dewayne Dedmon',
-    position: 'C',
-    age: 36,
-    isRetired: true,
-    career: '2013-2023',
-    attributes: {Shooting: 74, Dribbling: 58, Defense: 76, IQ: 74, Athleticism: 78, Passing: 62, Rebounding: 84, Speed: 65, Finishing: 72}
   },
 {
     id: 221,
@@ -1502,16 +1047,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2018-present',
     attributes: {Shooting: 87, Dribbling: 78, Defense: 82, IQ: 84, Athleticism: 84, Passing: 78, Rebounding: 72, Speed: 84, Finishing: 72}
   },
-
-{
-    id: 228,
-    name: 'Dorian Finney-Smith',
-    position: 'SF',
-    age: 32,
-    isRetired: false,
-    career: '2016-present',
-    attributes: {Shooting: 80, Dribbling: 70, Defense: 84, IQ: 82, Athleticism: 80, Passing: 70, Rebounding: 76, Speed: 76, Finishing: 61}
-  },
 {
     id: 229,
     name: 'Doug Christie',
@@ -1538,16 +1073,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: false,
     career: '2012-present',
     attributes: {Shooting: 75, Dribbling: 78, Defense: 96, IQ: 98, Athleticism: 78, Passing: 91, Rebounding: 88, Speed: 74, Finishing: 66}
-  },
-
-{
-    id: 233,
-    name: 'Drew Eubanks',
-    position: 'C',
-    age: 28,
-    isRetired: false,
-    career: '2018-present',
-    attributes: {Shooting: 65, Dribbling: 62, Defense: 78, IQ: 75, Athleticism: 84, Passing: 68, Rebounding: 80, Speed: 70, Finishing: 75}
   },
 {
     id: 234,
@@ -1577,15 +1102,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 58, Dribbling: 62, Defense: 96, IQ: 88, Athleticism: 98, Passing: 68, Rebounding: 99, Speed: 78, Finishing: 91}
   },
 {
-    id: 239,
-    name: 'Dwight Powell',
-    position: 'C',
-    age: 34,
-    isRetired: false,
-    career: '2014-present',
-    attributes: {Shooting: 72, Dribbling: 65, Defense: 74, IQ: 82, Athleticism: 84, Passing: 70, Rebounding: 76, Speed: 74, Finishing: 80}
-  },
-{
     id: 244,
     name: 'Eddie Griffin',
     position: 'PF',
@@ -1593,24 +1109,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: true,
     career: '2001-2007',
     attributes: {Shooting: 74, Dribbling: 65, Defense: 88, IQ: 72, Athleticism: 88, Passing: 64, Rebounding: 84, Speed: 76, Finishing: 63}
-  },
-{
-    id: 245,
-    name: 'Eddie House',
-    position: 'SG',
-    age: 47,
-    isRetired: true,
-    career: '2000-2011',
-    attributes: {Shooting: 90, Dribbling: 78, Defense: 70, IQ: 80, Athleticism: 75, Passing: 76, Rebounding: 60, Speed: 80, Finishing: 48}
-  },
-{
-    id: 246,
-    name: 'Eddie Johnson (ala)',
-    position: 'SF',
-    age: 66,
-    isRetired: true,
-    career: '1981-1999',
-    attributes: {Shooting: 92, Dribbling: 78, Defense: 68, IQ: 85, Athleticism: 76, Passing: 74, Rebounding: 76, Speed: 75, Finishing: 70}
   },
 {
     id: 247,
@@ -1639,7 +1137,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '1977-1984',
     attributes: {Shooting: 76, Dribbling: 84, Defense: 82, IQ: 88, Athleticism: 78, Passing: 84, Rebounding: 62, Speed: 86, Finishing: 68}
   },
-
 {
     id: 251,
     name: 'Elton Brand',
@@ -1659,15 +1156,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 85, Dribbling: 74, Defense: 93, IQ: 94, Athleticism: 92, Passing: 76, Rebounding: 98, Speed: 78, Finishing: 85}
   },
 {
-    id: 253,
-    name: 'Enes Kanter Freedom',
-    position: 'C',
-    age: 33,
-    isRetired: true,
-    career: '2011-2022',
-    attributes: {Shooting: 75, Dribbling: 66, Defense: 60, IQ: 78, Athleticism: 74, Passing: 68, Rebounding: 95, Speed: 62, Finishing: 82}
-  },
-{
     id: 254,
     name: 'Eric Bledsoe',
     position: 'PG',
@@ -1676,7 +1164,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2010-2022',
     attributes: {Shooting: 78, Dribbling: 84, Defense: 88, IQ: 82, Athleticism: 92, Passing: 82, Rebounding: 76, Speed: 92, Finishing: 80}
   },
-
 {
     id: 256,
     name: 'Eric Gordon',
@@ -1686,7 +1173,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2008-present',
     attributes: {Shooting: 88, Dribbling: 79, Defense: 74, IQ: 84, Athleticism: 78, Passing: 76, Rebounding: 64, Speed: 78, Finishing: 76}
   },
-
 {
     id: 258,
     name: 'Erick Dampier',
@@ -1697,24 +1183,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 55, Dribbling: 50, Defense: 84, IQ: 78, Athleticism: 79, Passing: 58, Rebounding: 88, Speed: 60, Finishing: 72}
   },
 {
-    id: 259,
-    name: 'Ervin Johnson',
-    position: 'C',
-    age: 57,
-    isRetired: true,
-    career: '1993-2006',
-    attributes: {Shooting: 52, Dribbling: 52, Defense: 82, IQ: 76, Athleticism: 78, Passing: 60, Rebounding: 86, Speed: 64, Finishing: 63}
-  },
-{
-    id: 262,
-    name: 'Evan Fournier',
-    position: 'SG',
-    age: 32,
-    isRetired: true,
-    career: '2012-2024',
-    attributes: {Shooting: 85, Dribbling: 80, Defense: 65, IQ: 82, Athleticism: 74, Passing: 78, Rebounding: 68, Speed: 76, Finishing: 69}
-  },
-{
     id: 263,
     name: 'Evan Mobley',
     position: 'PF',
@@ -1722,33 +1190,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: false,
     career: '2021-present',
     attributes: {Shooting: 76, Dribbling: 78, Defense: 92, IQ: 90, Athleticism: 90, Passing: 80, Rebounding: 90, Speed: 82, Finishing: 81}
-  },
-{
-    id: 264,
-    name: 'Festus Ezeli',
-    position: 'C',
-    age: 35,
-    isRetired: true,
-    career: '2012-2016',
-    attributes: {Shooting: 55, Dribbling: 52, Defense: 78, IQ: 74, Athleticism: 80, Passing: 60, Rebounding: 80, Speed: 65, Finishing: 71}
-  },
-{
-    id: 265,
-    name: 'Frank Brickowski',
-    position: 'PF',
-    age: 66,
-    isRetired: true,
-    career: '1984-1997',
-    attributes: {Shooting: 78, Dribbling: 68, Defense: 76, IQ: 82, Athleticism: 74, Passing: 72, Rebounding: 80, Speed: 66, Finishing: 70}
-  },
-{
-    id: 266,
-    name: 'Frank Jackson',
-    position: 'PG',
-    age: 27,
-    isRetired: false,
-    career: '2017-2023',
-    attributes: {Shooting: 80, Dribbling: 78, Defense: 68, IQ: 72, Athleticism: 84, Passing: 70, Rebounding: 62, Speed: 85, Finishing: 66}
   },
 {
     id: 267,
@@ -1786,7 +1227,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2016-present',
     attributes: {Shooting: 85, Dribbling: 86, Defense: 88, IQ: 94, Athleticism: 76, Passing: 87, Rebounding: 70, Speed: 82, Finishing: 58}
   },
-
 {
     id: 272,
     name: 'Gabe Vincent',
@@ -1805,7 +1245,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '1965-1979',
     attributes: {Shooting: 90, Dribbling: 88, Defense: 80, IQ: 94, Athleticism: 82, Passing: 86, Rebounding: 70, Speed: 86, Finishing: 80}
   },
-
 {
     id: 275,
     name: 'Gary Grant',
@@ -1834,15 +1273,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 75, Dribbling: 76, Defense: 92, IQ: 88, Athleticism: 90, Passing: 74, Rebounding: 78, Speed: 88, Finishing: 84}
   },
 {
-    id: 278,
-    name: 'Gary Trent Jr.',
-    position: 'SG',
-    age: 26,
-    isRetired: false,
-    career: '2018-present',
-    attributes: {Shooting: 87, Dribbling: 78, Defense: 78, IQ: 80, Athleticism: 76, Passing: 70, Rebounding: 68, Speed: 80, Finishing: 56}
-  },
-{
     id: 279,
     name: 'George Hill',
     position: 'PG',
@@ -1860,7 +1290,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '1973-1978',
     attributes: {Shooting: 72, Dribbling: 78, Defense: 75, IQ: 95, Athleticism: 70, Passing: 82, Rebounding: 58, Speed: 76, Finishing: 64}
   },
-
 {
     id: 282,
     name: 'Gerald Green',
@@ -1898,15 +1327,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 92, Dribbling: 94, Defense: 76, IQ: 88, Athleticism: 90, Passing: 85, Rebounding: 74, Speed: 92, Finishing: 81}
   },
 {
-    id: 286,
-    name: 'Glen Davis (Big Baby)',
-    position: 'PF',
-    age: 39,
-    isRetired: true,
-    career: '2007-2015',
-    attributes: {Shooting: 74, Dribbling: 68, Defense: 76, IQ: 78, Athleticism: 72, Passing: 68, Rebounding: 84, Speed: 64, Finishing: 70}
-  },
-{
     id: 287,
     name: 'Goga Bitadze',
     position: 'C',
@@ -1925,15 +1345,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 84, Dribbling: 88, Defense: 74, IQ: 92, Athleticism: 78, Passing: 88, Rebounding: 70, Speed: 84, Finishing: 80}
   },
 {
-    id: 289,
-    name: 'Gordan Giriček',
-    position: 'SG',
-    age: 48,
-    isRetired: true,
-    career: '2002-2008',
-    attributes: {Shooting: 84, Dribbling: 78, Defense: 70, IQ: 78, Athleticism: 78, Passing: 72, Rebounding: 68, Speed: 78, Finishing: 66}
-  },
-{
     id: 290,
     name: 'Gordon Hayward',
     position: 'SF',
@@ -1943,15 +1354,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 86, Dribbling: 85, Defense: 78, IQ: 90, Athleticism: 82, Passing: 84, Rebounding: 76, Speed: 80, Finishing: 77}
   },
 {
-    id: 291,
-    name: 'Gorgui Dieng',
-    position: 'C',
-    age: 35,
-    isRetired: true,
-    career: '2013-2023',
-    attributes: {Shooting: 78, Dribbling: 62, Defense: 80, IQ: 82, Athleticism: 74, Passing: 72, Rebounding: 84, Speed: 65, Finishing: 68}
-  },
-{
     id: 292,
     name: 'Grant Hill',
     position: 'SF',
@@ -1959,15 +1361,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: true,
     career: '1994-2013',
     attributes: {Shooting: 84, Dribbling: 94, Defense: 88, IQ: 96, Athleticism: 95, Passing: 92, Rebounding: 85, Speed: 89, Finishing: 85}
-  },
-{
-    id: 293,
-    name: 'Grant Williams',
-    position: 'PF',
-    age: 26,
-    isRetired: false,
-    career: '2019-present',
-    attributes: {Shooting: 82, Dribbling: 72, Defense: 84, IQ: 86, Athleticism: 76, Passing: 76, Rebounding: 74, Speed: 70, Finishing: 59}
   },
 {
     id: 294,
@@ -2006,44 +1399,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 78, Dribbling: 80, Defense: 92, IQ: 92, Athleticism: 97, Passing: 78, Rebounding: 95, Speed: 84, Finishing: 83}
   },
 {
-    id: 300,
-    name: 'Gustavo Ayón',
-    position: 'C',
-    age: 40,
-    isRetired: true,
-    career: '2011-2014',
-    attributes: {Shooting: 65, Dribbling: 58, Defense: 76, IQ: 82, Athleticism: 70, Passing: 74, Rebounding: 84, Speed: 60, Finishing: 73}
-  },
-{
-    id: 301,
-    name: 'Hamidou Diallo',
-    position: 'SG',
-    age: 27,
-    isRetired: false,
-    career: '2018-2024',
-    attributes: {Shooting: 68, Dribbling: 72, Defense: 74, IQ: 68, Athleticism: 94, Passing: 65, Rebounding: 72, Speed: 92, Finishing: 76}
-  },
-
-{
-    id: 303,
-    name: 'Harrison Barnes',
-    position: 'SF',
-    age: 33,
-    isRetired: false,
-    career: '2012-present',
-    attributes: {Shooting: 84, Dribbling: 75, Defense: 76, IQ: 84, Athleticism: 74, Passing: 70, Rebounding: 72, Speed: 72, Finishing: 73}
-  },
-{
-    id: 304,
-    name: 'Harvey Grant',
-    position: 'SF',
-    age: 60,
-    isRetired: true,
-    career: '1988-1999',
-    attributes: {Shooting: 78, Dribbling: 70, Defense: 78, IQ: 80, Athleticism: 82, Passing: 72, Rebounding: 77, Speed: 78, Finishing: 71}
-  },
-
-{
     id: 306,
     name: 'Herb Jones',
     position: 'SF',
@@ -2061,7 +1416,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '1988-2001',
     attributes: {Shooting: 89, Dribbling: 80, Defense: 82, IQ: 85, Athleticism: 78, Passing: 78, Rebounding: 65, Speed: 82, Finishing: 68}
   },
-
 {
     id: 309,
     name: 'Horace Grant',
@@ -2080,16 +1434,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2020-present',
     attributes: {Shooting: 87, Dribbling: 86, Defense: 78, IQ: 85, Athleticism: 78, Passing: 84, Rebounding: 64, Speed: 88, Finishing: 66}
   },
-
-{
-    id: 315,
-    name: 'Isaac Okoro',
-    position: 'SF',
-    age: 24,
-    isRetired: false,
-    career: '2020-present',
-    attributes: {Shooting: 76, Dribbling: 70, Defense: 88, IQ: 78, Athleticism: 86, Passing: 68, Rebounding: 65, Speed: 85, Finishing: 72}
-  },
 {
     id: 316,
     name: 'Isaiah Hartenstein',
@@ -2099,17 +1443,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2018-present',
     attributes: {Shooting: 72, Dribbling: 68, Defense: 88, IQ: 92, Athleticism: 78, Passing: 86, Rebounding: 92, Speed: 68, Finishing: 78}
   },
-
-{
-    id: 318,
-    name: 'Isaiah Joe',
-    position: 'SG',
-    age: 26,
-    isRetired: false,
-    career: '2020-present',
-    attributes: {Shooting: 93, Dribbling: 74, Defense: 75, IQ: 80, Athleticism: 74, Passing: 68, Rebounding: 58, Speed: 82, Finishing: 45}
-  },
-
 {
     id: 320,
     name: 'Isaiah Stewart',
@@ -2138,16 +1471,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 80, Dribbling: 86, Defense: 62, IQ: 94, Athleticism: 70, Passing: 88, Rebounding: 54, Speed: 84, Finishing: 64}
   },
 {
-    id: 323,
-    name: 'J.J. Hickson',
-    position: 'PF',
-    age: 36,
-    isRetired: true,
-    career: '2008-2016',
-    attributes: {Shooting: 64, Dribbling: 62, Defense: 68, IQ: 66, Athleticism: 88, Passing: 58, Rebounding: 90, Speed: 74, Finishing: 75}
-  },
-
-{
     id: 325,
     name: 'Ja Morant',
     position: 'PG',
@@ -2166,16 +1489,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 84, Dribbling: 70, Defense: 84, IQ: 78, Athleticism: 82, Passing: 65, Rebounding: 85, Speed: 75, Finishing: 64}
   },
 {
-    id: 327,
-    name: 'Jabari Walker',
-    position: 'PF',
-    age: 23,
-    isRetired: false,
-    career: '2022-present',
-    attributes: {Shooting: 74, Dribbling: 68, Defense: 76, IQ: 74, Athleticism: 78, Passing: 64, Rebounding: 86, Speed: 72, Finishing: 66}
-  },
-
-{
     id: 329,
     name: 'Jaden Ivey',
     position: 'SG',
@@ -2184,7 +1497,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2022-present',
     attributes: {Shooting: 80, Dribbling: 88, Defense: 75, IQ: 78, Athleticism: 94, Passing: 82, Rebounding: 64, Speed: 96, Finishing: 74}
   },
-
 {
     id: 331,
     name: 'Jae Crowder',
@@ -2248,16 +1560,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2021-present',
     attributes: {Shooting: 80, Dribbling: 84, Defense: 82, IQ: 84, Athleticism: 90, Passing: 82, Rebounding: 88, Speed: 85, Finishing: 78}
   },
-
-{
-    id: 339,
-    name: 'Jalen Smith',
-    position: 'PF',
-    age: 25,
-    isRetired: false,
-    career: '2020-present',
-    attributes: {Shooting: 82, Dribbling: 65, Defense: 78, IQ: 75, Athleticism: 80, Passing: 62, Rebounding: 84, Speed: 70, Finishing: 68}
-  },
 {
     id: 340,
     name: 'Jalen Suggs',
@@ -2295,16 +1597,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 90, Dribbling: 90, Defense: 78, IQ: 90, Athleticism: 82, Passing: 88, Rebounding: 68, Speed: 84, Finishing: 79}
   },
 {
-    id: 347,
-    name: 'James Edwards',
-    position: 'C',
-    age: 69,
-    isRetired: true,
-    career: '1977-1996',
-    attributes: {Shooting: 84, Dribbling: 58, Defense: 76, IQ: 82, Athleticism: 75, Passing: 65, Rebounding: 80, Speed: 60, Finishing: 78}
-  },
-
-{
     id: 349,
     name: 'James Harden',
     position: 'PG',
@@ -2313,26 +1605,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2009-present',
     attributes: {Shooting: 89, Dribbling: 96, Defense: 72, IQ: 97, Athleticism: 75, Passing: 96, Rebounding: 78, Speed: 80, Finishing: 86}
   },
-{
-    id: 350,
-    name: 'James Johnson',
-    position: 'PF',
-    age: 38,
-    isRetired: false,
-    career: '2009-present',
-    attributes: {Shooting: 72, Dribbling: 78, Defense: 82, IQ: 84, Athleticism: 78, Passing: 80, Rebounding: 70, Speed: 72, Finishing: 73}
-  },
-
-{
-    id: 352,
-    name: 'James Wiseman',
-    position: 'C',
-    age: 24,
-    isRetired: false,
-    career: '2020-present',
-    attributes: {Shooting: 68, Dribbling: 62, Defense: 74, IQ: 68, Athleticism: 90, Passing: 60, Rebounding: 84, Speed: 74, Finishing: 68}
-  },
-
 {
     id: 354,
     name: 'Jarace Walker',
@@ -2351,7 +1623,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2007-2021',
     attributes: {Shooting: 82, Dribbling: 65, Defense: 74, IQ: 94, Athleticism: 62, Passing: 78, Rebounding: 68, Speed: 60, Finishing: 56}
   },
-
 {
     id: 357,
     name: 'Jaren Jackson Jr.',
@@ -2389,16 +1660,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 50, Dribbling: 45, Defense: 82, IQ: 85, Athleticism: 68, Passing: 62, Rebounding: 74, Speed: 55, Finishing: 55}
   },
 {
-    id: 363,
-    name: 'Jason Hart',
-    position: 'PG',
-    age: 47,
-    isRetired: true,
-    career: '2000-2010',
-    attributes: {Shooting: 74, Dribbling: 80, Defense: 78, IQ: 82, Athleticism: 72, Passing: 82, Rebounding: 60, Speed: 84, Finishing: 58}
-  },
-
-{
     id: 365,
     name: 'JaVale McGee',
     position: 'C',
@@ -2426,15 +1687,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 62, Dribbling: 64, Defense: 78, IQ: 70, Athleticism: 94, Passing: 62, Rebounding: 82, Speed: 78, Finishing: 74}
   },
 {
-    id: 368,
-    name: 'Jaylen Adams',
-    position: 'PG',
-    age: 29,
-    isRetired: false,
-    career: '2018-2021',
-    attributes: {Shooting: 78, Dribbling: 82, Defense: 70, IQ: 76, Athleticism: 74, Passing: 80, Rebounding: 58, Speed: 84, Finishing: 55}
-  },
-{
     id: 369,
     name: 'Jaylen Brown',
     position: 'SG',
@@ -2442,15 +1694,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: false,
     career: '2016-present',
     attributes: {Shooting: 88, Dribbling: 88, Defense: 92, IQ: 88, Athleticism: 94, Passing: 80, Rebounding: 78, Speed: 90, Finishing: 82}
-  },
-{
-    id: 370,
-    name: 'Jaylin Williams',
-    position: 'C',
-    age: 23,
-    isRetired: false,
-    career: '2022-present',
-    attributes: {Shooting: 78, Dribbling: 70, Defense: 80, IQ: 92, Athleticism: 72, Passing: 82, Rebounding: 78, Speed: 66, Finishing: 64}
   },
 {
     id: 371,
@@ -2471,15 +1714,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 52, Dribbling: 48, Defense: 84, IQ: 85, Athleticism: 76, Passing: 65, Rebounding: 94, Speed: 60, Finishing: 61}
   },
 {
-    id: 375,
-    name: 'Jeff Green',
-    position: 'PF',
-    age: 39,
-    isRetired: false,
-    career: '2007-present',
-    attributes: {Shooting: 78, Dribbling: 74, Defense: 75, IQ: 85, Athleticism: 80, Passing: 74, Rebounding: 70, Speed: 74, Finishing: 75}
-  },
-{
     id: 376,
     name: 'Jerami Grant',
     position: 'PF',
@@ -2498,24 +1732,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 74, Dribbling: 78, Defense: 86, IQ: 88, Athleticism: 86, Passing: 80, Rebounding: 80, Speed: 82, Finishing: 68}
   },
 {
-    id: 378,
-    name: 'Jericho Sims',
-    position: 'C',
-    age: 27,
-    isRetired: false,
-    career: '2021-present',
-    attributes: {Shooting: 50, Dribbling: 52, Defense: 78, IQ: 72, Athleticism: 96, Passing: 58, Rebounding: 82, Speed: 76, Finishing: 70}
-  },
-{
-    id: 379,
-    name: 'Jermaine Jackson',
-    position: 'PG',
-    age: 49,
-    isRetired: true,
-    career: '1999-2006',
-    attributes: {Shooting: 70, Dribbling: 80, Defense: 72, IQ: 76, Athleticism: 74, Passing: 78, Rebounding: 58, Speed: 84, Finishing: 55}
-  },
-{
     id: 383,
     name: 'Jevon Carter',
     position: 'PG',
@@ -2524,7 +1740,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2018-present',
     attributes: {Shooting: 84, Dribbling: 76, Defense: 88, IQ: 84, Athleticism: 74, Passing: 75, Rebounding: 62, Speed: 82, Finishing: 55}
   },
-
 {
     id: 385,
     name: 'Jim Jackson',
@@ -2553,15 +1768,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 78, Dribbling: 82, Defense: 74, IQ: 80, Athleticism: 84, Passing: 78, Rebounding: 78, Speed: 76, Finishing: 70}
   },
 {
-    id: 390,
-    name: 'Joe Ingles',
-    position: 'SF',
-    age: 38,
-    isRetired: false,
-    career: '2014-present',
-    attributes: {Shooting: 86, Dribbling: 78, Defense: 74, IQ: 96, Athleticism: 62, Passing: 88, Rebounding: 68, Speed: 64, Finishing: 63}
-  },
-{
     id: 391,
     name: 'Joe Johnson',
     position: 'SG',
@@ -2570,7 +1776,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2001-2022',
     attributes: {Shooting: 92, Dribbling: 94, Defense: 78, IQ: 90, Athleticism: 80, Passing: 84, Rebounding: 74, Speed: 78, Finishing: 76}
   },
-
 {
     id: 393,
     name: 'Joel Embiid',
@@ -2580,17 +1785,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2014-present',
     attributes: {Shooting: 90, Dribbling: 85, Defense: 94, IQ: 94, Athleticism: 88, Passing: 84, Rebounding: 96, Speed: 74, Finishing: 92}
   },
-
-{
-    id: 395,
-    name: 'John Barnhill',
-    position: 'PG',
-    age: 87,
-    isRetired: true,
-    career: '1962-1972',
-    attributes: {Shooting: 75, Dribbling: 78, Defense: 72, IQ: 80, Athleticism: 76, Passing: 82, Rebounding: 60, Speed: 84, Finishing: 62}
-  },
-
 {
     id: 397,
     name: 'John Collins',
@@ -2599,15 +1793,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: false,
     career: '2017-present',
     attributes: {Shooting: 82, Dribbling: 70, Defense: 76, IQ: 78, Athleticism: 90, Passing: 68, Rebounding: 88, Speed: 76, Finishing: 79}
-  },
-{
-    id: 398,
-    name: 'John Crotty',
-    position: 'PG',
-    age: 56,
-    isRetired: true,
-    career: '1992-2003',
-    attributes: {Shooting: 78, Dribbling: 78, Defense: 70, IQ: 85, Athleticism: 65, Passing: 82, Rebounding: 55, Speed: 76, Finishing: 55}
   },
 {
     id: 399,
@@ -2636,7 +1821,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '1970-1982',
     attributes: {Shooting: 78, Dribbling: 78, Defense: 80, IQ: 85, Athleticism: 78, Passing: 84, Rebounding: 76, Speed: 75, Finishing: 72}
   },
-
 {
     id: 403,
     name: 'Johnny Green',
@@ -2646,16 +1830,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '1959-1973',
     attributes: {Shooting: 65, Dribbling: 60, Defense: 82, IQ: 84, Athleticism: 92, Passing: 68, Rebounding: 94, Speed: 78, Finishing: 83}
   },
-{
-    id: 404,
-    name: 'Jon Barry',
-    position: 'SG',
-    age: 56,
-    isRetired: true,
-    career: '1992-2006',
-    attributes: {Shooting: 86, Dribbling: 76, Defense: 72, IQ: 85, Athleticism: 72, Passing: 80, Rebounding: 62, Speed: 78, Finishing: 58}
-  },
-
 {
     id: 406,
     name: 'Jonas Valančiūnas',
@@ -2674,7 +1848,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2021-present',
     attributes: {Shooting: 78, Dribbling: 80, Defense: 84, IQ: 78, Athleticism: 96, Passing: 72, Rebounding: 76, Speed: 88, Finishing: 82}
   },
-
 {
     id: 409,
     name: 'Jordan Clarkson',
@@ -2683,15 +1856,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: false,
     career: '2014-present',
     attributes: {Shooting: 86, Dribbling: 88, Defense: 68, IQ: 82, Athleticism: 78, Passing: 78, Rebounding: 68, Speed: 85, Finishing: 72}
-  },
-{
-    id: 410,
-    name: 'Jordan Crawford',
-    position: 'SG',
-    age: 37,
-    isRetired: true,
-    career: '2010-2018',
-    attributes: {Shooting: 84, Dribbling: 86, Defense: 65, IQ: 78, Athleticism: 80, Passing: 78, Rebounding: 62, Speed: 84, Finishing: 66}
   },
 {
     id: 411,
@@ -2703,16 +1867,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 82, Dribbling: 84, Defense: 72, IQ: 84, Athleticism: 80, Passing: 82, Rebounding: 60, Speed: 86, Finishing: 63}
   },
 {
-    id: 412,
-    name: 'Jordan Hill',
-    position: 'C',
-    age: 38,
-    isRetired: true,
-    career: '2009-2017',
-    attributes: {Shooting: 68, Dribbling: 60, Defense: 74, IQ: 70, Athleticism: 82, Passing: 58, Rebounding: 88, Speed: 68, Finishing: 71}
-  },
-
-{
     id: 414,
     name: 'Jordan Poole',
     position: 'SG',
@@ -2720,15 +1874,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: false,
     career: '2019-present',
     attributes: {Shooting: 84, Dribbling: 92, Defense: 65, IQ: 75, Athleticism: 82, Passing: 84, Rebounding: 62, Speed: 88, Finishing: 71}
-  },
-{
-    id: 415,
-    name: 'Jorge Gutiérrez',
-    position: 'PG',
-    age: 36,
-    isRetired: true,
-    career: '2013-2016',
-    attributes: {Shooting: 70, Dribbling: 78, Defense: 78, IQ: 82, Athleticism: 72, Passing: 78, Rebounding: 60, Speed: 80, Finishing: 57}
   },
 {
     id: 416,
@@ -2757,7 +1902,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2021-present',
     attributes: {Shooting: 76, Dribbling: 85, Defense: 74, IQ: 94, Athleticism: 78, Passing: 94, Rebounding: 84, Speed: 80, Finishing: 72}
   },
-
 {
     id: 420,
     name: 'Josh Green',
@@ -2767,7 +1911,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2020-present',
     attributes: {Shooting: 80, Dribbling: 74, Defense: 82, IQ: 80, Athleticism: 88, Passing: 75, Rebounding: 68, Speed: 90, Finishing: 74}
   },
-
 {
     id: 422,
     name: 'Josh Hart',
@@ -2785,15 +1928,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: true,
     career: '2003-2013',
     attributes: {Shooting: 82, Dribbling: 82, Defense: 85, IQ: 84, Athleticism: 86, Passing: 76, Rebounding: 80, Speed: 82, Finishing: 75}
-  },
-{
-    id: 424,
-    name: 'Josh Jackson',
-    position: 'SF',
-    age: 28,
-    isRetired: false,
-    career: '2017-2022',
-    attributes: {Shooting: 72, Dribbling: 78, Defense: 78, IQ: 70, Athleticism: 90, Passing: 72, Rebounding: 70, Speed: 88, Finishing: 64}
   },
 {
     id: 425,
@@ -2822,7 +1956,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '1976-1987',
     attributes: {Shooting: 88, Dribbling: 92, Defense: 90, IQ: 94, Athleticism: 99, Passing: 88, Rebounding: 88, Speed: 96, Finishing: 96}
   },
-
 {
     id: 432,
     name: 'Julius Randle',
@@ -2832,17 +1965,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2014-present',
     attributes: {Shooting: 84, Dribbling: 84, Defense: 78, IQ: 88, Athleticism: 88, Passing: 85, Rebounding: 94, Speed: 76, Finishing: 81}
   },
-
-{
-    id: 434,
-    name: 'Justin Holiday',
-    position: 'SG',
-    age: 36,
-    isRetired: false,
-    career: '2012-present',
-    attributes: {Shooting: 82, Dribbling: 74, Defense: 82, IQ: 84, Athleticism: 76, Passing: 72, Rebounding: 64, Speed: 78, Finishing: 58}
-  },
-
 {
     id: 436,
     name: 'Jusuf Nurkić',
@@ -2871,16 +1993,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 68, Dribbling: 82, Defense: 96, IQ: 98, Athleticism: 84, Passing: 88, Rebounding: 65, Speed: 88, Finishing: 61}
   },
 {
-    id: 439,
-    name: 'Kai Jones',
-    position: 'PF',
-    age: 24,
-    isRetired: false,
-    career: '2021-present',
-    attributes: {Shooting: 70, Dribbling: 74, Defense: 76, IQ: 68, Athleticism: 95, Passing: 62, Rebounding: 78, Speed: 86, Finishing: 68}
-  },
-
-{
     id: 441,
     name: 'Kareem Abdul-Jabbar',
     position: 'C',
@@ -2897,15 +2009,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: false,
     career: '2011-present',
     attributes: {Shooting: 94, Dribbling: 90, Defense: 98, IQ: 97, Athleticism: 88, Passing: 84, Rebounding: 84, Speed: 82, Finishing: 89}
-  },
-{
-    id: 443,
-    name: 'Keita Bates-Diop',
-    position: 'SF',
-    age: 29,
-    isRetired: false,
-    career: '2018-present',
-    attributes: {Shooting: 78, Dribbling: 72, Defense: 78, IQ: 80, Athleticism: 78, Passing: 68, Rebounding: 72, Speed: 74, Finishing: 67}
   },
 {
     id: 444,
@@ -2934,7 +2037,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2011-2023',
     attributes: {Shooting: 88, Dribbling: 96, Defense: 65, IQ: 92, Athleticism: 82, Passing: 88, Rebounding: 58, Speed: 94, Finishing: 73}
   },
-
 {
     id: 448,
     name: 'Kenneth Faried',
@@ -2953,25 +2055,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '1991-2005',
     attributes: {Shooting: 84, Dribbling: 96, Defense: 78, IQ: 92, Athleticism: 85, Passing: 94, Rebounding: 60, Speed: 92, Finishing: 74}
   },
-
-{
-    id: 451,
-    name: 'Kentavious Caldwell-Pope',
-    position: 'SG',
-    age: 32,
-    isRetired: false,
-    career: '2013-present',
-    attributes: {Shooting: 84, Dribbling: 70, Defense: 86, IQ: 84, Athleticism: 76, Passing: 70, Rebounding: 65, Speed: 78, Finishing: 69}
-  },
-{
-    id: 452,
-    name: 'Kenyon Martin Jr.',
-    position: 'SF',
-    age: 24,
-    isRetired: false,
-    career: '2020-present',
-    attributes: {Shooting: 70, Dribbling: 72, Defense: 71, IQ: 70, Athleticism: 91, Passing: 66, Rebounding: 73, Speed: 84, Finishing: 81}
-  },
 {
     id: 453,
     name: 'Keon Clark',
@@ -2982,16 +2065,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 62, Dribbling: 58, Defense: 80, IQ: 72, Athleticism: 88, Passing: 60, Rebounding: 82, Speed: 76, Finishing: 75}
   },
 {
-    id: 454,
-    name: 'Keon Johnson',
-    position: 'SG',
-    age: 23,
-    isRetired: false,
-    career: '2021-present',
-    attributes: {Shooting: 72, Dribbling: 75, Defense: 74, IQ: 68, Athleticism: 94, Passing: 69, Rebounding: 64, Speed: 89, Finishing: 65}
-  },
-
-{
     id: 456,
     name: 'Kevin Durant',
     position: 'PF',
@@ -2999,15 +2072,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: false,
     career: '2007-present',
     attributes: {Shooting: 98, Dribbling: 92, Defense: 82, IQ: 96, Athleticism: 85, Passing: 85, Rebounding: 76, Speed: 81, Finishing: 91}
-  },
-{
-    id: 457,
-    name: 'Kevin Edwards',
-    position: 'SG',
-    age: 60,
-    isRetired: true,
-    career: '1988-2001',
-    attributes: {Shooting: 77, Dribbling: 76, Defense: 74, IQ: 75, Athleticism: 78, Passing: 73, Rebounding: 64, Speed: 79, Finishing: 68}
   },
 {
     id: 458,
@@ -3019,15 +2083,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 84, Dribbling: 82, Defense: 99, IQ: 98, Athleticism: 92, Passing: 86, Rebounding: 97, Speed: 84, Finishing: 86}
   },
 {
-    id: 459,
-    name: 'Kevin Huerter',
-    position: 'SG',
-    age: 27,
-    isRetired: false,
-    career: '2018-present',
-    attributes: {Shooting: 85, Dribbling: 76, Defense: 70, IQ: 79, Athleticism: 74, Passing: 78, Rebounding: 66, Speed: 77, Finishing: 63}
-  },
-{
     id: 460,
     name: 'Kevin Johnson',
     position: 'PG',
@@ -3036,7 +2091,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '1987-2000',
     attributes: {Shooting: 80, Dribbling: 93, Defense: 78, IQ: 92, Athleticism: 94, Passing: 95, Rebounding: 64, Speed: 95, Finishing: 84}
   },
-
 {
     id: 462,
     name: 'Kevin Knox II',
@@ -3092,24 +2146,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 90, Dribbling: 82, Defense: 78, IQ: 88, Athleticism: 72, Passing: 84, Rebounding: 70, Speed: 74, Finishing: 74}
   },
 {
-    id: 468,
-    name: 'Killian Hayes',
-    position: 'PG',
-    age: 24,
-    isRetired: false,
-    career: '2020-present',
-    attributes: {Shooting: 66, Dribbling: 78, Defense: 77, IQ: 75, Athleticism: 74, Passing: 82, Rebounding: 64, Speed: 80, Finishing: 54}
-  },
-{
-    id: 469,
-    name: 'Klay Thompson',
-    position: 'SG',
-    age: 35,
-    isRetired: false,
-    career: '2011-present',
-    attributes: {Shooting: 94, Dribbling: 72, Defense: 76, IQ: 90, Athleticism: 70, Passing: 72, Rebounding: 66, Speed: 74, Finishing: 62}
-  },
-{
     id: 470,
     name: 'Kobe Bryant',
     position: 'SG',
@@ -3126,15 +2162,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: false,
     career: '2016-present',
     attributes: {Shooting: 72, Dribbling: 78, Defense: 88, IQ: 80, Athleticism: 82, Passing: 78, Rebounding: 68, Speed: 84, Finishing: 61}
-  },
-{
-    id: 474,
-    name: 'Kyle Anderson',
-    position: 'PF',
-    age: 32,
-    isRetired: false,
-    career: '2014-present',
-    attributes: {Shooting: 74, Dribbling: 80, Defense: 84, IQ: 95, Athleticism: 62, Passing: 86, Rebounding: 74, Speed: 60, Finishing: 68}
   },
 {
     id: 475,
@@ -3199,7 +2226,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2017-present',
     attributes: {Shooting: 91, Dribbling: 78, Defense: 74, IQ: 85, Athleticism: 82, Passing: 72, Rebounding: 86, Speed: 76, Finishing: 81}
   },
-
 {
     id: 485,
     name: 'LeBron James',
@@ -3208,16 +2234,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: false,
     career: '2003-present',
     attributes: {Shooting: 88, Dribbling: 92, Defense: 84, IQ: 99, Athleticism: 88, Passing: 97, Rebounding: 85, Speed: 84, Finishing: 95}
-  },
-
-{
-    id: 487,
-    name: 'Leroy Ellis',
-    position: 'C',
-    age: 85,
-    isRetired: true,
-    career: '1962-1976',
-    attributes: {Shooting: 68, Dribbling: 50, Defense: 76, IQ: 78, Athleticism: 72, Passing: 62, Rebounding: 88, Speed: 64, Finishing: 71}
   },
 {
     id: 488,
@@ -3247,15 +2263,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 82, Dribbling: 82, Defense: 88, IQ: 94, Athleticism: 78, Passing: 92, Rebounding: 78, Speed: 82, Finishing: 59}
   },
 {
-    id: 494,
-    name: 'Lucious Harris',
-    position: 'SG',
-    age: 55,
-    isRetired: true,
-    career: '1993-2005',
-    attributes: {Shooting: 80, Dribbling: 75, Defense: 74, IQ: 78, Athleticism: 76, Passing: 74, Rebounding: 64, Speed: 78, Finishing: 65}
-  },
-{
     id: 495,
     name: 'Luguentz Dort',
     position: 'SG',
@@ -3272,15 +2279,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: false,
     career: '2018-present',
     attributes: {Shooting: 92, Dribbling: 98, Defense: 78, IQ: 99, Athleticism: 80, Passing: 98, Rebounding: 88, Speed: 82, Finishing: 91}
-  },
-{
-    id: 499,
-    name: 'Luke Kornet',
-    position: 'C',
-    age: 30,
-    isRetired: false,
-    career: '2017-present',
-    attributes: {Shooting: 72, Dribbling: 62, Defense: 78, IQ: 85, Athleticism: 70, Passing: 75, Rebounding: 78, Speed: 64, Finishing: 71}
   },
 {
     id: 500,
@@ -3319,15 +2317,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 88, Dribbling: 84, Defense: 82, IQ: 94, Athleticism: 74, Passing: 86, Rebounding: 72, Speed: 76, Finishing: 74}
   },
 {
-    id: 510,
-    name: 'Malik Beasley',
-    position: 'SG',
-    age: 29,
-    isRetired: false,
-    career: '2016-present',
-    attributes: {Shooting: 88, Dribbling: 76, Defense: 70, IQ: 76, Athleticism: 82, Passing: 70, Rebounding: 66, Speed: 80, Finishing: 55}
-  },
-{
     id: 511,
     name: 'Manu Ginóbili',
     position: 'SG',
@@ -3345,7 +2334,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2008-2021',
     attributes: {Shooting: 82, Dribbling: 74, Defense: 94, IQ: 98, Athleticism: 65, Passing: 91, Rebounding: 88, Speed: 62, Finishing: 76}
   },
-
 {
     id: 514,
     name: 'Marcin Gortat',
@@ -3364,7 +2352,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2014-present',
     attributes: {Shooting: 78, Dribbling: 82, Defense: 94, IQ: 92, Athleticism: 82, Passing: 84, Rebounding: 70, Speed: 82, Finishing: 62}
   },
-
 {
     id: 517,
     name: 'Mario Elie',
@@ -3375,15 +2362,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 82, Dribbling: 76, Defense: 85, IQ: 88, Athleticism: 78, Passing: 76, Rebounding: 68, Speed: 78, Finishing: 68}
   },
 {
-    id: 518,
-    name: 'Mario Hezonja',
-    position: 'SF',
-    age: 30,
-    isRetired: true,
-    career: '2015-2020',
-    attributes: {Shooting: 78, Dribbling: 80, Defense: 68, IQ: 72, Athleticism: 88, Passing: 72, Rebounding: 74, Speed: 82, Finishing: 64}
-  },
-{
     id: 521,
     name: 'Mark Jackson',
     position: 'PG',
@@ -3392,7 +2370,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '1987-2004',
     attributes: {Shooting: 75, Dribbling: 88, Defense: 78, IQ: 98, Athleticism: 65, Passing: 97, Rebounding: 74, Speed: 72, Finishing: 72}
   },
-
 {
     id: 523,
     name: 'Mark Williams',
@@ -3411,7 +2388,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2017-present',
     attributes: {Shooting: 70, Dribbling: 88, Defense: 78, IQ: 84, Athleticism: 84, Passing: 86, Rebounding: 68, Speed: 85, Finishing: 73}
   },
-
 {
     id: 526,
     name: 'Marques Johnson',
@@ -3420,15 +2396,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: true,
     career: '1977-1989',
     attributes: {Shooting: 84, Dribbling: 85, Defense: 82, IQ: 92, Athleticism: 90, Passing: 88, Rebounding: 84, Speed: 84, Finishing: 84}
-  },
-{
-    id: 527,
-    name: 'Marvin Bagley III',
-    position: 'C',
-    age: 26,
-    isRetired: false,
-    career: '2018-present',
-    attributes: {Shooting: 74, Dribbling: 72, Defense: 66, IQ: 68, Athleticism: 86, Passing: 64, Rebounding: 84, Speed: 76, Finishing: 75}
   },
 {
     id: 528,
@@ -3449,24 +2416,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 62, Dribbling: 70, Defense: 74, IQ: 84, Athleticism: 78, Passing: 85, Rebounding: 84, Speed: 70, Finishing: 74}
   },
 {
-    id: 530,
-    name: 'Matisse Thybulle',
-    position: 'SF',
-    age: 28,
-    isRetired: false,
-    career: '2019-present',
-    attributes: {Shooting: 74, Dribbling: 68, Defense: 92, IQ: 84, Athleticism: 84, Passing: 66, Rebounding: 64, Speed: 82, Finishing: 54}
-  },
-{
-    id: 531,
-    name: 'Matt Barnes',
-    position: 'SF',
-    age: 45,
-    isRetired: true,
-    career: '2003-2017',
-    attributes: {Shooting: 78, Dribbling: 74, Defense: 82, IQ: 85, Athleticism: 78, Passing: 76, Rebounding: 74, Speed: 76, Finishing: 66}
-  },
-{
     id: 532,
     name: 'Matt Bonner',
     position: 'PF',
@@ -3475,7 +2424,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2004-2016',
     attributes: {Shooting: 88, Dribbling: 58, Defense: 65, IQ: 84, Athleticism: 62, Passing: 70, Rebounding: 68, Speed: 60, Finishing: 45}
   },
-
 {
     id: 534,
     name: 'Matthew Dellavedova',
@@ -3494,17 +2442,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '1978-1993',
     attributes: {Shooting: 82, Dribbling: 90, Defense: 95, IQ: 96, Athleticism: 86, Passing: 92, Rebounding: 68, Speed: 92, Finishing: 80}
   },
-
-{
-    id: 537,
-    name: 'Max Strus',
-    position: 'SF',
-    age: 29,
-    isRetired: false,
-    career: '2019-present',
-    attributes: {Shooting: 86, Dribbling: 75, Defense: 74, IQ: 82, Athleticism: 78, Passing: 74, Rebounding: 70, Speed: 76, Finishing: 58}
-  },
-
 {
     id: 539,
     name: 'Metta World Peace (Ron Artest)',
@@ -3514,7 +2451,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '1999-2017',
     attributes: {Shooting: 78, Dribbling: 76, Defense: 98, IQ: 88, Athleticism: 84, Passing: 78, Rebounding: 82, Speed: 78, Finishing: 68}
   },
-
 {
     id: 541,
     name: 'Michael Adams',
@@ -3551,17 +2487,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '1995-2010',
     attributes: {Shooting: 86, Dribbling: 82, Defense: 80, IQ: 88, Athleticism: 90, Passing: 78, Rebounding: 75, Speed: 85, Finishing: 78}
   },
-
-{
-    id: 548,
-    name: 'Michael Holton',
-    position: 'PG',
-    age: 64,
-    isRetired: true,
-    career: '1984-1992',
-    attributes: {Shooting: 74, Dribbling: 78, Defense: 72, IQ: 75, Athleticism: 74, Passing: 78, Rebounding: 60, Speed: 80, Finishing: 58}
-  },
-
 {
     id: 550,
     name: 'Michael Jordan',
@@ -3579,15 +2504,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: false,
     career: '2019-present',
     attributes: {Shooting: 92, Dribbling: 76, Defense: 74, IQ: 78, Athleticism: 84, Passing: 68, Rebounding: 84, Speed: 78, Finishing: 76}
-  },
-{
-    id: 552,
-    name: 'Mickey Johnson',
-    position: 'PF',
-    age: 73,
-    isRetired: true,
-    career: '1974-1986',
-    attributes: {Shooting: 74, Dribbling: 72, Defense: 75, IQ: 78, Athleticism: 78, Passing: 75, Rebounding: 86, Speed: 74, Finishing: 70}
   },
 {
     id: 553,
@@ -3617,34 +2533,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 88, Dribbling: 86, Defense: 78, IQ: 96, Athleticism: 72, Passing: 90, Rebounding: 62, Speed: 78, Finishing: 74}
   },
 {
-    id: 556,
-    name: 'Mike Dunleavy Jr.',
-    position: 'SF',
-    age: 45,
-    isRetired: true,
-    career: '2002-2017',
-    attributes: {Shooting: 86, Dribbling: 78, Defense: 74, IQ: 88, Athleticism: 70, Passing: 82, Rebounding: 72, Speed: 72, Finishing: 62}
-  },
-{
-    id: 557,
-    name: 'Mike Dunleavy Sr.',
-    position: 'SG',
-    age: 71,
-    isRetired: true,
-    career: '1976-1990',
-    attributes: {Shooting: 82, Dribbling: 76, Defense: 72, IQ: 92, Athleticism: 72, Passing: 84, Rebounding: 64, Speed: 74, Finishing: 64}
-  },
-{
-    id: 558,
-    name: 'Mike Gminski',
-    position: 'C',
-    age: 66,
-    isRetired: true,
-    career: '1980-1994',
-    attributes: {Shooting: 82, Dribbling: 58, Defense: 76, IQ: 84, Athleticism: 68, Passing: 72, Rebounding: 88, Speed: 62, Finishing: 70}
-  },
-
-{
     id: 560,
     name: 'Miles McBride',
     position: 'PG',
@@ -3653,7 +2541,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2021-present',
     attributes: {Shooting: 84, Dribbling: 78, Defense: 86, IQ: 82, Athleticism: 82, Passing: 74, Rebounding: 62, Speed: 85, Finishing: 56}
   },
-
 {
     id: 562,
     name: 'Mitchell Robinson',
@@ -3662,15 +2549,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: false,
     career: '2018-present',
     attributes: {Shooting: 50, Dribbling: 52, Defense: 88, IQ: 78, Athleticism: 86, Passing: 60, Rebounding: 94, Speed: 74, Finishing: 82}
-  },
-{
-    id: 563,
-    name: 'Mo Bamba',
-    position: 'C',
-    age: 27,
-    isRetired: false,
-    career: '2018-present',
-    attributes: {Shooting: 78, Dribbling: 62, Defense: 82, IQ: 72, Athleticism: 82, Passing: 62, Rebounding: 82, Speed: 72, Finishing: 64}
   },
 {
     id: 564,
@@ -3700,24 +2578,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 80, Dribbling: 86, Defense: 96, IQ: 94, Athleticism: 82, Passing: 88, Rebounding: 70, Speed: 88, Finishing: 58}
   },
 {
-    id: 567,
-    name: 'Moritz Wagner',
-    position: 'C',
-    age: 28,
-    isRetired: false,
-    career: '2018-present',
-    attributes: {Shooting: 78, Dribbling: 74, Defense: 72, IQ: 84, Athleticism: 76, Passing: 76, Rebounding: 78, Speed: 72, Finishing: 72}
-  },
-{
-    id: 568,
-    name: 'Moses Moody',
-    position: 'SG',
-    age: 23,
-    isRetired: false,
-    career: '2021-present',
-    attributes: {Shooting: 80, Dribbling: 74, Defense: 78, IQ: 79, Athleticism: 78, Passing: 70, Rebounding: 70, Speed: 76, Finishing: 62}
-  },
-{
     id: 569,
     name: 'Myles Turner',
     position: 'C',
@@ -3725,16 +2585,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: false,
     career: '2015-present',
     attributes: {Shooting: 85, Dribbling: 65, Defense: 90, IQ: 84, Athleticism: 80, Passing: 68, Rebounding: 84, Speed: 72, Finishing: 72}
-  },
-
-{
-    id: 571,
-    name: 'Nemanja Bjelica',
-    position: 'PF',
-    age: 37,
-    isRetired: true,
-    career: '2015-2022',
-    attributes: {Shooting: 84, Dribbling: 78, Defense: 72, IQ: 90, Athleticism: 68, Passing: 84, Rebounding: 78, Speed: 64, Finishing: 60}
   },
 {
     id: 572,
@@ -3753,25 +2603,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: true,
     career: '1989-2002',
     attributes: {Shooting: 84, Dribbling: 80, Defense: 82, IQ: 84, Athleticism: 88, Passing: 76, Rebounding: 72, Speed: 84, Finishing: 72}
-  },
-{
-    id: 574,
-    name: 'Nick Collison',
-    position: 'PF',
-    age: 45,
-    isRetired: true,
-    career: '2004-2018',
-    attributes: {Shooting: 68, Dribbling: 62, Defense: 82, IQ: 94, Athleticism: 72, Passing: 78, Rebounding: 80, Speed: 66, Finishing: 68}
-  },
-
-{
-    id: 576,
-    name: 'Nick Richards',
-    position: 'C',
-    age: 28,
-    isRetired: false,
-    career: '2020-present',
-    attributes: {Shooting: 60, Dribbling: 54, Defense: 78, IQ: 74, Athleticism: 82, Passing: 60, Rebounding: 86, Speed: 68, Finishing: 74}
   },
 {
     id: 577,
@@ -3810,15 +2641,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 88, Dribbling: 85, Defense: 78, IQ: 99, Athleticism: 70, Passing: 99, Rebounding: 95, Speed: 68, Finishing: 93}
   },
 {
-    id: 581,
-    name: 'Nikola Jović',
-    position: 'PF',
-    age: 22,
-    isRetired: false,
-    career: '2022-present',
-    attributes: {Shooting: 80, Dribbling: 82, Defense: 74, IQ: 80, Athleticism: 76, Passing: 82, Rebounding: 74, Speed: 75, Finishing: 64}
-  },
-{
     id: 582,
     name: 'Nikola Vučević',
     position: 'C',
@@ -3826,16 +2648,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: false,
     career: '2011-present',
     attributes: {Shooting: 84, Dribbling: 74, Defense: 72, IQ: 88, Athleticism: 68, Passing: 82, Rebounding: 94, Speed: 62, Finishing: 75}
-  },
-
-{
-    id: 584,
-    name: 'Obi Toppin',
-    position: 'PF',
-    age: 27,
-    isRetired: false,
-    career: '2020-present',
-    attributes: {Shooting: 80, Dribbling: 72, Defense: 68, IQ: 78, Athleticism: 94, Passing: 74, Rebounding: 72, Speed: 84, Finishing: 78}
   },
 {
     id: 585,
@@ -3855,26 +2667,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2020-present',
     attributes: {Shooting: 72, Dribbling: 65, Defense: 85, IQ: 82, Athleticism: 86, Passing: 68, Rebounding: 84, Speed: 76, Finishing: 76}
   },
-{
-    id: 590,
-    name: 'Oshae Brissett',
-    position: 'PF',
-    age: 27,
-    isRetired: false,
-    career: '2019-present',
-    attributes: {Shooting: 76, Dribbling: 70, Defense: 78, IQ: 75, Athleticism: 84, Passing: 66, Rebounding: 74, Speed: 78, Finishing: 64}
-  },
-
-{
-    id: 592,
-    name: 'Otto Porter Jr.',
-    position: 'SF',
-    age: 32,
-    isRetired: true,
-    career: '2013-2024',
-    attributes: {Shooting: 85, Dribbling: 74, Defense: 84, IQ: 88, Athleticism: 72, Passing: 76, Rebounding: 76, Speed: 72, Finishing: 62}
-  },
-
 {
     id: 594,
     name: 'P.J. Tucker',
@@ -3912,16 +2704,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 84, Dribbling: 88, Defense: 84, IQ: 90, Athleticism: 86, Passing: 86, Rebounding: 82, Speed: 82, Finishing: 83}
   },
 {
-    id: 598,
-    name: 'Pat Connaughton',
-    position: 'SG',
-    age: 32,
-    isRetired: false,
-    career: '2015-present',
-    attributes: {Shooting: 82, Dribbling: 72, Defense: 74, IQ: 80, Athleticism: 90, Passing: 70, Rebounding: 74, Speed: 80, Finishing: 62}
-  },
-
-{
     id: 600,
     name: 'Patrick Ewing',
     position: 'C',
@@ -3929,15 +2711,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: true,
     career: '1985-2002',
     attributes: {Shooting: 82, Dribbling: 65, Defense: 96, IQ: 94, Athleticism: 88, Passing: 70, Rebounding: 94, Speed: 72, Finishing: 88}
-  },
-{
-    id: 601,
-    name: 'Patrick Williams',
-    position: 'PF',
-    age: 24,
-    isRetired: false,
-    career: '2020-present',
-    attributes: {Shooting: 78, Dribbling: 70, Defense: 82, IQ: 76, Athleticism: 85, Passing: 68, Rebounding: 75, Speed: 78, Finishing: 68}
   },
 {
     id: 602,
@@ -3958,15 +2731,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 91, Dribbling: 88, Defense: 88, IQ: 90, Athleticism: 84, Passing: 82, Rebounding: 78, Speed: 84, Finishing: 82}
   },
 {
-    id: 604,
-    name: 'Paul Reed',
-    position: 'C',
-    age: 26,
-    isRetired: false,
-    career: '2020-present',
-    attributes: {Shooting: 68, Dribbling: 62, Defense: 78, IQ: 72, Athleticism: 84, Passing: 60, Rebounding: 82, Speed: 76, Finishing: 72}
-  },
-{
     id: 605,
     name: 'Payton Pritchard',
     position: 'PG',
@@ -3975,7 +2739,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2020-present',
     attributes: {Shooting: 86, Dribbling: 84, Defense: 72, IQ: 82, Athleticism: 75, Passing: 80, Rebounding: 64, Speed: 85, Finishing: 58}
   },
-
 {
     id: 607,
     name: 'Pervis Ellison',
@@ -3984,16 +2747,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: true,
     career: '1989-2000',
     attributes: {Shooting: 74, Dribbling: 60, Defense: 82, IQ: 78, Athleticism: 78, Passing: 72, Rebounding: 85, Speed: 68, Finishing: 75}
-  },
-
-{
-    id: 609,
-    name: 'Peyton Watson',
-    position: 'SF',
-    age: 23,
-    isRetired: false,
-    career: '2022-present',
-    attributes: {Shooting: 68, Dribbling: 72, Defense: 85, IQ: 75, Athleticism: 88, Passing: 70, Rebounding: 74, Speed: 84, Finishing: 72}
   },
 {
     id: 610,
@@ -4004,35 +2757,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '1971-1981',
     attributes: {Shooting: 85, Dribbling: 84, Defense: 80, IQ: 85, Athleticism: 82, Passing: 78, Rebounding: 68, Speed: 84, Finishing: 76}
   },
-{
-    id: 611,
-    name: 'Phil Jackson',
-    position: 'PF',
-    age: 80,
-    isRetired: true,
-    career: '1967-1980',
-    attributes: {Shooting: 70, Dribbling: 62, Defense: 82, IQ: 98, Athleticism: 68, Passing: 78, Rebounding: 76, Speed: 60, Finishing: 64}
-  },
-
-{
-    id: 613,
-    name: 'Popeye Jones',
-    position: 'PF',
-    age: 55,
-    isRetired: true,
-    career: '1993-2004',
-    attributes: {Shooting: 65, Dribbling: 58, Defense: 74, IQ: 80, Athleticism: 70, Passing: 66, Rebounding: 92, Speed: 58, Finishing: 68}
-  },
-{
-    id: 614,
-    name: 'Quentin Grimes',
-    position: 'SG',
-    age: 25,
-    isRetired: false,
-    career: '2021-present',
-    attributes: {Shooting: 82, Dribbling: 74, Defense: 82, IQ: 78, Athleticism: 80, Passing: 70, Rebounding: 68, Speed: 82, Finishing: 65}
-  },
-
 {
     id: 616,
     name: 'Quinn Buckner',
@@ -4052,25 +2776,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 70, Dribbling: 76, Defense: 65, IQ: 68, Athleticism: 85, Passing: 74, Rebounding: 62, Speed: 88, Finishing: 64}
   },
 {
-    id: 620,
-    name: 'Randy Foye',
-    position: 'SG',
-    age: 42,
-    isRetired: true,
-    career: '2006-2017',
-    attributes: {Shooting: 80, Dribbling: 78, Defense: 70, IQ: 76, Athleticism: 78, Passing: 76, Rebounding: 64, Speed: 80, Finishing: 62}
-  },
-{
-    id: 623,
-    name: 'Raul Neto',
-    position: 'PG',
-    age: 33,
-    isRetired: false,
-    career: '2015-2023',
-    attributes: {Shooting: 75, Dribbling: 78, Defense: 72, IQ: 82, Athleticism: 70, Passing: 78, Rebounding: 60, Speed: 78, Finishing: 64}
-  },
-
-{
     id: 625,
     name: 'Ray Allen',
     position: 'SG',
@@ -4088,16 +2793,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2005-2019',
     attributes: {Shooting: 78, Dribbling: 84, Defense: 74, IQ: 80, Athleticism: 78, Passing: 85, Rebounding: 64, Speed: 82, Finishing: 68}
   },
-
-{
-    id: 628,
-    name: 'Reggie Harding',
-    position: 'C',
-    age: 85,
-    isRetired: true,
-    career: '1963-1968',
-    attributes: {Shooting: 64, Dribbling: 58, Defense: 78, IQ: 70, Athleticism: 75, Passing: 68, Rebounding: 84, Speed: 65, Finishing: 72}
-  },
 {
     id: 629,
     name: 'Reggie Jackson',
@@ -4106,16 +2801,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: false,
     career: '2011-present',
     attributes: {Shooting: 80, Dribbling: 85, Defense: 68, IQ: 78, Athleticism: 78, Passing: 80, Rebounding: 62, Speed: 82, Finishing: 76}
-  },
-
-{
-    id: 631,
-    name: 'Renaldo Balkman',
-    position: 'PF',
-    age: 41,
-    isRetired: true,
-    career: '2006-2012',
-    attributes: {Shooting: 65, Dribbling: 68, Defense: 80, IQ: 72, Athleticism: 84, Passing: 66, Rebounding: 78, Speed: 76, Finishing: 70}
   },
 {
     id: 632,
@@ -4126,7 +2811,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '1988-2000',
     attributes: {Shooting: 84, Dribbling: 80, Defense: 68, IQ: 78, Athleticism: 90, Passing: 76, Rebounding: 65, Speed: 86, Finishing: 75}
   },
-
 {
     id: 634,
     name: 'Richard Hamilton (Rip)',
@@ -4146,15 +2830,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 80, Dribbling: 78, Defense: 80, IQ: 85, Athleticism: 90, Passing: 76, Rebounding: 75, Speed: 85, Finishing: 84}
   },
 {
-    id: 636,
-    name: 'Richaun Holmes',
-    position: 'C',
-    age: 32,
-    isRetired: false,
-    career: '2015-present',
-    attributes: {Shooting: 75, Dribbling: 60, Defense: 76, IQ: 74, Athleticism: 82, Passing: 64, Rebounding: 80, Speed: 72, Finishing: 82}
-  },
-{
     id: 637,
     name: 'Rick Barry',
     position: 'SF',
@@ -4162,15 +2837,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: true,
     career: '1965-1980',
     attributes: {Shooting: 92, Dribbling: 88, Defense: 85, IQ: 98, Athleticism: 82, Passing: 90, Rebounding: 84, Speed: 82, Finishing: 87}
-  },
-{
-    id: 638,
-    name: 'Rick Brunson',
-    position: 'PG',
-    age: 53,
-    isRetired: true,
-    career: '1997-2006',
-    attributes: {Shooting: 70, Dribbling: 78, Defense: 78, IQ: 88, Athleticism: 70, Passing: 82, Rebounding: 60, Speed: 75, Finishing: 58}
   },
 {
     id: 639,
@@ -4218,25 +2884,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 60, Dribbling: 58, Defense: 92, IQ: 85, Athleticism: 94, Passing: 78, Rebounding: 90, Speed: 78, Finishing: 86}
   },
 {
-    id: 651,
-    name: 'Rondae Hollis-Jefferson',
-    position: 'SF',
-    age: 31,
-    isRetired: false,
-    career: '2015-2021',
-    attributes: {Shooting: 66, Dribbling: 74, Defense: 82, IQ: 76, Athleticism: 82, Passing: 72, Rebounding: 78, Speed: 78, Finishing: 68}
-  },
-
-{
-    id: 653,
-    name: 'Roy Hibbert',
-    position: 'C',
-    age: 39,
-    isRetired: true,
-    career: '2008-2017',
-    attributes: {Shooting: 68, Dribbling: 45, Defense: 92, IQ: 84, Athleticism: 60, Passing: 64, Rebounding: 84, Speed: 45, Finishing: 72}
-  },
-{
     id: 654,
     name: 'Rudy Fernandez',
     position: 'SG',
@@ -4246,15 +2893,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 84, Dribbling: 80, Defense: 76, IQ: 90, Athleticism: 85, Passing: 82, Rebounding: 65, Speed: 82, Finishing: 68}
   },
 {
-    id: 655,
-    name: 'Rudy Gay',
-    position: 'SF',
-    age: 39,
-    isRetired: true,
-    career: '2006-2023',
-    attributes: {Shooting: 82, Dribbling: 80, Defense: 78, IQ: 80, Athleticism: 88, Passing: 72, Rebounding: 78, Speed: 82, Finishing: 58}
-  },
-{
     id: 656,
     name: 'Rudy Gobert',
     position: 'C',
@@ -4262,15 +2900,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: false,
     career: '2013-present',
     attributes: {Shooting: 55, Dribbling: 48, Defense: 98, IQ: 92, Athleticism: 84, Passing: 68, Rebounding: 97, Speed: 68, Finishing: 78}
-  },
-{
-    id: 657,
-    name: 'Rui Hachimura',
-    position: 'PF',
-    age: 27,
-    isRetired: false,
-    career: '2019-present',
-    attributes: {Shooting: 82, Dribbling: 74, Defense: 74, IQ: 76, Athleticism: 82, Passing: 66, Rebounding: 75, Speed: 76, Finishing: 76}
   },
 {
     id: 658,
@@ -4344,7 +2973,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '1989-2001',
     attributes: {Shooting: 85, Dribbling: 78, Defense: 78, IQ: 86, Athleticism: 82, Passing: 78, Rebounding: 74, Speed: 80, Finishing: 77}
   },
-
 {
     id: 673,
     name: 'Serge Ibaka',
@@ -4353,16 +2981,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: true,
     career: '2009-2023',
     attributes: {Shooting: 82, Dribbling: 62, Defense: 90, IQ: 82, Athleticism: 85, Passing: 64, Rebounding: 88, Speed: 72, Finishing: 78}
-  },
-
-{
-    id: 675,
-    name: 'Seth Curry',
-    position: 'SG',
-    age: 35,
-    isRetired: false,
-    career: '2013-present',
-    attributes: {Shooting: 95, Dribbling: 80, Defense: 68, IQ: 85, Athleticism: 72, Passing: 78, Rebounding: 60, Speed: 78, Finishing: 55}
   },
 {
     id: 676,
@@ -4381,16 +2999,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: false,
     career: '2018-present',
     attributes: {Shooting: 88, Dribbling: 97, Defense: 88, IQ: 96, Athleticism: 86, Passing: 90, Rebounding: 76, Speed: 92, Finishing: 90}
-  },
-
-{
-    id: 679,
-    name: 'Shandon Anderson',
-    position: 'SF',
-    age: 52,
-    isRetired: true,
-    career: '1996-2006',
-    attributes: {Shooting: 74, Dribbling: 72, Defense: 80, IQ: 78, Athleticism: 82, Passing: 70, Rebounding: 68, Speed: 80, Finishing: 72}
   },
 {
     id: 680,
@@ -4411,16 +3019,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 80, Dribbling: 78, Defense: 78, IQ: 84, Athleticism: 84, Passing: 75, Rebounding: 88, Speed: 76, Finishing: 83}
   },
 {
-    id: 682,
-    name: 'Shawn Bradley',
-    position: 'C',
-    age: 53,
-    isRetired: true,
-    career: '1993-2005',
-    attributes: {Shooting: 65, Dribbling: 48, Defense: 88, IQ: 74, Athleticism: 65, Passing: 60, Rebounding: 86, Speed: 50, Finishing: 70}
-  },
-
-{
     id: 684,
     name: 'Sherman Douglas',
     position: 'PG',
@@ -4428,15 +3026,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: true,
     career: '1989-2001',
     attributes: {Shooting: 76, Dribbling: 86, Defense: 70, IQ: 88, Athleticism: 78, Passing: 90, Rebounding: 60, Speed: 85, Finishing: 72}
-  },
-{
-    id: 685,
-    name: 'Sidney Green',
-    position: 'PF',
-    age: 65,
-    isRetired: true,
-    career: '1983-1993',
-    attributes: {Shooting: 70, Dribbling: 62, Defense: 76, IQ: 75, Athleticism: 78, Passing: 66, Rebounding: 84, Speed: 68, Finishing: 68}
   },
 {
     id: 688,
@@ -4456,7 +3045,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2014-present',
     attributes: {Shooting: 80, Dribbling: 84, Defense: 70, IQ: 84, Athleticism: 78, Passing: 82, Rebounding: 64, Speed: 82, Finishing: 72}
   },
-
 {
     id: 691,
     name: 'Spencer Haywood',
@@ -4475,7 +3063,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '1991-2006',
     attributes: {Shooting: 68, Dribbling: 74, Defense: 90, IQ: 84, Athleticism: 88, Passing: 72, Rebounding: 74, Speed: 82, Finishing: 78}
   },
-
 {
     id: 694,
     name: 'Stephen Curry',
@@ -4540,15 +3127,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 58, Dribbling: 45, Defense: 78, IQ: 68, Athleticism: 70, Passing: 58, Rebounding: 84, Speed: 40, Finishing: 72}
   },
 {
-    id: 705,
-    name: 'Taj Gibson',
-    position: 'PF',
-    age: 40,
-    isRetired: false,
-    career: '2010-present',
-    attributes: {Shooting: 74, Dribbling: 62, Defense: 82, IQ: 88, Athleticism: 74, Passing: 68, Rebounding: 80, Speed: 68, Finishing: 76}
-  },
-{
     id: 706,
     name: 'Tari Eason',
     position: 'PF',
@@ -4556,24 +3134,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: false,
     career: '2023-present',
     attributes: {Shooting: 76, Dribbling: 74, Defense: 88, IQ: 82, Athleticism: 86, Passing: 70, Rebounding: 85, Speed: 80, Finishing: 73}
-  },
-{
-    id: 707,
-    name: 'Tarik Black',
-    position: 'C',
-    age: 33,
-    isRetired: true,
-    career: '2015-2018',
-    attributes: {Shooting: 65, Dribbling: 58, Defense: 75, IQ: 72, Athleticism: 82, Passing: 62, Rebounding: 80, Speed: 68, Finishing: 74}
-  },
-{
-    id: 711,
-    name: 'Terence Davis',
-    position: 'SG',
-    age: 28,
-    isRetired: false,
-    career: '2020-2025',
-    attributes: {Shooting: 78, Dribbling: 76, Defense: 75, IQ: 74, Athleticism: 84, Passing: 68, Rebounding: 68, Speed: 82, Finishing: 68}
   },
 {
     id: 712,
@@ -4612,15 +3172,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 84, Dribbling: 86, Defense: 74, IQ: 80, Athleticism: 82, Passing: 80, Rebounding: 70, Speed: 85, Finishing: 68}
   },
 {
-    id: 716,
-    name: 'Terry Taylor',
-    position: 'PF',
-    age: 26,
-    isRetired: false,
-    career: '2022-present',
-    attributes: {Shooting: 70, Dribbling: 68, Defense: 72, IQ: 78, Athleticism: 76, Passing: 68, Rebounding: 84, Speed: 70, Finishing: 73}
-  },
-{
     id: 717,
     name: 'Thanasis Antetokounmpo',
     position: 'PF',
@@ -4629,17 +3180,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2016-present',
     attributes: {Shooting: 60, Dribbling: 62, Defense: 75, IQ: 68, Athleticism: 90, Passing: 60, Rebounding: 70, Speed: 78, Finishing: 65}
   },
-
-{
-    id: 719,
-    name: 'Thomas Bryant',
-    position: 'C',
-    age: 28,
-    isRetired: false,
-    career: '2018-present',
-    attributes: {Shooting: 78, Dribbling: 62, Defense: 72, IQ: 76, Athleticism: 78, Passing: 68, Rebounding: 82, Speed: 68, Finishing: 82}
-  },
-
 {
     id: 721,
     name: 'Tim Duncan',
@@ -4648,15 +3188,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: true,
     career: '1998-2016',
     attributes: {Shooting: 84, Dribbling: 78, Defense: 98, IQ: 99, Athleticism: 85, Passing: 88, Rebounding: 98, Speed: 72, Finishing: 93}
-  },
-{
-    id: 722,
-    name: 'Tim Hardaway Jr.',
-    position: 'SG',
-    age: 33,
-    isRetired: false,
-    career: '2014-present',
-    attributes: {Shooting: 85, Dribbling: 78, Defense: 70, IQ: 78, Athleticism: 80, Passing: 72, Rebounding: 68, Speed: 80, Finishing: 58}
   },
 {
     id: 723,
@@ -4685,7 +3216,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '1982-1998',
     attributes: {Shooting: 85, Dribbling: 78, Defense: 74, IQ: 84, Athleticism: 92, Passing: 76, Rebounding: 84, Speed: 82, Finishing: 84}
   },
-
 {
     id: 727,
     name: 'Tom Gugliotta',
@@ -4704,43 +3234,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '1975-1983',
     attributes: {Shooting: 75, Dribbling: 82, Defense: 80, IQ: 84, Athleticism: 78, Passing: 85, Rebounding: 64, Speed: 82, Finishing: 66}
   },
-{
-    id: 729,
-    name: 'Toney Douglas',
-    position: 'PG',
-    age: 39,
-    isRetired: true,
-    career: '2010-2017',
-    attributes: {Shooting: 78, Dribbling: 76, Defense: 82, IQ: 78, Athleticism: 78, Passing: 74, Rebounding: 62, Speed: 82, Finishing: 58}
-  },
-{
-    id: 730,
-    name: 'Tony Allen',
-    position: 'SG',
-    age: 43,
-    isRetired: true,
-    career: '2005-2018',
-    attributes: {Shooting: 65, Dribbling: 72, Defense: 99, IQ: 92, Athleticism: 85, Passing: 68, Rebounding: 72, Speed: 84, Finishing: 65}
-  },
-{
-    id: 731,
-    name: 'Tony Battie',
-    position: 'C',
-    age: 49,
-    isRetired: true,
-    career: '1998-2012',
-    attributes: {Shooting: 70, Dribbling: 58, Defense: 82, IQ: 80, Athleticism: 78, Passing: 62, Rebounding: 82, Speed: 68, Finishing: 68}
-  },
-{
-    id: 732,
-    name: 'Torrey Craig',
-    position: 'SF',
-    age: 34,
-    isRetired: true,
-    career: '2018-2025',
-    attributes: {Shooting: 76, Dribbling: 68, Defense: 82, IQ: 80, Athleticism: 78, Passing: 68, Rebounding: 74, Speed: 75, Finishing: 66}
-  },
-
 {
     id: 734,
     name: 'Trae Young',
@@ -4778,25 +3271,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 82, Dribbling: 88, Defense: 70, IQ: 78, Athleticism: 82, Passing: 78, Rebounding: 64, Speed: 85, Finishing: 64}
   },
 {
-    id: 738,
-    name: 'Trendon Watford',
-    position: 'PF',
-    age: 25,
-    isRetired: false,
-    career: '2022-present',
-    attributes: {Shooting: 74, Dribbling: 76, Defense: 72, IQ: 82, Athleticism: 78, Passing: 78, Rebounding: 75, Speed: 72, Finishing: 71}
-  },
-{
-    id: 739,
-    name: 'Trent Forrest',
-    position: 'PG',
-    age: 27,
-    isRetired: false,
-    career: '2021-2024',
-    attributes: {Shooting: 68, Dribbling: 76, Defense: 78, IQ: 80, Athleticism: 76, Passing: 78, Rebounding: 62, Speed: 78, Finishing: 62}
-  },
-
-{
     id: 741,
     name: 'Trevor Ariza',
     position: 'SF',
@@ -4814,7 +3288,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2014-2022',
     attributes: {Shooting: 80, Dribbling: 85, Defense: 65, IQ: 78, Athleticism: 76, Passing: 80, Rebounding: 58, Speed: 84, Finishing: 62}
   },
-
 {
     id: 744,
     name: 'Tristan Thompson',
@@ -4824,7 +3297,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2012-2025',
     attributes: {Shooting: 60, Dribbling: 58, Defense: 78, IQ: 84, Athleticism: 78, Passing: 66, Rebounding: 92, Speed: 68, Finishing: 74}
   },
-
 {
     id: 746,
     name: 'Ty Jerome',
@@ -4834,16 +3306,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2020-present',
     attributes: {Shooting: 82, Dribbling: 78, Defense: 70, IQ: 88, Athleticism: 68, Passing: 82, Rebounding: 60, Speed: 74, Finishing: 60}
   },
-
-{
-    id: 748,
-    name: 'Tyler Ennis',
-    position: 'PG',
-    age: 31,
-    isRetired: true,
-    career: '2015-2018',
-    attributes: {Shooting: 74, Dribbling: 80, Defense: 68, IQ: 80, Athleticism: 74, Passing: 82, Rebounding: 60, Speed: 78, Finishing: 60}
-  },
 {
     id: 749,
     name: 'Tyler Herro',
@@ -4852,15 +3314,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: false,
     career: '2020-present',
     attributes: {Shooting: 92, Dribbling: 88, Defense: 72, IQ: 84, Athleticism: 78, Passing: 82, Rebounding: 72, Speed: 82, Finishing: 68}
-  },
-{
-    id: 750,
-    name: 'Tyler Johnson',
-    position: 'SG',
-    age: 33,
-    isRetired: true,
-    career: '2015-2022',
-    attributes: {Shooting: 78, Dribbling: 76, Defense: 72, IQ: 75, Athleticism: 78, Passing: 74, Rebounding: 64, Speed: 80, Finishing: 70}
   },
 {
     id: 751,
@@ -4879,15 +3332,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: false,
     career: '2020-present',
     attributes: {Shooting: 90, Dribbling: 88, Defense: 75, IQ: 88, Athleticism: 92, Passing: 85, Rebounding: 62, Speed: 97, Finishing: 83}
-  },
-{
-    id: 753,
-    name: 'Tyrone Corbin',
-    position: 'SF',
-    age: 62,
-    isRetired: true,
-    career: '1985-2001',
-    attributes: {Shooting: 74, Dribbling: 70, Defense: 82, IQ: 84, Athleticism: 76, Passing: 72, Rebounding: 77, Speed: 75, Finishing: 68}
   },
 {
     id: 754,
@@ -4925,26 +3369,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2015-present',
     attributes: {Shooting: 82, Dribbling: 84, Defense: 74, IQ: 95, Athleticism: 70, Passing: 91, Rebounding: 58, Speed: 83, Finishing: 73}
   },
-
-{
-    id: 759,
-    name: 'Udonis Haslem',
-    position: 'PF',
-    age: 45,
-    isRetired: true,
-    career: '2003-2023',
-    attributes: {Shooting: 72, Dribbling: 62, Defense: 82, IQ: 90, Athleticism: 68, Passing: 66, Rebounding: 84, Speed: 64, Finishing: 70}
-  },
-{
-    id: 760,
-    name: 'Usman Garuba',
-    position: 'PF',
-    age: 23,
-    isRetired: false,
-    career: '2021-2024',
-    attributes: {Shooting: 65, Dribbling: 62, Defense: 85, IQ: 80, Athleticism: 78, Passing: 74, Rebounding: 80, Speed: 72, Finishing: 62}
-  },
-
 {
     id: 762,
     name: 'Victor Oladipo',
@@ -4973,16 +3397,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 84, Dribbling: 82, Defense: 74, IQ: 85, Athleticism: 80, Passing: 76, Rebounding: 68, Speed: 83, Finishing: 74}
   },
 {
-    id: 765,
-    name: 'Vinny Del Negro',
-    position: 'SG',
-    age: 58,
-    isRetired: true,
-    career: '1988-2001',
-    attributes: {Shooting: 86, Dribbling: 78, Defense: 70, IQ: 88, Athleticism: 68, Passing: 80, Rebounding: 60, Speed: 74, Finishing: 62}
-  },
-
-{
     id: 767,
     name: 'Vlade Divac',
     position: 'C',
@@ -4991,7 +3405,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '1989-2005',
     attributes: {Shooting: 74, Dribbling: 72, Defense: 82, IQ: 98, Athleticism: 68, Passing: 95, Rebounding: 88, Speed: 60, Finishing: 76}
   },
-
 {
     id: 769,
     name: 'Walker Kessler',
@@ -5000,24 +3413,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: false,
     career: '2022-present',
     attributes: {Shooting: 58, Dribbling: 50, Defense: 92, IQ: 84, Athleticism: 80, Passing: 62, Rebounding: 89, Speed: 68, Finishing: 76}
-  },
-{
-    id: 770,
-    name: 'Wally Szczerbiak',
-    position: 'SF',
-    age: 48,
-    isRetired: true,
-    career: '1999-2009',
-    attributes: {Shooting: 92, Dribbling: 74, Defense: 68, IQ: 85, Athleticism: 75, Passing: 76, Rebounding: 72, Speed: 72, Finishing: 74}
-  },
-{
-    id: 771,
-    name: 'Walt Davis',
-    position: 'C',
-    age: 94,
-    isRetired: true,
-    career: '1953-1958',
-    attributes: {Shooting: 65, Dribbling: 58, Defense: 78, IQ: 75, Athleticism: 88, Passing: 60, Rebounding: 82, Speed: 74, Finishing: 65}
   },
 {
     id: 772,
@@ -5047,16 +3442,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 91, Dribbling: 85, Defense: 78, IQ: 88, Athleticism: 88, Passing: 82, Rebounding: 68, Speed: 92, Finishing: 82}
   },
 {
-    id: 775,
-    name: 'Wayne Cooper',
-    position: 'C',
-    age: 68,
-    isRetired: true,
-    career: '1978-1992',
-    attributes: {Shooting: 66, Dribbling: 55, Defense: 82, IQ: 78, Athleticism: 75, Passing: 60, Rebounding: 85, Speed: 64, Finishing: 68}
-  },
-
-{
     id: 777,
     name: 'Wendell Carter Jr.',
     position: 'C',
@@ -5064,24 +3449,6 @@ export const nbaPlayers: RealPlayer[] = [
     isRetired: false,
     career: '2018-present',
     attributes: {Shooting: 78, Dribbling: 68, Defense: 82, IQ: 85, Athleticism: 78, Passing: 74, Rebounding: 86, Speed: 68, Finishing: 74}
-  },
-{
-    id: 781,
-    name: 'Wesley Matthews',
-    position: 'SG',
-    age: 38,
-    isRetired: false,
-    career: '2009-present',
-    attributes: {Shooting: 82, Dribbling: 74, Defense: 80, IQ: 85, Athleticism: 72, Passing: 72, Rebounding: 65, Speed: 74, Finishing: 62}
-  },
-{
-    id: 782,
-    name: 'Wil Jones',
-    position: 'SF',
-    age: 78,
-    isRetired: true,
-    career: '1976-1978',
-    attributes: {Shooting: 74, Dribbling: 75, Defense: 80, IQ: 78, Athleticism: 82, Passing: 72, Rebounding: 84, Speed: 78, Finishing: 68}
   },
 {
     id: 783,
@@ -5111,33 +3478,6 @@ export const nbaPlayers: RealPlayer[] = [
     attributes: {Shooting: 80, Dribbling: 78, Defense: 82, IQ: 84, Athleticism: 82, Passing: 81, Rebounding: 72, Speed: 80, Finishing: 72}
   },
 {
-    id: 786,
-    name: 'Willie Cauley-Stein',
-    position: 'C',
-    age: 31,
-    isRetired: false,
-    career: '2015-2022',
-    attributes: {Shooting: 52, Dribbling: 64, Defense: 78, IQ: 70, Athleticism: 88, Passing: 65, Rebounding: 82, Speed: 84, Finishing: 72}
-  },
-{
-    id: 787,
-    name: 'Willie Green',
-    position: 'SG',
-    age: 43,
-    isRetired: true,
-    career: '2003-2015',
-    attributes: {Shooting: 79, Dribbling: 76, Defense: 74, IQ: 86, Athleticism: 76, Passing: 75, Rebounding: 60, Speed: 78, Finishing: 64}
-  },
-{
-    id: 788,
-    name: 'Willy Hernangómez',
-    position: 'C',
-    age: 31,
-    isRetired: false,
-    career: '2016-2023',
-    attributes: {Shooting: 74, Dribbling: 62, Defense: 65, IQ: 82, Athleticism: 68, Passing: 72, Rebounding: 90, Speed: 60, Finishing: 78}
-  },
-{
     id: 789,
     name: 'Wilson Chandler',
     position: 'SF',
@@ -5164,7 +3504,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '1987-1995',
     attributes: {Shooting: 77, Dribbling: 80, Defense: 75, IQ: 80, Athleticism: 78, Passing: 82, Rebounding: 65, Speed: 82, Finishing: 66}
   },
-
 {
     id: 793,
     name: 'Yi Jianlian',
@@ -5201,7 +3540,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2020-present',
     attributes: {Shooting: 75, Dribbling: 62, Defense: 74, IQ: 74, Athleticism: 78, Passing: 60, Rebounding: 76, Speed: 72, Finishing: 68}
   },
-
 {
     id: 798,
     name: 'Zion Williamson',
@@ -5211,7 +3549,6 @@ export const nbaPlayers: RealPlayer[] = [
     career: '2019-present',
     attributes: {Shooting: 74, Dribbling: 85, Defense: 78, IQ: 88, Athleticism: 98, Passing: 86, Rebounding: 88, Speed: 88, Finishing: 89}
   },
-
 {
     id: 800,
     name: 'Victor Wembanyama',
